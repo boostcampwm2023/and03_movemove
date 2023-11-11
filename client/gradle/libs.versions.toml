@@ -1,0 +1,41 @@
+[versions]
+activity-compose = "1.8.0"
+kotlin = "1.12.0"
+kotlin-lang = "1.9.20"
+android-gradle-plugin = "8.1.1"
+core-ktx = "1.9.0"
+app-compat = "1.6.1"
+lifecycle-runtime-ktx = "2.6.2"
+material = "1.10.0"
+lifecycle-extensions = "2.2.0"
+junit = "4.13.2"
+junit-ext = "1.1.5"
+junit-espresso = "3.5.1"
+hilt = "2.48"
+data-store = "1.0.0"
+retrofit = "2.9.0"
+okHttp = "5.0.0-alpha.2"
+coil = "2.5.0"
+
+[libraries]
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
+android-gradle-plugin = { group = "com.android", name = "application", version.ref = "android-gradle-plugin" }
+core-ktx = { module = "androidx.core:core-ktx", version.ref = "kotlin" }
+lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "lifecycle-extensions" }
+junit = { module = "junit:junit", version = "junit" }
+junit-ext = { module = "androidx.test.ext:junit", version = "junit-ext" }
+junit-espresso = { module = "androidx.test.espresso:espresso-core", version = "junit-espresso" }
+hilt = { group = "com.google.dagger", name = "hilt-android", version = "hilt" }
+data-store = { group = "androidx.datstore", name = "data-store-preferences", version = "data-store" }
+data-store-core = { group = "androidx.datstore", name = "data-store-preferences-core", version = "data-store" }
+
+[bundles]
+common = ["core-ktx"]
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
+android-library = { id = "com.android.library", version.ref = "android-gradle-plugin" }
+kotlin-lang = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin-lang" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
