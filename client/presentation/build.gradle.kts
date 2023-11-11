@@ -1,7 +1,8 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("version-catalog")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.lang)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -53,6 +54,12 @@ dependencies {
 
     implementation(libs.bundles.common)
 
+    implementation(libs.core.ktx)
+    implementation(libs.lifecycle.runtime.ktx)
+
+    // ksp
+    ksp(libs.ksp.hilt)
+
     // compose
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
     implementation("androidx.compose.ui:ui")
@@ -60,7 +67,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     debugImplementation("androidx.compose.ui:ui-tooling")
-    implementation(libs.lifecycle.runtime.ktx)
 
     // test
     testImplementation(libs.junit)

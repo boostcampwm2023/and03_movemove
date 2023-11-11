@@ -1,7 +1,8 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-    id("version-catalog")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.lang)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -32,4 +33,7 @@ android {
 
 dependencies {
     implementation(libs.bundles.common)
+
+    // ksp
+    ksp(libs.ksp.hilt)
 }
