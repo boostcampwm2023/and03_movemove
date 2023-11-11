@@ -14,5 +14,6 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "MoveMove-Android"
-include(":app")
- 
+include(":presentation")
+include(":data")
+include(":domain")
