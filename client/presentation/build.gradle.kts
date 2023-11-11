@@ -52,29 +52,18 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":data"))
 
+    implementation(libs.bundles.android)
+    implementation(libs.bundles.compose)
     implementation(libs.bundles.common)
-
-    implementation(libs.core.ktx)
-    implementation(libs.lifecycle.runtime.ktx)
 
     // ksp
     ksp(libs.ksp.hilt)
-
-    // compose
-    implementation(platform("androidx.compose:compose-bom:2023.03.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    implementation(libs.compose.lifecycle)
-    implementation(libs.hilt.navigation.compose)
 
     // test
     testImplementation(libs.junit)
     androidTestImplementation(libs.junit.ext)
     androidTestImplementation(libs.junit.espresso)
+    debugImplementation(libs.compose.ui.test)
+    debugImplementation(libs.compose.ui.tooling.debug)
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
-    implementation(libs.activity.compose)
 }

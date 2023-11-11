@@ -1,42 +1,71 @@
 [versions]
-activity-compose = "1.8.0"
-ktx = "1.12.0"
+# plugins
 kotlin-lang = "1.9.20"
 kotlin-parcelize = "1.9.10"
 android-gradle-plugin = "8.1.1"
+
+# libraries
+## default
+ktx = "1.12.0"
 core-ktx = "1.9.0"
 app-compat = "1.6.1"
 lifecycle-runtime-ktx = "2.6.2"
 material = "1.10.0"
 lifecycle-extensions = "2.2.0"
+
+## compose
+compose = "1.8.0"
+compose-ui = "1.5.4"
+
+## test
 junit = "4.13.2"
 junit-ext = "1.1.5"
 junit-espresso = "3.5.1"
-hilt = "2.48"
+
+## android-library
 data-store = "1.0.0"
 retrofit = "2.9.0"
 okHttp = "5.0.0-alpha.2"
 coil = "2.5.0"
+hilt = "2.48"
 
 [libraries]
-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
+# default
 android-gradle-plugin = { group = "com.android", name = "application", version.ref = "android-gradle-plugin" }
-core-ktx = { module = "androidx.core:core-ktx", version.ref = "ktx" }
-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
-material = { module = "com.google.android.material:material", version.ref = "material" }
-lifecycle-extensions = { module = "androidx.lifecycle:lifecycle-extensions", version.ref = "lifecycle-extensions" }
-junit = { module = "junit:junit", version.ref = "junit" }
-junit-ext = { module = "androidx.test.ext:junit", version.ref = "junit-ext" }
-junit-espresso = { module = "androidx.test.espresso:espresso-core", version.ref = "junit-espresso" }
-hilt = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version = "1.1.0" }
-compose-lifecycle = { module = "androidx.lifecycle:lifecycle-runtime-compose", version = "2.7.0-beta01" }
-ksp-hilt = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "ktx" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
+lifecycle-extensions = { group = "androidx.lifecycle", name = "lifecycle-extensions", version.ref = "lifecycle-extensions" }
+
+# compose
+activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "compose" }
+compose-lifecycle = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version = "2.7.0-beta01" }
+compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "compose-ui" }
+compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "compose-ui" }
+compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "compose-ui" }
+compose-ui-tooling-debug = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose-ui" }
+compose-material3 = { group = "androidx.compose.material3", name = "material3", version = "1.1.2" }
+compose-hilt-navigation = { group = "androidx.hilt", name = "hilt-navigation-compose", version = "1.1.0" }
+
+# test
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+junit-ext = { group = "androidx.test.ext", name = "junit", version.ref = "junit-ext" }
+junit-espresso = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "junit-espresso" }
+compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose-ui" }
+
+# android-library
 datastore = { group = "androidx.datstore", name = "data-store-preferences", version.ref = "data-store" }
 datastore-core = { group = "androidx.datstore", name = "data-store-preferences-core", version.ref = "data-store" }
+hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+
+# ksp
+ksp-hilt = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 
 [bundles]
+android = ["core-ktx", "lifecycle-runtime-ktx", "material", "lifecycle-extensions"]
+compose = ["activity-compose", "compose-lifecycle", "compose-ui", "compose-ui-graphics", "compose-ui-tooling-preview", "compose-material3", "compose-hilt-navigation"]
 common = ["hilt"]
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
