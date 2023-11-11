@@ -29,6 +29,8 @@ junit = { module = "junit:junit", version.ref = "junit" }
 junit-ext = { module = "androidx.test.ext:junit", version.ref = "junit-ext" }
 junit-espresso = { module = "androidx.test.espresso:espresso-core", version.ref = "junit-espresso" }
 hilt = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version = "1.1.0" }
+compose-lifecycle = { module = "androidx.lifecycle:lifecycle-runtime-compose", version = "2.7.0-beta01" }
 ksp-hilt = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
 datastore = { group = "androidx.datstore", name = "data-store-preferences", version.ref = "data-store" }
 datastore-core = { group = "androidx.datstore", name = "data-store-preferences-core", version.ref = "data-store" }

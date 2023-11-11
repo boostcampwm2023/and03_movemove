@@ -67,6 +67,8 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation(libs.compose.lifecycle)
+    implementation(libs.hilt.navigation.compose)
 
     // test
     testImplementation(libs.junit)
