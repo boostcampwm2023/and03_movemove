@@ -24,8 +24,8 @@ import com.everyone.movemove_android.ui.main.home.HomeScreen
 import com.everyone.movemove_android.ui.main.my.MyScreen
 import com.everyone.movemove_android.ui.main.navigation.Destination
 import com.everyone.movemove_android.ui.main.navigation.rememberNavigator
-import com.everyone.movemove_android.ui.main.video.VideoScreen
-import com.everyone.movemove_android.ui.main.video_add.VideoAddScreen
+import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoScreen
+import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoScreen
 import com.everyone.movemove_android.ui.theme.InActiveInDark
 import com.everyone.movemove_android.ui.theme.Point
 
@@ -48,8 +48,8 @@ fun MainScreen() {
             Modifier.padding(innerPadding)
         ) {
             composable(Destination.HOME.route) { HomeScreen() }
-            composable(Destination.VIDEO.route) { VideoScreen() }
-            composable(Destination.VIDEO_ADD.route) { VideoAddScreen() }
+            composable(Destination.WATCHING_VIDEO.route) { WatchingVideoScreen() }
+            composable(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
             composable(Destination.MY.route) { MyScreen() }
         }
     }

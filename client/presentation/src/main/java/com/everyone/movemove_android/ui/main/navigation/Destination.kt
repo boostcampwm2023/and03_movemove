@@ -15,15 +15,15 @@ enum class Destination(
         iconRes = R.drawable.ic_home,
         labelResId = R.string.navigation_home
     ),
-    VIDEO(
+    WATCHING_VIDEO(
         route = ROUTE_VIDEO,
-        iconRes = R.drawable.ic_video,
-        labelResId = R.string.navigation_video
+        iconRes = R.drawable.ic_watching_video,
+        labelResId = R.string.navigation_watching_video
     ),
-    VIDEO_ADD(
+    UPLOADING_VIDEO(
         route = ROUTE_VIDEO_ADD,
-        iconRes = R.drawable.ic_video_add,
-        labelResId = R.string.navigation_video_add
+        iconRes = R.drawable.ic_uploading_video,
+        labelResId = R.string.navigation_uploading_video
     ),
     MY(
         route = ROUTE_MY,
