@@ -1,7 +1,6 @@
 package com.everyone.movemove_android.ui.main
 
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -9,10 +8,11 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.NavHost
@@ -23,7 +23,7 @@ import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.main.home.HomeScreen
 import com.everyone.movemove_android.ui.main.my.MyScreen
 import com.everyone.movemove_android.ui.main.navigation.Destination
-import com.everyone.movemove_android.ui.main.navigation.rememberNavigator
+import com.everyone.movemove_android.ui.main.navigation.Navigator
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoScreen
 import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoScreen
 import com.everyone.movemove_android.ui.theme.InActiveInDark
@@ -81,3 +81,7 @@ fun MoveMoveNavigationBar(
         }
     }
 }
+
+@Composable
+fun rememberNavigator(navController: NavController) =
+    remember(navController) { Navigator(navController) }

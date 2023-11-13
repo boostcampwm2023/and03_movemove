@@ -15,7 +15,3 @@ class Navigator(private val navController: NavController) {
         }
     }
 }
-
-@Composable
-fun rememberNavigator(navController: NavController) =
-    remember(navController) { Navigator(navController) }
