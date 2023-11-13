@@ -57,7 +57,8 @@ fun MainScreen() {
 
 @Composable
 fun MoveMoveNavigationBar(
-    currentDestination: NavDestination?, onNavigate: (Destination) -> Unit
+    currentDestination: NavDestination?,
+    onNavigate: (Destination) -> Unit
 ) {
     NavigationBar {
         Destination.values().forEach { destination ->
