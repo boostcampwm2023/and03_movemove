@@ -1,30 +1,30 @@
 package com.everyone.movemove_android.ui.util
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.everyone.movemove_android.base.BaseContract
-import kotlinx.coroutines.flow.SharedFlow
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 
 @Composable
-inline fun <reified STATE, EVENT, EFFECT> use(
-    viewModel:BaseContract<STATE, EVENT, EFFECT>
-): StateDispatchEffect<STATE, EVENT, EFFECT> {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+fun Modifier.addFocusCleaner(): Modifier {
+    val focusManager = LocalFocusManager.current
 
-    val dispatch: (EVENT) -> Unit = { event ->
-        viewModel.event(event)
+    return this.pointerInput(Unit) {
+        detectTapGestures {
+            focusManager.clearFocus()
+        }
     }
-
-    return StateDispatchEffect(
-        state = state,
-        effectFlow = viewModel.effect,
-        dispatch = dispatch,
-    )
 }
 
-data class StateDispatchEffect<STATE, EVENT, EFFECT>(
-    val state: STATE,
-    val dispatch: (EVENT) -> Unit,
-    val effectFlow: SharedFlow<EFFECT>,
-)
+@Composable
+fun Modifier.clickableWithoutRipple(onClick: () -> Unit): Modifier {
+    return this.clickable(
+        interactionSource = MutableInteractionSource(),
+        indication = null
+    ) {
+        onClick()
+    }
+}
