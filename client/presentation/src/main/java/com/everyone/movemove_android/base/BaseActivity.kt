@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.base
+package com.everyone.movemove_android.base
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

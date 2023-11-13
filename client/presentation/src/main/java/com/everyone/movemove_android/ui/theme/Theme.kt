@@ -14,8 +14,11 @@ import androidx.compose.ui.platform.LocalView
 
 private val darkColorScheme = darkColorScheme(
     primary = Point,
+    onPrimary = FontInDark,
     background = BackgroundInDark,
-    surface = BackgroundInDark
+    onBackground = FontInDark,
+    surface = SurfaceInDark,
+    onSurface = FontInDark
 )
 
 @OptIn(ExperimentalFoundationApi::class)
