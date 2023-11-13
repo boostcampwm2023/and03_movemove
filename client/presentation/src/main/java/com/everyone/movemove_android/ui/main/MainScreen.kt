@@ -47,6 +47,10 @@ fun MainScreen() {
             startDestination = Destination.HOME.route,
             Modifier.padding(innerPadding)
         ) {
+            composable(Destination.HOME.route) { HomeScreen() }
+            composable(Destination.VIDEO.route) { VideoScreen() }
+            composable(Destination.VIDEO_ADD.route) { VideoAddScreen() }
+            composable(Destination.MY.route) { MyScreen() }
         }
     }
 }
