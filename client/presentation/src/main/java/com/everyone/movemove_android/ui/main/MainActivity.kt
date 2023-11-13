@@ -6,6 +6,6 @@ import com.everyone.movemove_android.base.BaseActivity
 class MainActivity : BaseActivity() {
     @Composable
     override fun InitComposeUi() {
-
+        MainScreen()
     }
 }
