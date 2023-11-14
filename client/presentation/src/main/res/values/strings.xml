@@ -1,8 +1,17 @@
 <resources>
     <string name="app_name">MoveMove-Android</string>
 
+    <!--    navigation-->
     <string name="navigation_home">홈</string>
     <string name="navigation_watching_video">비디오</string>
     <string name="navigation_uploading_video">업로드</string>
     <string name="navigation_my">나</string>
+
+    <!--    uploading-->
+    <string name="add_video_description">갤러리에서 영상을 추가하세요</string>
+    <string name="title">제목</string>
+    <string name="video_description">한 줄 설명</string>
+    <string name="category">카테고리</string>
+    <string name="select">선택</string>
+    <string name="complete">완료</string>
 </resources>
