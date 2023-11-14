@@ -1,5 +1,6 @@
 # Created by https://www.toptal.com/developers/gitignore/api/kotlin,android,androidstudio,gradle
 # Edit at https://www.toptal.com/developers/gitignore?templates=kotlin,android,androidstudio,gradle
+.DS_Store
 
 ### Android ###
 # Gradle files
