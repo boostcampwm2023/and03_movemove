@@ -18,7 +18,9 @@ private val darkColorScheme = darkColorScheme(
     background = BackgroundInDark,
     onBackground = FontInDark,
     surface = SurfaceInDark,
-    onSurface = FontInDark
+    onSurface = FontInDark,
+    surfaceVariant = SurfaceVariantInDark,
+    onSurfaceVariant = FontInDark
 )
 
 @OptIn(ExperimentalFoundationApi::class)
