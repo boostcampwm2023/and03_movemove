@@ -102,7 +102,7 @@ fun VideoPlayer(uri: Uri) {
             PlayerView(context).apply {
                 hideController()
                 useController = false
-                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
 
                 player = exoPlayer
                 layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
