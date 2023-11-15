@@ -6,9 +6,14 @@ import {
   Post,
   Delete,
   Body,
+  StreamableFile,
+  Header,
 } from '@nestjs/common';
 import { VideoService } from './video.service';
 import { VideoRatingDTO, VideoDto } from './dto/video.dto';
+import { Response } from 'express';
+import { createReadStream } from 'fs';
+import { join } from 'path';
 
 @Controller('videos')
 export class VideoController {
@@ -43,6 +48,24 @@ export class VideoController {
     return this.videoService.uploadVideo(videoDto);
   }
 
+  @Get('top-rated')
+  getTopRatedVideo(@Param('category') category: string) {
+    return this.videoService.getTopRatedVideo(category);
+  }
+
+  @Get('manifest')
+  @Header('Content-Type', 'application/json')
+  getManifest() {
+    const file = createReadStream(join(process.cwd(), 'package.json'));
+    return new StreamableFile(file);
+  }
+
+  @Get('trend')
+  getTrendVideo(@Param('limit') limit: number) {
+    console.log('33');
+    return this.videoService.getTrendVideo(limit);
+  }
+
   @Get(':id')
   getVideo(@Param('id') videoId: string) {
     return this.videoService.getVideo(videoId);
@@ -51,15 +74,5 @@ export class VideoController {
   @Delete(':id')
   deleteVideo(@Param('id') videoId: string) {
     return this.videoService.deleteVideo(videoId);
-  }
-
-  @Get('trend')
-  getTrendVideo(@Param('limit') limit: number) {
-    return this.videoService.getTrendVideo(limit);
-  }
-
-  @Get('top-rated')
-  getTopRatedVideo(@Param('category') category: string) {
-    return this.videoService.getTopRatedVideo(category);
   }
 }

@@ -12,7 +12,7 @@ export class VideoService {
   }
 
   setVideoRating(videoId: string, videoRatingDto: VideoRatingDTO) {
-    return `update video rating ${videoId} ${videoRatingDto}`;
+    return `set video rating ${videoId} ${videoRatingDto}`;
   }
 
   uploadVideo(videoDto: VideoDto) {
