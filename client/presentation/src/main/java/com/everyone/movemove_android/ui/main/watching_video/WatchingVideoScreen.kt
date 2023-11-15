@@ -43,7 +43,7 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.theme.grey300
+import com.everyone.movemove_android.ui.theme.VideoDescriptionInDark
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -177,7 +177,7 @@ fun MoveMoveFooterContents() {
         Spacer(modifier = Modifier.height(4.dp))
         StyledText(
             text = "안녕하세요. 반갑습니다. 손흥민입니다. 토트넘만세",
-            color = grey300,
+            color = VideoDescriptionInDark,
             style = MaterialTheme.typography.bodySmall
         )
     }
