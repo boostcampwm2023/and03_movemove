@@ -49,19 +49,25 @@ import com.everyone.movemove_android.ui.theme.grey300
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WatchingVideoScreen() {
-    // TODO: 임시 url 수정 필요
-    val videoURL =
-        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-    val videoUri = Uri.parse(videoURL)
 
-    val pagerState = rememberPagerState(pageCount = { 10 })
+    // TODO: 임시 url 수정 필요
+    val videoURL = listOf(
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        "https://blog.kakaocdn.net/dn/BuPGp/btsAmZlwWw9/4SQJKxQ9vCOwGaKCesn7E1/%E1%84%89%E1%85%A6%E1%84%85%E1%85%A9%E1%84%85%E1%85%A9%20%E1%84%80%E1%85%B5%E1%86%AB%20%E1%84%83%E1%85%A9%E1%86%BC%E1%84%8B%E1%85%A7%E1%86%BC%E1%84%89%E1%85%A1%E1%86%BC%20%E1%84%90%E1%85%A6%E1%84%89%E1%85%B3%E1%84%90%E1%85%B3%201080x1920.mp4?attach=1&knm=tfile.mp4",
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        "https://blog.kakaocdn.net/dn/BuPGp/btsAmZlwWw9/4SQJKxQ9vCOwGaKCesn7E1/%E1%84%89%E1%85%A6%E1%84%85%E1%85%A9%E1%84%85%E1%85%A9%20%E1%84%80%E1%85%B5%E1%86%AB%20%E1%84%83%E1%85%A9%E1%86%BC%E1%84%8B%E1%85%A7%E1%86%BC%E1%84%89%E1%85%A1%E1%86%BC%20%E1%84%90%E1%85%A6%E1%84%89%E1%85%B3%E1%84%90%E1%85%B3%201080x1920.mp4?attach=1&knm=tfile.mp4",
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        "https://blog.kakaocdn.net/dn/BuPGp/btsAmZlwWw9/4SQJKxQ9vCOwGaKCesn7E1/%E1%84%89%E1%85%A6%E1%84%85%E1%85%A9%E1%84%85%E1%85%A9%20%E1%84%80%E1%85%B5%E1%86%AB%20%E1%84%83%E1%85%A9%E1%86%BC%E1%84%8B%E1%85%A7%E1%86%BC%E1%84%89%E1%85%A1%E1%86%BC%20%E1%84%90%E1%85%A6%E1%84%89%E1%85%B3%E1%84%90%E1%85%B3%201080x1920.mp4?attach=1&knm=tfile.mp4"
+    )
+    val videoUri = videoURL.map { Uri.parse(it) }
+    val pagerState = rememberPagerState(pageCount = { videoUri.size })
 
     VerticalPager(
         modifier = Modifier.fillMaxSize(),
         state = pagerState
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            VideoPlayer(uri = videoUri)
+            VideoPlayer(uri = videoUri[it])
             Column(modifier = Modifier.align(Alignment.BottomStart)) {
                 MoveMoveFooter()
                 Divider()
