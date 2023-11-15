@@ -55,11 +55,7 @@ dependencies {
     implementation(libs.bundles.android)
     implementation(libs.bundles.compose)
     implementation(libs.bundles.common)
-
-    // media3
-    implementation(libs.media3.common)
-    implementation(libs.media3.exoplayer)
-    implementation(libs.media3.ui)
+    implementation(libs.bundles.media3)
 
     // ksp
     ksp(libs.ksp.hilt)

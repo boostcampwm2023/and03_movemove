@@ -71,7 +71,7 @@ media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "medi
 android = ["core-ktx", "lifecycle-runtime-ktx", "material", "lifecycle-extensions"]
 compose = ["activity-compose", "compose-lifecycle", "compose-ui", "compose-ui-graphics", "compose-ui-tooling-preview", "compose-material3", "compose-hilt-navigation"]
 common = ["hilt"]
-
+media3 = ["media3-common", "media3-exoplayer", "media3-ui"]
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
