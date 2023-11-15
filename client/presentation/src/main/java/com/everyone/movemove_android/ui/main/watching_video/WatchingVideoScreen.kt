@@ -43,6 +43,9 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.theme.FooterBottomBackgroundInDark
+import com.everyone.movemove_android.ui.theme.FooterMiddleBackgroundInDark
+import com.everyone.movemove_android.ui.theme.FooterTopBackgroundInDark
 import com.everyone.movemove_android.ui.theme.VideoDescriptionInDark
 
 
@@ -127,11 +130,10 @@ fun MoveMoveFooter() {
             .background(
                 alpha = 0.2f,
                 brush = Brush.verticalGradient(
-                    // TODO 임시 색상 논의 필요
                     colors = listOf(
-                        Color(0xff282828),
-                        Color(0xff191919),
-                        Color(0xff000000),
+                        FooterTopBackgroundInDark,
+                        FooterMiddleBackgroundInDark,
+                        FooterBottomBackgroundInDark,
                     )
                 )
             )
