@@ -135,7 +135,11 @@ fun MoveMoveFooter() {
                     )
                 )
             )
-            .padding(top = 30.dp, start = 16.dp, bottom = 18.dp),
+            .padding(
+                top = 30.dp,
+                start = 16.dp,
+                bottom = 18.dp
+            ),
     ) {
         MoveMoveFooterContents()
     }
