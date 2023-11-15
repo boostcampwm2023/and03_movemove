@@ -28,7 +28,6 @@ import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoScree
 import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoScreen
 import com.everyone.movemove_android.ui.theme.InActiveInDark
 import com.everyone.movemove_android.ui.theme.Point
-
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
@@ -36,16 +35,17 @@ fun MainScreen() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    Scaffold(bottomBar = {
-        MoveMoveNavigationBar(
-            currentDestination = currentDestination,
-            onNavigate = { navigator.navigateTo(it) },
-        )
-    }) { innerPadding ->
+    Scaffold(
+        bottomBar = {
+            MoveMoveNavigationBar(
+                currentDestination = currentDestination,
+                onNavigate = { navigator.navigateTo(it) },
+            )
+        }) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = Destination.HOME.route,
-            Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding)
         ) {
             composable(Destination.HOME.route) { HomeScreen() }
             composable(Destination.WATCHING_VIDEO.route) { WatchingVideoScreen() }
