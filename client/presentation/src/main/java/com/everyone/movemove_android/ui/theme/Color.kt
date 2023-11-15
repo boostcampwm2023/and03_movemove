@@ -13,6 +13,7 @@ val DisabledInDark = Color(0xFF565656)
 val DisabledFontInDark = Color(0xFF888888)
 val SurfaceInDark = Color(0xFF3C3C3C)
 val SurfaceVariantInDark = Color(0xFF414141)
+val grey300 = Color(0xFFE0E0E0)
 
 @Composable
 fun textFieldSelectionColors() = TextSelectionColors(
