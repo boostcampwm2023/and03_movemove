@@ -119,6 +119,7 @@ fun MoveMoveFooter() {
         Modifier
             .fillMaxWidth()
             .background(
+                alpha = 0.2f,
                 brush = Brush.verticalGradient(
                     // TODO 임시 색상 논의 필요
                     colors = listOf(
