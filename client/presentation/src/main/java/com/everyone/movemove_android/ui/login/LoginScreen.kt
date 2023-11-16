@@ -3,13 +3,16 @@ package com.everyone.movemove_android.ui.login
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -24,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.everyone.movemove_android.R.drawable
+import com.everyone.movemove_android.ui.theme.GoogleGray
 import com.everyone.movemove_android.ui.theme.KakaoYellow
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
@@ -65,7 +69,37 @@ fun LoginScreen() {
                         modifier = Modifier.align(alignment = Alignment.CenterStart)
                     )
                     Text(
+                        //TODO 구글하고 같이 String.xml으로 추출
                         text = "카카오 로그인",
+                        modifier = Modifier.align(alignment = Alignment.Center),
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Button(
+                onClick = {
+
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = GoogleGray,
+                    contentColor = Color.Black
+                ),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Image(
+                        painter = painterResource(id = drawable.img_google_login),
+                        contentDescription = "null",
+                        modifier = Modifier
+                            .align(alignment = Alignment.CenterStart)
+                            .size(18.dp)
+                    )
+                    Text(
+                        //TODO 구글하고 같이 String.xml으로 추출
+                        text = "구글로 로그인",
                         modifier = Modifier.align(alignment = Alignment.Center),
                     )
                 }
