@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -235,12 +237,13 @@ private fun VideoEditor(
             setMediaSource(ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(uri)))
             videoScalingMode = C.VIDEO_SCALING_MODE_DEFAULT
             repeatMode = Player.REPEAT_MODE_ONE
+            playWhenReady = true
             prepare()
         }
     }
 
-    var playingState by remember { mutableStateOf(false) }
-    var playAndPauseVisibilityState by remember { mutableStateOf(false) }
+    var playingState by remember { mutableStateOf(true) }
+    var playAndPauseVisibilityState by remember { mutableStateOf(true) }
 
     LaunchedEffect(playAndPauseVisibilityState) {
         if (playAndPauseVisibilityState) {
@@ -305,7 +308,7 @@ private fun VideoEditor(
 
         Divider(color = if (isSystemInDarkTheme()) BorderInDark else Color.White) // todo : 라이트 모드의 Border 색상이 정해지지 않음
 
-        TimeLineEditor()
+        TimelineEditor(exoPlayer)
     }
 
     DisposableEffect(Unit) {
@@ -316,76 +319,117 @@ private fun VideoEditor(
 }
 
 @Composable
-private fun TimeLineEditor() {
-    var timeLineWidthState by remember { mutableIntStateOf(0) }
+private fun TimelineEditor(exoPlayer: ExoPlayer) {
+    var timelineWidthState by remember { mutableIntStateOf(0) }
+    var videoLengthState by remember { mutableLongStateOf(0L) }
+    var videoStartMsState by remember { mutableLongStateOf(0L) }
+    var videoEndMsState by remember { mutableLongStateOf(0L) }
+    var timelineUnitWidthState by remember { mutableLongStateOf(0L) }
+    var videoLengthUnitState by remember { mutableLongStateOf(0L) }
+    val boundWidthDp = 4.dp
+
+    if (exoPlayer.duration > 0L) {
+        videoLengthState = exoPlayer.duration
+        timelineUnitWidthState = timelineWidthState.toLong() / 1000L
+        videoLengthUnitState = videoLengthState / 1000L
+        if (videoEndMsState == 0L && exoPlayer.duration > 0L) videoEndMsState = videoLengthState
+
+        if (exoPlayer.currentPosition < videoStartMsState || exoPlayer.currentPosition > videoEndMsState) {
+            exoPlayer.seekTo(videoStartMsState)
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(50.dp)
-            .onGloballyPositioned { timeLineWidthState = it.size.width }
     ) {
+        var indicatorXPositionState by remember { mutableIntStateOf(0) }
         var lowerBoundDraggingState by remember { mutableStateOf(false) }
         var lowerBoundOffsetState by remember { mutableFloatStateOf(0f) }
-
         var upperBoundDraggingState by remember { mutableStateOf(false) }
         var upperBoundOffsetState by remember { mutableFloatStateOf(0f) }
 
-        val boundWidthDp = 8.dp
-
         Box(
             modifier = Modifier
-                .absoluteOffset(x = lowerBoundOffsetState.pxToDp())
-                .width(boundWidthDp)
-                .fillMaxHeight()
-                .background(color = if (lowerBoundDraggingState) Point else Color.White)
-                .pointerInput(Unit) {
-                    detectHorizontalDragGestures(
-                        onDragStart = {
-                            lowerBoundDraggingState = true
-                        },
-                        onDragEnd = {
-                            lowerBoundDraggingState = false
-                        },
-                        onDragCancel = {
-                            lowerBoundDraggingState = false
-                        },
-                        onHorizontalDrag = { _, dragAmount ->
-                            val sum = lowerBoundOffsetState + dragAmount
-                            if (sum >= 0 && sum < timeLineWidthState + upperBoundOffsetState - (boundWidthDp.toPx() * 2)) {
-                                lowerBoundOffsetState = sum
-                            }
-                        }
-                    )
-                }
-        )
+                .fillMaxSize()
+                .padding(horizontal = boundWidthDp)
+                .onGloballyPositioned { timelineWidthState = it.size.width }
+        ) {
 
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .absoluteOffset(x = upperBoundOffsetState.pxToDp())
-                .width(boundWidthDp)
-                .fillMaxHeight()
-                .background(color = if (upperBoundDraggingState) Point else Color.White)
-                .pointerInput(Unit) {
-                    detectHorizontalDragGestures(
-                        onDragStart = {
-                            upperBoundDraggingState = true
-                        },
-                        onDragEnd = {
-                            upperBoundDraggingState = false
-                        },
-                        onDragCancel = {
-                            upperBoundDraggingState = false
-                        },
-                        onHorizontalDrag = { _, dragAmount ->
-                            val sum = upperBoundOffsetState + dragAmount
-                            if (sum <= 0 && sum > lowerBoundOffsetState - timeLineWidthState + (boundWidthDp.toPx() * 2)) {
-                                upperBoundOffsetState += dragAmount
+        }
+
+        if (videoEndMsState > 0) {
+            Box(
+                modifier = Modifier
+                    .absoluteOffset(x = lowerBoundOffsetState.pxToDp())
+                    .width(boundWidthDp)
+                    .fillMaxHeight()
+                    .background(color = if (lowerBoundDraggingState) Point else Color.White)
+                    .pointerInput(Unit) {
+                        detectHorizontalDragGestures(
+                            onDragStart = { lowerBoundDraggingState = true },
+                            onDragEnd = {
+                                lowerBoundDraggingState = false
+                                videoStartMsState = (videoLengthUnitState * (lowerBoundOffsetState / timelineUnitWidthState)).toLong()
+                            },
+                            onDragCancel = { lowerBoundDraggingState = false },
+                            onHorizontalDrag = { _, dragAmount ->
+                                val sum = lowerBoundOffsetState + dragAmount
+                                if (sum >= 0 && sum < timelineWidthState + upperBoundOffsetState - (boundWidthDp.toPx() * 3)) {
+                                    lowerBoundOffsetState = sum
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
+            )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .absoluteOffset(x = upperBoundOffsetState.pxToDp())
+                    .width(boundWidthDp)
+                    .fillMaxHeight()
+                    .background(color = if (upperBoundDraggingState) Point else Color.White)
+                    .pointerInput(Unit) {
+                        detectHorizontalDragGestures(
+                            onDragStart = { upperBoundDraggingState = true },
+                            onDragEnd = {
+                                upperBoundDraggingState = false
+                                videoEndMsState = videoLengthUnitState * ((timelineWidthState + upperBoundOffsetState) / timelineUnitWidthState).toLong()
+                            },
+                            onDragCancel = { upperBoundDraggingState = false },
+                            onHorizontalDrag = { _, dragAmount ->
+                                val sum = upperBoundOffsetState + dragAmount
+                                if (sum <= 0 && sum > lowerBoundOffsetState - timelineWidthState + (boundWidthDp.toPx() * 3)) {
+                                    upperBoundOffsetState = sum
+                                }
+                            }
+                        )
+                    }
+            )
+
+            Box(
+                modifier = Modifier
+                    .absoluteOffset(x = indicatorXPositionState.pxToDp() + boundWidthDp)
+                    .width(1.dp)
+                    .fillMaxHeight()
+                    .background(color = Point)
+            )
+
+            LaunchedEffect(Unit) {
+                while (true) {
+                    indicatorXPositionState = (timelineUnitWidthState * (exoPlayer.currentPosition / videoLengthUnitState)).toInt()
+                    delay(200)
                 }
-        )
+            }
+        } else {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(24.dp),
+                color = Point
+            )
+        }
     }
 }
