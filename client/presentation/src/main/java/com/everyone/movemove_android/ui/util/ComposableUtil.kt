@@ -6,7 +6,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.unit.Dp
+import kotlin.math.roundToInt
 
 @Composable
 fun Modifier.addFocusCleaner(): Modifier {
@@ -27,4 +30,9 @@ fun Modifier.clickableWithoutRipple(onClick: () -> Unit): Modifier {
     ) {
         onClick()
     }
+}
+
+@Composable
+fun Float.pxToDp() = with(LocalDensity.current) {
+    roundToInt().toDp()
 }
