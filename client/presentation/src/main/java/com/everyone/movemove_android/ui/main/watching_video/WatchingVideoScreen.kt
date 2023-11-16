@@ -68,7 +68,7 @@ fun WatchingVideoScreen() {
         state = pagerState
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            VideoPlayer(uri = videoUri[it])
+            VideoPlayer(uri = videoUri[it], isScrollInProgress = pagerState.isScrollInProgress)
             Column(modifier = Modifier.align(Alignment.BottomStart)) {
                 MoveMoveFooter()
                 Divider()
@@ -80,7 +80,7 @@ fun WatchingVideoScreen() {
 @SuppressLint("OpaqueUnitKey")
 @Composable
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-fun VideoPlayer(uri: Uri) {
+fun VideoPlayer(uri: Uri, isScrollInProgress: Boolean) {
     val context = LocalContext.current
 
     val exoPlayer = remember {
@@ -99,8 +99,7 @@ fun VideoPlayer(uri: Uri) {
                 prepare()
             }
     }
-
-    exoPlayer.playWhenReady = true
+    exoPlayer.playWhenReady = !isScrollInProgress
     exoPlayer.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
     exoPlayer.repeatMode = Player.REPEAT_MODE_ONE
 
