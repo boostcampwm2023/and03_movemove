@@ -8,21 +8,10 @@ export type VideoDocument = HydratedDocument<Video>;
 export class Video {
   @Prop({
     require: true,
-    unique: true,
-  })
-  videoId: string;
-
-  @Prop({
-    require: true,
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Video',
+    ref: 'User',
   })
   uploaderId: User;
-
-  @Prop({
-    require: true,
-  })
-  url: string; //manifest주소
 
   @Prop({
     require: true,
@@ -41,11 +30,6 @@ export class Video {
     default: 0,
   })
   raterCount: number; //별점준사람 수
-
-  @Prop({
-    require: true,
-  })
-  thumbnailURL: string; //썸네일 url
 
   @Prop({
     require: true,

@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { Action, ActionSchema } from 'src/action/schemas/action.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -11,15 +12,13 @@ export class User {
   })
   uuid: string;
 
-  @Prop({
-    require: true,
-  })
-  nickname: string;
+  @Prop({ type: [{ type: ActionSchema }] })
+  actions: Action[];
 
   @Prop({
     require: true,
   })
-  profileImageURL: string;
+  nickname: string;
 
   @Prop({
     require: true,
