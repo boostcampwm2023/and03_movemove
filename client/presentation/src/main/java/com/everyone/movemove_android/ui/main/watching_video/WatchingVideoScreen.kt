@@ -27,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -46,7 +45,6 @@ import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.theme.FooterBottomBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterMiddleBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterTopBackgroundInDark
-import com.everyone.movemove_android.ui.theme.VideoDescriptionInDark
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -183,7 +181,6 @@ fun MoveMoveFooterContents() {
         Spacer(modifier = Modifier.height(4.dp))
         StyledText(
             text = "안녕하세요. 반갑습니다. 손흥민입니다. 토트넘만세",
-            color = VideoDescriptionInDark,
             style = MaterialTheme.typography.bodySmall
         )
     }
