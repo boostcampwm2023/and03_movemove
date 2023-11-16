@@ -13,6 +13,10 @@ val DisabledInDark = Color(0xFF565656)
 val DisabledFontInDark = Color(0xFF888888)
 val SurfaceInDark = Color(0xFF3C3C3C)
 val SurfaceVariantInDark = Color(0xFF414141)
+val VideoDescriptionInDark = Color(0xFFE0E0E0)
+val FooterTopBackgroundInDark = Color(0xff282828)
+val FooterMiddleBackgroundInDark = Color(0xff191919)
+val FooterBottomBackgroundInDark = Color(0xff000000)
 
 @Composable
 fun textFieldSelectionColors() = TextSelectionColors(
