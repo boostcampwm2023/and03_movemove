@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { VideoService } from './video.service';
 import { VideoRatingDTO, VideoDto } from './dto/video.dto';
-import { Response } from 'express';
 import { createReadStream } from 'fs';
 import { join } from 'path';
 
