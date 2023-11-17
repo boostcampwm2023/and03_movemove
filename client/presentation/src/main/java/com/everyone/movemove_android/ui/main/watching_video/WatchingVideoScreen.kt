@@ -2,6 +2,7 @@ package com.everyone.movemove_android.ui.main.watching_video
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.util.Log
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -23,7 +24,12 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -62,17 +68,41 @@ fun WatchingVideoScreen() {
     )
     val videoUri = videoURL.map { Uri.parse(it) }
     val pagerState = rememberPagerState(pageCount = { videoUri.size })
+    val context = LocalContext.current
+    val exoPlayerPair = remember {
+        Triple(
+            ExoPlayer.Builder(context).build(),
+            ExoPlayer.Builder(context).build(),
+            ExoPlayer.Builder(context).build()
+        )
+    }
 
     VerticalPager(
         modifier = Modifier.fillMaxSize(),
         state = pagerState
-    ) {
+    ) { page ->
+
+        val exoPlayer = when (page % 3) {
+            0 -> exoPlayerPair.first
+            1 -> exoPlayerPair.second
+            else -> exoPlayerPair.third
+        }
+
         Box(modifier = Modifier.fillMaxSize()) {
-            VideoPlayer(uri = videoUri[it], isScrollInProgress = pagerState.isScrollInProgress)
+            VideoPlayer(
+                exoPlayer = exoPlayer,
+                uri = videoUri[page]
+            )
             Column(modifier = Modifier.align(Alignment.BottomStart)) {
                 MoveMoveFooter()
                 Divider()
             }
+        }
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayerPair.first.release()
+            exoPlayerPair.second.release()
+            exoPlayerPair.third.release()
         }
     }
 }
@@ -80,40 +110,33 @@ fun WatchingVideoScreen() {
 @SuppressLint("OpaqueUnitKey")
 @Composable
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-fun VideoPlayer(uri: Uri, isScrollInProgress: Boolean) {
+fun VideoPlayer(exoPlayer: ExoPlayer, uri: Uri) {
     val context = LocalContext.current
 
-    val exoPlayer = remember {
-        ExoPlayer.Builder(context)
-            .build()
-            .apply {
-                val dataSourceFactory: DataSource.Factory = DefaultHttpDataSource.Factory()
-                val source = HlsMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(MediaItem.fromUri(uri))
+    LaunchedEffect(uri) {
+        val dataSourceFactory: DataSource.Factory = DefaultHttpDataSource.Factory()
+        val source = HlsMediaSource.Factory(dataSourceFactory)
+            .createMediaSource(MediaItem.fromUri(uri))
 
-                setMediaSource(source)
-                prepare()
-            }
-    }.apply {
-        playWhenReady = !isScrollInProgress
-        videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
-        repeatMode = Player.REPEAT_MODE_ONE
+        exoPlayer.apply {
+            setMediaSource(source)
+            prepare()
+            playWhenReady = true
+            videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+            repeatMode = Player.REPEAT_MODE_ONE
+        }
     }
 
-    DisposableEffect(
-        AndroidView(factory = {
-            PlayerView(context).apply {
-                hideController()
-                useController = false
-                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
+    AndroidView(factory = {
+        PlayerView(context).apply {
+            hideController()
+            useController = false
+            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
 
-                player = exoPlayer
-                layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-            }
-        })
-    ) {
-        onDispose { exoPlayer.release() }
-    }
+            player = exoPlayer
+            layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        }
+    })
 }
 
 @Composable
