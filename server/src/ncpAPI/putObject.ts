@@ -3,7 +3,8 @@ import { getTimeStamp, getAuthorization } from './common';
 
 export const putObject = (bucketName: string, objectName: string, data) => {
   const endPoint = 'https://kr.object.ncloudstorage.com';
-  const apiUrl = `${endPoint}/${bucketName}/${objectName}`;
+  const canonicalURI = `/${bucketName}/${objectName}`;
+  const apiUrl = `${endPoint}${canonicalURI}`;
 
   const timeStamp = getTimeStamp();
   const defaultHeaders = {
@@ -15,7 +16,12 @@ export const putObject = (bucketName: string, objectName: string, data) => {
   const method = 'PUT';
   return axios.put(apiUrl, data, {
     headers: {
-      Authorization: getAuthorization(method, defaultHeaders, timeStamp),
+      Authorization: getAuthorization(
+        method,
+        canonicalURI,
+        defaultHeaders,
+        timeStamp,
+      ),
       ...defaultHeaders,
     },
   });

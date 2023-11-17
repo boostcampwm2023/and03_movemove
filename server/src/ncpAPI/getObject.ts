@@ -3,7 +3,8 @@ import { getTimeStamp, getAuthorization } from './common';
 
 export const getObject = (bucketName: string, objectName: string) => {
   const endPoint = 'https://kr.object.ncloudstorage.com';
-  const apiUrl = `${endPoint}/${bucketName}/${objectName}`;
+  const canonicalURI = `/${bucketName}/${objectName}`;
+  const apiUrl = `${endPoint}${canonicalURI}`;
 
   const timeStamp = getTimeStamp();
   const defaultHeaders = {
@@ -15,7 +16,12 @@ export const getObject = (bucketName: string, objectName: string) => {
   const method = 'GET';
   return axios.get(apiUrl, {
     headers: {
-      Authorization: getAuthorization(method, defaultHeaders, timeStamp),
+      Authorization: getAuthorization(
+        method,
+        canonicalURI,
+        defaultHeaders,
+        timeStamp,
+      ),
       ...defaultHeaders,
     },
   });

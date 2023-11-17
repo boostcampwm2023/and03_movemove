@@ -21,6 +21,7 @@ export function makeSignature(method: string, url: string, timestamp: number) {
 }
 export const getAuthorization = (
   method: string,
+  canonicalURI: string,
   headers: object,
   timeStamp: string,
 ): string => {
@@ -33,19 +34,32 @@ export const getAuthorization = (
 
   const signedHeaders = Object.keys(headers).join(';');
 
-  const kSignature = createSignatureKey(method, scope, headers, timeStamp);
+  const kSignature = createSignatureKey(
+    method,
+    canonicalURI,
+    scope,
+    headers,
+    timeStamp,
+  );
   const authorization = `AWS4-HMAC-SHA256 Credential=${accessKeyID}/${scope}, SignedHeaders=${signedHeaders}, Signature=${kSignature}`;
   return authorization;
 };
 
 const createSignatureKey = (
   method: string,
+  canonicalURI: string,
   scope: string,
   headers: object,
   timeStamp: string,
 ): string => {
   const kSigning = createSigningKey();
-  const stringToSign = createStringToSign(method, scope, headers, timeStamp);
+  const stringToSign = createStringToSign(
+    method,
+    canonicalURI,
+    scope,
+    headers,
+    timeStamp,
+  );
   const kSignature = CryptoJS.HmacSHA256(stringToSign, kSigning).toString(
     CryptoJS.enc.Hex,
   );
@@ -70,11 +84,11 @@ const getHash = (key: any, message: string) => {
 
 const createStringToSign = (
   method: string,
+  canonicalURI: string,
   scope: string,
   headers: object,
   timeStamp: string,
 ) => {
-  const canonicalURI = '/video-thimbnail-bucket/sample-object.txt';
   const canonicalRequest = createCanonicalRequest(
     method,
     canonicalURI,
