@@ -35,9 +35,9 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.datasource.DataSource
-import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.everyone.movemove_android.R
@@ -53,12 +53,12 @@ fun WatchingVideoScreen() {
 
     // TODO: 임시 url 수정 필요
     val videoURL = listOf(
-        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-        "https://blog.kakaocdn.net/dn/BuPGp/btsAmZlwWw9/4SQJKxQ9vCOwGaKCesn7E1/%E1%84%89%E1%85%A6%E1%84%85%E1%85%A9%E1%84%85%E1%85%A9%20%E1%84%80%E1%85%B5%E1%86%AB%20%E1%84%83%E1%85%A9%E1%86%BC%E1%84%8B%E1%85%A7%E1%86%BC%E1%84%89%E1%85%A1%E1%86%BC%20%E1%84%90%E1%85%A6%E1%84%89%E1%85%B3%E1%84%90%E1%85%B3%201080x1920.mp4?attach=1&knm=tfile.mp4",
-        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-        "https://blog.kakaocdn.net/dn/BuPGp/btsAmZlwWw9/4SQJKxQ9vCOwGaKCesn7E1/%E1%84%89%E1%85%A6%E1%84%85%E1%85%A9%E1%84%85%E1%85%A9%20%E1%84%80%E1%85%B5%E1%86%AB%20%E1%84%83%E1%85%A9%E1%86%BC%E1%84%8B%E1%85%A7%E1%86%BC%E1%84%89%E1%85%A1%E1%86%BC%20%E1%84%90%E1%85%A6%E1%84%89%E1%85%B3%E1%84%90%E1%85%B3%201080x1920.mp4?attach=1&knm=tfile.mp4",
-        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-        "https://blog.kakaocdn.net/dn/BuPGp/btsAmZlwWw9/4SQJKxQ9vCOwGaKCesn7E1/%E1%84%89%E1%85%A6%E1%84%85%E1%85%A9%E1%84%85%E1%85%A9%20%E1%84%80%E1%85%B5%E1%86%AB%20%E1%84%83%E1%85%A9%E1%86%BC%E1%84%8B%E1%85%A7%E1%86%BC%E1%84%89%E1%85%A1%E1%86%BC%20%E1%84%90%E1%85%A6%E1%84%89%E1%85%B3%E1%84%90%E1%85%B3%201080x1920.mp4?attach=1&knm=tfile.mp4"
+        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/jdgdown_AVC_SD_1Pass_30fps_1.mp4/index.m3u8",
+        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/TikTok%20Video%201080x1920%20px,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8",
+        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/%EA%B8%B0%EC%84%B1%EC%9A%A9%EC%9D%B4%20%EB%B3%B4%EC%97%AC%EC%A3%BC%EC%97%88%EB%8D%98%20%EC%97%84%EC%B2%AD%EB%82%9C%20%EB%A1%B1%ED%82%A5%20%EB%8A%A5%EB%A0%A5%20%E3%84%B7%E3%84%B7%E3%84%B7,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8",
+        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/%EC%9D%B4%EA%B1%B0%20%EB%9A%AB%EC%9D%84%20%EC%88%98%20%EC%9E%88%EC%9D%84%EA%B9%8C%EC%9A%94_,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8",
+        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/%EC%BA%89%ED%85%8C...%20%EC%95%84%EB%8B%88%20%EC%A1%B0%EB%82%98%EB%8B%A8%EA%B3%BC%20%EC%B2%BC%EC%8B%9C%20%EA%B2%BD%EA%B8%B0%20%EC%A7%81%EA%B4%80,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8",
+        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/lplbisang,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8"
     )
     val videoUri = videoURL.map { Uri.parse(it) }
     val pagerState = rememberPagerState(pageCount = { videoUri.size })
@@ -87,21 +87,18 @@ fun VideoPlayer(uri: Uri, isScrollInProgress: Boolean) {
         ExoPlayer.Builder(context)
             .build()
             .apply {
-                val defaultDataSourceFactory = DefaultDataSource.Factory(context)
-                val dataSourceFactory: DataSource.Factory = DefaultDataSource.Factory(
-                    context,
-                    defaultDataSourceFactory
-                )
-                val source = ProgressiveMediaSource.Factory(dataSourceFactory)
+                val dataSourceFactory: DataSource.Factory = DefaultHttpDataSource.Factory()
+                val source = HlsMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(MediaItem.fromUri(uri))
 
                 setMediaSource(source)
                 prepare()
             }
+    }.apply {
+        playWhenReady = !isScrollInProgress
+        videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+        repeatMode = Player.REPEAT_MODE_ONE
     }
-    exoPlayer.playWhenReady = !isScrollInProgress
-    exoPlayer.videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
-    exoPlayer.repeatMode = Player.REPEAT_MODE_ONE
 
     DisposableEffect(
         AndroidView(factory = {
