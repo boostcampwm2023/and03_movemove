@@ -19,7 +19,6 @@ export function makeSignature(method: string, url: string, timestamp: number) {
 
   return hash.toString(CryptoJS.enc.Base64);
 }
-
 export const getAuthorization = (headers: object): string => {
   const accessKeyID = process.env.ACCESS_KEY!;
   const region = 'kr-standard';

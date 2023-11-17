@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
+import { requestEncoding } from './ncpAPI/requestEncoding';
 import { putObject } from './ncpAPI/putObject';
 
 @Controller()
