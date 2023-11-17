@@ -98,6 +98,28 @@ fun WatchingVideoScreen() {
                 Divider()
             }
         }
+
+        when (pagerState.currentPage % 3) {
+            0 -> {
+                exoPlayerPair.first.play()
+                exoPlayerPair.second.pause()
+                exoPlayerPair.third.pause()
+            }
+
+            1 -> {
+                exoPlayerPair.first.pause()
+                exoPlayerPair.second.play()
+                exoPlayerPair.third.pause()
+            }
+
+            2 -> {
+                exoPlayerPair.first.pause()
+                exoPlayerPair.second.pause()
+                exoPlayerPair.third.play()
+            }
+        }
+    }
+
     DisposableEffect(Unit) {
         onDispose {
             exoPlayerPair.first.release()
