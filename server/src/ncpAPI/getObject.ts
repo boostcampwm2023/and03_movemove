@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getTimeStamp, getAuthorization } from './common';
 
-export const putObject = (bucketName: string, objectName: string, data) => {
+export const getObject = (bucketName: string, objectName: string) => {
   const endPoint = 'https://kr.object.ncloudstorage.com';
   const apiUrl = `${endPoint}/${bucketName}/${objectName}`;
 
@@ -12,8 +12,8 @@ export const putObject = (bucketName: string, objectName: string, data) => {
     'x-amz-date': timeStamp,
   };
 
-  const method = 'PUT';
-  return axios.put(apiUrl, data, {
+  const method = 'GET';
+  return axios.get(apiUrl, {
     headers: {
       Authorization: getAuthorization(method, defaultHeaders, timeStamp),
       ...defaultHeaders,

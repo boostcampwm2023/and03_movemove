@@ -19,7 +19,11 @@ export function makeSignature(method: string, url: string, timestamp: number) {
 
   return hash.toString(CryptoJS.enc.Base64);
 }
-export const getAuthorization = (headers: object): string => {
+export const getAuthorization = (
+  method: string,
+  headers: object,
+  timeStamp: string,
+): string => {
   const accessKeyID = process.env.ACCESS_KEY!;
   const region = 'kr-standard';
 
@@ -29,14 +33,19 @@ export const getAuthorization = (headers: object): string => {
 
   const signedHeaders = Object.keys(headers).join(';');
 
-  const kSignature = createSignatureKey(scope, headers);
+  const kSignature = createSignatureKey(method, scope, headers, timeStamp);
   const authorization = `AWS4-HMAC-SHA256 Credential=${accessKeyID}/${scope}, SignedHeaders=${signedHeaders}, Signature=${kSignature}`;
   return authorization;
 };
 
-const createSignatureKey = (scope: string, headers: object): string => {
+const createSignatureKey = (
+  method: string,
+  scope: string,
+  headers: object,
+  timeStamp: string,
+): string => {
   const kSigning = createSigningKey();
-  const stringToSign = createStringToSign(scope, headers);
+  const stringToSign = createStringToSign(method, scope, headers, timeStamp);
   const kSignature = CryptoJS.HmacSHA256(stringToSign, kSigning).toString(
     CryptoJS.enc.Hex,
   );
@@ -56,15 +65,15 @@ const createSigningKey = () => {
 };
 
 const getHash = (key: any, message: string) => {
-  console.log(key);
-  console.log(message);
   return CryptoJS.HmacSHA256(message, key);
-  // return crypto.createHmac('sha256', key).update(message).digest();
 };
 
-const createStringToSign = (scope: string, headers: object) => {
-  const timeStamp = getTimeStamp();
-  const method = 'PUT';
+const createStringToSign = (
+  method: string,
+  scope: string,
+  headers: object,
+  timeStamp: string,
+) => {
   const canonicalURI = '/video-thimbnail-bucket/sample-object.txt';
   const canonicalRequest = createCanonicalRequest(
     method,
@@ -76,7 +85,6 @@ const createStringToSign = (scope: string, headers: object) => {
 ${timeStamp}
 ${scope}
 ${CryptoJS.enc.Hex.stringify(CryptoJS.SHA256(canonicalRequest))}`;
-
   return stringToSign;
 };
 
@@ -94,7 +102,6 @@ ${canonicalHeaders}
 
 ${signedHeaders}
 ${hashedPayLoad}`;
-  console.log(`canonicalRequest : ${canonicalRequest}`);
   return canonicalRequest;
 };
 
