@@ -54,7 +54,11 @@ fun WatchingVideoScreen() {
     // TODO: 임시 url 수정 필요
     val videoURL = listOf(
         "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/jdgdown_AVC_SD_1Pass_30fps_1.mp4/index.m3u8",
-        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/jdgdown_AVC_SD_1Pass_30fps_1.mp4/index.m3u8",
+        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/TikTok%20Video%201080x1920%20px,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8",
+        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/%EA%B8%B0%EC%84%B1%EC%9A%A9%EC%9D%B4%20%EB%B3%B4%EC%97%AC%EC%A3%BC%EC%97%88%EB%8D%98%20%EC%97%84%EC%B2%AD%EB%82%9C%20%EB%A1%B1%ED%82%A5%20%EB%8A%A5%EB%A0%A5%20%E3%84%B7%E3%84%B7%E3%84%B7,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8",
+        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/%EC%9D%B4%EA%B1%B0%20%EB%9A%AB%EC%9D%84%20%EC%88%98%20%EC%9E%88%EC%9D%84%EA%B9%8C%EC%9A%94_,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8",
+        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/%EC%BA%89%ED%85%8C...%20%EC%95%84%EB%8B%88%20%EC%A1%B0%EB%82%98%EB%8B%A8%EA%B3%BC%20%EC%B2%BC%EC%8B%9C%20%EA%B2%BD%EA%B8%B0%20%EC%A7%81%EA%B4%80,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8",
+        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/lplbisang,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8"
     )
     val videoUri = videoURL.map { Uri.parse(it) }
     val pagerState = rememberPagerState(pageCount = { videoUri.size })
