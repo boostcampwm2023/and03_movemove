@@ -73,6 +73,7 @@ import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContr
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickSelectVideo
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.theme.BorderInDark
+import com.everyone.movemove_android.ui.theme.EditorTimelineDim
 import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.addFocusCleaner
@@ -81,6 +82,7 @@ import com.everyone.movemove_android.ui.util.pxToDp
 import com.everyone.movemove_android.ui.util.toPx
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 
@@ -363,25 +365,30 @@ private fun TimelineEditor(
         var lowerBoundOffsetState by remember { mutableFloatStateOf(0f) }
         var upperBoundDraggingState by remember { mutableStateOf(false) }
         var upperBoundOffsetState by remember { mutableFloatStateOf(0f) }
-        var thumbnailImageSizeState by remember { mutableStateOf(Pair(0, 0)) }
-        thumbnailImageSizeState = Pair(
-            LocalConfiguration.current.screenWidthDp.dp.toPx().roundToInt(),
-            LocalConfiguration.current.screenHeightDp.dp.toPx().roundToInt()
-        )
+        val videoWidth = exoPlayer.videoSize.width
+        val videoHeight = exoPlayer.videoSize.height
 
-        if (exoPlayer.duration > 0L) {
+        if (videoWidth > 0 && videoHeight > 0) {
+            var thumbnailImageSizeState by remember { mutableStateOf(Pair(0, 0)) }
+
+            thumbnailImageSizeState = Pair(
+                LocalConfiguration.current.screenWidthDp.dp.toPx().roundToInt(),
+                LocalConfiguration.current.screenHeightDp.dp.toPx().roundToInt()
+            )
+
             LaunchedEffect(Unit) {
-                repeat(15) {
+                val frameCount = if (videoWidth >= videoHeight) 10 else 15
+                repeat(frameCount) {
                     frameBitmaps.add(
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                             mediaMetadataRetriever.getScaledFrameAtTime(
-                                ((exoPlayer.duration / 15) * it + 1) * 1000L,
+                                ((exoPlayer.duration / frameCount) * it + 1) * 1000L,
                                 MediaMetadataRetriever.OPTION_CLOSEST,
                                 thumbnailImageSizeState.first,
                                 thumbnailImageSizeState.second
                             )
                         } else {
-                            mediaMetadataRetriever.getFrameAtTime(((exoPlayer.duration / 15) * it + 1) * 1000L)
+                            mediaMetadataRetriever.getFrameAtTime(((exoPlayer.duration / frameCount) * it + 1) * 1000L)
                         }
                     )
                 }
@@ -434,6 +441,13 @@ private fun TimelineEditor(
 
             Box(
                 modifier = Modifier
+                    .width(lowerBoundOffsetState.pxToDp())
+                    .fillMaxHeight()
+                    .background(EditorTimelineDim)
+            )
+
+            Box(
+                modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .absoluteOffset(x = upperBoundOffsetState.pxToDp())
                     .width(boundWidthDp)
@@ -455,6 +469,14 @@ private fun TimelineEditor(
                             }
                         )
                     }
+            )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .background(EditorTimelineDim)
+                    .padding(end = abs(upperBoundOffsetState).pxToDp())
             )
 
             Box(
