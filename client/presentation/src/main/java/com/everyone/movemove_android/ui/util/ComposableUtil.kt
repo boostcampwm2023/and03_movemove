@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.unit.Dp
 import kotlin.math.roundToInt
 
 @Composable
@@ -39,4 +40,9 @@ fun Float.pxToDp() = with(LocalDensity.current) {
 @Composable
 fun Int.pxToDp() = with(LocalDensity.current) {
     this@pxToDp.toDp()
+}
+
+@Composable
+fun Dp.toPx() = with(LocalDensity.current) {
+    this@toPx.toPx()
 }

@@ -1,6 +1,9 @@
 package com.everyone.movemove_android.ui.main.uploading_video
 
+import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,8 +46,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -64,7 +70,6 @@ import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Effect.LoadVideo
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickSelectVideo
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.theme.BorderInDark
@@ -73,13 +78,16 @@ import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.addFocusCleaner
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import com.everyone.movemove_android.ui.util.pxToDp
+import com.everyone.movemove_android.ui.util.toPx
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlin.math.roundToInt
+
 
 @Composable
 fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
     val (state, event, effect) = use(viewModel)
-
+    val context = LocalContext.current
     val videoLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
@@ -96,10 +104,6 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
             when (effect) {
                 is LaunchVideoPicker -> {
                     videoLauncher.launch(PickVisualMediaRequest(VideoOnly))
-                }
-
-                is LoadVideo -> {
-
                 }
             }
         }
@@ -231,6 +235,8 @@ private fun VideoEditor(
     onClickReSelectVideo: () -> Unit
 ) {
     val context = LocalContext.current
+    var playingState by remember { mutableStateOf(true) }
+    var playAndPauseVisibilityState by remember { mutableStateOf(true) }
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
             val dataSourceFactory = DefaultDataSource.Factory(context, DefaultDataSource.Factory(context))
@@ -241,9 +247,11 @@ private fun VideoEditor(
             prepare()
         }
     }
-
-    var playingState by remember { mutableStateOf(true) }
-    var playAndPauseVisibilityState by remember { mutableStateOf(true) }
+    val mediaMetadataRetriever = remember {
+        MediaMetadataRetriever().apply {
+            setDataSource(context, uri)
+        }
+    }
 
     LaunchedEffect(playAndPauseVisibilityState) {
         if (playAndPauseVisibilityState) {
@@ -308,7 +316,10 @@ private fun VideoEditor(
 
         Divider(color = if (isSystemInDarkTheme()) BorderInDark else Color.White) // todo : 라이트 모드의 Border 색상이 정해지지 않음
 
-        TimelineEditor(exoPlayer)
+        TimelineEditor(
+            exoPlayer = exoPlayer,
+            mediaMetadataRetriever = mediaMetadataRetriever
+        )
     }
 
     DisposableEffect(Unit) {
@@ -319,13 +330,17 @@ private fun VideoEditor(
 }
 
 @Composable
-private fun TimelineEditor(exoPlayer: ExoPlayer) {
+private fun TimelineEditor(
+    exoPlayer: ExoPlayer,
+    mediaMetadataRetriever: MediaMetadataRetriever
+) {
     var timelineWidthState by remember { mutableIntStateOf(0) }
     var videoLengthState by remember { mutableLongStateOf(0L) }
     var videoStartMsState by remember { mutableLongStateOf(0L) }
     var videoEndMsState by remember { mutableLongStateOf(0L) }
     var timelineUnitWidthState by remember { mutableLongStateOf(0L) }
     var videoLengthUnitState by remember { mutableLongStateOf(0L) }
+    val frameBitmaps = remember { mutableStateListOf<Bitmap?>() }
     val boundWidthDp = 4.dp
 
     if (exoPlayer.duration > 0L) {
@@ -333,7 +348,6 @@ private fun TimelineEditor(exoPlayer: ExoPlayer) {
         timelineUnitWidthState = timelineWidthState.toLong() / 1000L
         videoLengthUnitState = videoLengthState / 1000L
         if (videoEndMsState == 0L && exoPlayer.duration > 0L) videoEndMsState = videoLengthState
-
         if (exoPlayer.currentPosition < videoStartMsState || exoPlayer.currentPosition > videoEndMsState) {
             exoPlayer.seekTo(videoStartMsState)
         }
@@ -349,14 +363,48 @@ private fun TimelineEditor(exoPlayer: ExoPlayer) {
         var lowerBoundOffsetState by remember { mutableFloatStateOf(0f) }
         var upperBoundDraggingState by remember { mutableStateOf(false) }
         var upperBoundOffsetState by remember { mutableFloatStateOf(0f) }
+        var thumbnailImageSizeState by remember { mutableStateOf(Pair(0, 0)) }
+        thumbnailImageSizeState = Pair(
+            LocalConfiguration.current.screenWidthDp.dp.toPx().roundToInt(),
+            LocalConfiguration.current.screenHeightDp.dp.toPx().roundToInt()
+        )
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = boundWidthDp)
-                .onGloballyPositioned { timelineWidthState = it.size.width }
-        ) {
+        if (exoPlayer.duration > 0L) {
+            LaunchedEffect(Unit) {
+                repeat(15) {
+                    frameBitmaps.add(
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                            mediaMetadataRetriever.getScaledFrameAtTime(
+                                ((exoPlayer.duration / 15) * it + 1) * 1000L,
+                                MediaMetadataRetriever.OPTION_CLOSEST,
+                                thumbnailImageSizeState.first,
+                                thumbnailImageSizeState.second
+                            )
+                        } else {
+                            mediaMetadataRetriever.getFrameAtTime(((exoPlayer.duration / 15) * it + 1) * 1000L)
+                        }
+                    )
+                }
+            }
 
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = boundWidthDp)
+                    .onGloballyPositioned { timelineWidthState = it.size.width }
+            ) {
+                frameBitmaps.forEach { frameBitmap ->
+                    frameBitmap?.let {
+                        Image(
+                            modifier = Modifier
+                                .height(50.dp)
+                                .weight(1f),
+                            bitmap = frameBitmap.asImageBitmap(),
+                            contentDescription = null
+                        )
+                    }
+                }
+            }
         }
 
         if (videoEndMsState > 0) {

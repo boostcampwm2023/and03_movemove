@@ -17,7 +17,5 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
 
     sealed interface Effect {
         data object LaunchVideoPicker : Effect
-
-        data object LoadVideo : Effect
     }
 }
