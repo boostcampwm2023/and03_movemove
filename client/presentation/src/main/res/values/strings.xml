@@ -14,4 +14,7 @@
     <string name="category">카테고리</string>
     <string name="select">선택</string>
     <string name="complete">완료</string>
+
+    <!--    watching-->
+    <string name="scoreboard_title">점수를 남겨주세요!</string>
 </resources>
