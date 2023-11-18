@@ -99,6 +99,7 @@ fun WatchingVideoScreen() {
                 uri = videoUri[page]
             )
             Column(modifier = Modifier.align(Alignment.BottomStart)) {
+                MoveMoveScoreboard()
                 MoveMoveFooter()
                 Divider()
             }
