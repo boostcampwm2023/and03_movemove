@@ -70,7 +70,7 @@ const createSigningKey = () => {
   const region = 'kr-standard';
   const kSecret = process.env.SECRET_KEY!;
 
-  const kDate = getHash('AWS4' + kSecret, getDateStamp());
+  const kDate = getHash(`AWS4${kSecret}`, getDateStamp());
   const kRegion = getHash(kDate, region);
   const kService = getHash(kRegion, 's3');
   const kSigning = getHash(kService, 'aws4_request');

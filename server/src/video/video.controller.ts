@@ -9,10 +9,10 @@ import {
   StreamableFile,
   Header,
 } from '@nestjs/common';
-import { VideoService } from './video.service';
-import { VideoRatingDTO, VideoDto } from './dto/video.dto';
 import { createReadStream } from 'fs';
 import { join } from 'path';
+import { VideoService } from './video.service';
+import { VideoRatingDTO, VideoDto } from './dto/video.dto';
 
 @Controller('videos')
 export class VideoController {
@@ -61,7 +61,6 @@ export class VideoController {
 
   @Get('trend')
   getTrendVideo(@Param('limit') limit: number) {
-    console.log('33');
     return this.videoService.getTrendVideo(limit);
   }
 

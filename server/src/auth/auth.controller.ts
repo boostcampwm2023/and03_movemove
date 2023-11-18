@@ -9,7 +9,6 @@ import { AuthService } from './auth.service';
 import { UserDto } from 'src/user/dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes } from '@nestjs/swagger';
-
 @Controller('users')
 export class AuthController {
   constructor(private authService: AuthService) {}
