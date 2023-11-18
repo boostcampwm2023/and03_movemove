@@ -13,19 +13,21 @@ export class AppController {
   getAds() {
     return this.appService.getAds();
   }
+
   @Get('test')
   test() {
     return requestEncoding(process.env.INPUT_BUCKET, ['lplbisang.mp4'])
-      .then(function (response) {
+      .then((response) => {
         return response.data;
       })
-      .catch(function (error) {
+      .catch((error) => {
         if (error.response) {
           return error.response.data;
         }
         return error;
       });
   }
+
   @Get('test/putObject')
   testPutObject() {
     return putObject(
@@ -33,36 +35,38 @@ export class AppController {
       'sample-object2.txt',
       'hellohello2',
     )
-      .then(function (response) {
-        return 'put success: ' + response.data;
+      .then((response) => {
+        return `put success: ${response.data}`;
       })
-      .catch(function (error) {
+      .catch((error) => {
         if (error.response) {
           return error.response.data;
         }
         return error;
       });
   }
+
   @Get('test/getObject')
   testGetObject() {
     return getObject('video-thimbnail-bucket', 'sample-object2.txt')
-      .then(function (response) {
+      .then((response) => {
         return response.data;
       })
-      .catch(function (error) {
+      .catch((error) => {
         if (error.response) {
           return error.response.data;
         }
         return error;
       });
   }
+
   @Get('test/deleteObject')
   testDeleteObject() {
     return deleteObject('video-thimbnail-bucket', 'sample-object2.txt')
-      .then(function (response) {
-        return 'delete success:' + response.data;
+      .then((response) => {
+        return `delete success:${response.data}`;
       })
-      .catch(function (error) {
+      .catch((error) => {
         if (error.response) {
           return error.response.data;
         }

@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 import { Injectable } from '@nestjs/common';
 import { VideoRatingDTO, VideoDto } from './dto/video.dto';
 

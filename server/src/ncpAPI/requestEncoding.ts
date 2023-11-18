@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { makeSignature } from './common';
+
 export async function requestEncoding(bucketName: string, pathList: string[]) {
   const timestamp = Date.now();
   const accessKey = process.env.ACCESS_KEY!;
