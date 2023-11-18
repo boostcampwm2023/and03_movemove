@@ -1,9 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
 import { putObject } from 'src/ncpAPI/putObject';
 import { UserDto } from 'src/user/dto/user.dto';
+import { User } from 'src/user/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
+  constructor(
+    @Inject('USER_MODEL')
+    private userModel: Model<User>,
+  ) {}
   create(userDto: UserDto, profileImage: Express.Multer.File) {
     const extension = profileImage.originalname.split('.').pop();
     putObject(
@@ -11,7 +17,9 @@ export class AuthService {
       `${userDto.uuid}.${extension}`,
       profileImage.buffer,
     );
-    return 'asd';
+    const newUser = new this.userModel(userDto);
+    newUser.save();
+    return 'dd';
     // return `create user ${userDto}`;
   }
 
