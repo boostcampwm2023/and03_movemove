@@ -89,7 +89,6 @@ import kotlin.math.roundToInt
 @Composable
 fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
     val (state, event, effect) = use(viewModel)
-    val context = LocalContext.current
     val videoLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
@@ -239,16 +238,29 @@ private fun VideoEditor(
     val context = LocalContext.current
     var playingState by remember { mutableStateOf(true) }
     var playAndPauseVisibilityState by remember { mutableStateOf(true) }
+    var videoReadyState by remember { mutableStateOf(false) }
+    val videoDataSource by remember {
+        val dataSourceFactory = DefaultDataSource.Factory(context, DefaultDataSource.Factory(context))
+        mutableStateOf(ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(uri)))
+    }
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
-            val dataSourceFactory = DefaultDataSource.Factory(context, DefaultDataSource.Factory(context))
-            setMediaSource(ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(uri)))
+            setMediaSource(videoDataSource)
             videoScalingMode = C.VIDEO_SCALING_MODE_DEFAULT
             repeatMode = Player.REPEAT_MODE_ONE
             playWhenReady = true
             prepare()
+
+            addListener(object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    if (duration > 0) {
+                        videoReadyState = true
+                    }
+                }
+            })
         }
     }
+
     val mediaMetadataRetriever = remember {
         MediaMetadataRetriever().apply {
             setDataSource(context, uri)
@@ -269,15 +281,17 @@ private fun VideoEditor(
             .clickableWithoutRipple {
                 playAndPauseVisibilityState = !playAndPauseVisibilityState
             }) {
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = {
-                    PlayerView(context).apply {
-                        useController = false
-                        player = exoPlayer
+            if (videoReadyState) {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = {
+                        PlayerView(context).apply {
+                            useController = false
+                            player = exoPlayer
+                        }
                     }
-                }
-            )
+                )
+            }
 
             StyledText(
                 modifier = Modifier
@@ -345,14 +359,12 @@ private fun TimelineEditor(
     val frameBitmaps = remember { mutableStateListOf<Bitmap?>() }
     val boundWidthDp = 4.dp
 
-    if (exoPlayer.duration > 0L) {
-        videoLengthState = exoPlayer.duration
-        timelineUnitWidthState = timelineWidthState.toLong() / 1000L
-        videoLengthUnitState = videoLengthState / 1000L
-        if (videoEndMsState == 0L && exoPlayer.duration > 0L) videoEndMsState = videoLengthState
-        if (exoPlayer.currentPosition < videoStartMsState || exoPlayer.currentPosition > videoEndMsState) {
-            exoPlayer.seekTo(videoStartMsState)
-        }
+    videoLengthState = exoPlayer.duration
+    timelineUnitWidthState = timelineWidthState.toLong() / 1000L
+    videoLengthUnitState = videoLengthState / 1000L
+    if (videoEndMsState == 0L && exoPlayer.duration > 0L) videoEndMsState = videoLengthState
+    if (exoPlayer.currentPosition < videoStartMsState || exoPlayer.currentPosition > videoEndMsState) {
+        exoPlayer.seekTo(videoStartMsState)
     }
 
     Box(
@@ -373,11 +385,17 @@ private fun TimelineEditor(
 
             thumbnailImageSizeState = Pair(
                 LocalConfiguration.current.screenWidthDp.dp.toPx().roundToInt(),
-                LocalConfiguration.current.screenHeightDp.dp.toPx().roundToInt()
+                50.dp.toPx().roundToInt()
             )
 
             LaunchedEffect(Unit) {
                 val frameCount = if (videoWidth >= videoHeight) 10 else 15
+
+                thumbnailImageSizeState = Pair(
+                    thumbnailImageSizeState.first / frameCount,
+                    thumbnailImageSizeState.second
+                )
+
                 repeat(frameCount) {
                     frameBitmaps.add(
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
