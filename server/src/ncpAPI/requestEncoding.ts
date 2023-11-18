@@ -4,14 +4,15 @@ export async function requestEncoding(bucketName: string, pathList: string[]) {
   const timestamp = Date.now();
   const accessKey = process.env.ACCESS_KEY!;
   const categoryId = process.env.CATEGORY_ID!;
-  const apiPath = 'https://vodstation.apigw.ntruss.com';
-  const url = `/api/v2/category/${categoryId}/add-files`;
+  const endPoint = 'https://vodstation.apigw.ntruss.com';
+  const canonicalURI = `/api/v2/category/${categoryId}/add-files`;
+  const apiUrl = `${endPoint}${canonicalURI}`;
   const method = 'PUT';
-  const sign = makeSignature(method, url, timestamp);
+  const sign = makeSignature(method, canonicalURI, timestamp);
 
   return axios({
     method,
-    url: apiPath + url,
+    url: apiUrl,
     headers: {
       'x-ncp-apigw-timestamp': timestamp,
       'x-ncp-iam-access-key': accessKey,

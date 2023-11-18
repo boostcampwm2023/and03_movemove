@@ -3,6 +3,7 @@ import { AppService } from './app.service';
 import { requestEncoding } from './ncpAPI/requestEncoding';
 import { putObject } from './ncpAPI/putObject';
 import { getObject } from './ncpAPI/getObject';
+import { deleteObject } from './ncpAPI/deleteObject';
 
 @Controller()
 export class AppController {
@@ -25,15 +26,15 @@ export class AppController {
         return error;
       });
   }
-  @Get('test2')
-  test2() {
+  @Get('test/putObject')
+  testPutObject() {
     return putObject(
       'video-thimbnail-bucket',
       'sample-object2.txt',
       'hellohello2',
     )
       .then(function (response) {
-        return response.data;
+        return 'put success: ' + response.data;
       })
       .catch(function (error) {
         if (error.response) {
@@ -47,6 +48,19 @@ export class AppController {
     return getObject('video-thimbnail-bucket', 'sample-object2.txt')
       .then(function (response) {
         return response.data;
+      })
+      .catch(function (error) {
+        if (error.response) {
+          return error.response.data;
+        }
+        return error;
+      });
+  }
+  @Get('test/deleteObject')
+  testDeleteObject() {
+    return deleteObject('video-thimbnail-bucket', 'sample-object2.txt')
+      .then(function (response) {
+        return 'delete success:' + response.data;
       })
       .catch(function (error) {
         if (error.response) {
