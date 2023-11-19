@@ -19,17 +19,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.C
@@ -46,6 +55,7 @@ import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.theme.FooterBottomBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterMiddleBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterTopBackgroundInDark
+import com.everyone.movemove_android.ui.theme.Typography
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -89,6 +99,7 @@ fun WatchingVideoScreen() {
                 uri = videoUri[page]
             )
             Column(modifier = Modifier.align(Alignment.BottomStart)) {
+                MoveMoveScoreboard()
                 MoveMoveFooter()
                 Divider()
             }
@@ -154,6 +165,51 @@ fun VideoPlayer(exoPlayer: ExoPlayer, uri: Uri) {
             layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         }
     })
+}
+
+@Composable
+fun MoveMoveScoreboard() {
+    var sliderPosition by remember { mutableFloatStateOf(0.5f) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                start = 35.dp,
+                end = 35.dp,
+            )
+            .clip(shape = RoundedCornerShape(12.dp))
+            .background(color = Color.Black.copy(alpha = 0.3f))
+
+
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(
+                    top = 13.dp,
+                    start = 23.dp,
+                    end = 23.dp,
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            StyledText(
+                text = stringResource(R.string.scoreboard_title),
+                color = Color.White,
+                style = Typography.bodyMedium
+            )
+
+            Slider(
+                steps = 10,
+                value = sliderPosition,
+                onValueChange = { sliderPosition = it },
+                colors = SliderDefaults.colors(
+                    thumbColor = Color.White,
+                    inactiveTrackColor = Color.White
+                )
+            )
+        }
+    }
 }
 
 @Composable
