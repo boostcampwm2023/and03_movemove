@@ -94,8 +94,8 @@ class VideoTrimmer(
             mime?.let {
                 if (mime.startsWith("audio/") || mime.startsWith("video/")) {
                     mediaExtractor.selectTrack(i)
-                    val dstIndex = mediaMuxer.addTrack(format)
-                    indexMap[i] = dstIndex
+                    val newTrackIndex = mediaMuxer.addTrack(format)
+                    indexMap[i] = newTrackIndex
                     if (format.containsKey(MediaFormat.KEY_MAX_INPUT_SIZE)) {
                         val newSize = format.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE)
                         bufferSize = if (newSize > bufferSize) newSize else bufferSize
