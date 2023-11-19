@@ -53,6 +53,8 @@ class UploadingVideoViewModel @Inject constructor(
     private val _effect = MutableSharedFlow<Effect>()
     override val effect: SharedFlow<Effect> = _effect.asSharedFlow()
 
+    private lateinit var videoFilePath: String
+
     override fun event(event: Event) = when (event) {
         is OnClickSelectVideo -> onClickAddVideo()
         is OnGetUri -> onGetUri(event.uri)
@@ -114,7 +116,10 @@ class UploadingVideoViewModel @Inject constructor(
                 val tempList = mutableListOf<ImageBitmap>()
                 val mediaMetadataRetriever = MediaMetadataRetriever().apply {
                     uri?.let {
-                        setDataSource(getVideoFilePath(context, uri))
+                        getVideoFilePath(context, uri)?.let { path ->
+                            videoFilePath = path
+                            setDataSource(path)
+                        }
                     }
                 }
 
@@ -171,7 +176,24 @@ class UploadingVideoViewModel @Inject constructor(
     }
 
     private fun onClickUpload() {
+        if (::videoFilePath.isInitialized) {
+            _state.update {
+                it.copy(isLoading = it.isLoading)
+            }
 
+            with(state.value) {
+                viewModelScope.launch(ioDispatcher) {
+                    VideoTrimmer(
+                        originalPath = videoFilePath,
+                        newPath = context.filesDir.absolutePath,
+                        startMs = videoStartTime,
+                        endMs = videoEndTime
+                    ).trim()
+                }
+            }
+        } else {
+            // todo: Not Initialized
+        }
     }
 
     companion object {
