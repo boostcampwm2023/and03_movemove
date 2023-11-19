@@ -14,6 +14,9 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         val videoStartTime: Long = 0L,
         val videoEndTime: Long = 0L,
         val thumbnailList: List<ImageBitmap> = emptyList(),
+        val title: String = "",
+        val description: String = "",
+        val isUploadEnabled: Boolean = false,
     )
 
     data class VideoInfo(
@@ -30,6 +33,9 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         data class OnVideoReady(val duration: Long) : Event
         data class SetVideoStartTime(val time: Long) : Event
         data class SetVideoEndTime(val time: Long) : Event
+        data class OnTitleTyped(val title: String) : Event
+        data class OnDescriptionTyped(val description: String) : Event
+        data object OnClickUpload : Event
     }
 
     sealed interface Effect {

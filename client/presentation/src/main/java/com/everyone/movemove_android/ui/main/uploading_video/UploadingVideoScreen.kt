@@ -67,8 +67,11 @@ import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContr
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickPlayAndPause
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickPlayer
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickSelectVideo
+import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickUpload
+import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
+import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnTitleTyped
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnVideoReady
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.SetVideoEndTime
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.SetVideoStartTime
@@ -397,8 +400,8 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                             .padding(top = 12.dp)
                             .fillMaxWidth()
                             .height(40.dp),
-                        value = "",
-                        onValueChange = { }
+                        value = title,
+                        onValueChange = { event(OnTitleTyped(it)) }
                     )
 
                     StyledText(
@@ -412,8 +415,8 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                             .padding(top = 12.dp)
                             .fillMaxWidth()
                             .height(40.dp),
-                        value = "",
-                        onValueChange = { }
+                        value = description,
+                        onValueChange = { event(OnDescriptionTyped(it)) }
                     )
 
                     Row(modifier = Modifier.padding(top = 12.dp)) {
@@ -439,9 +442,9 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                         .padding(horizontal = 24.dp)
                         .align(Alignment.BottomCenter),
                     buttonText = stringResource(id = R.string.complete),
-                    isEnabled = false
+                    isEnabled = isUploadEnabled
                 ) {
-
+                    event(OnClickUpload)
                 }
             }
         }

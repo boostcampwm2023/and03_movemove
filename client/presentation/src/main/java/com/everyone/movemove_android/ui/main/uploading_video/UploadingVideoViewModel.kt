@@ -16,8 +16,11 @@ import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContr
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickPlayAndPause
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickPlayer
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickSelectVideo
+import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickUpload
+import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
+import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnTitleTyped
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnVideoReady
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.SetVideoEndTime
 import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.SetVideoStartTime
@@ -59,6 +62,9 @@ class UploadingVideoViewModel @Inject constructor(
         is OnVideoReady -> onVideoReady(event.duration)
         is SetVideoStartTime -> setVideoStartTime(event.time)
         is SetVideoEndTime -> setVideoEndTime(event.time)
+        is OnTitleTyped -> onTitleTyped(event.title)
+        is OnDescriptionTyped -> onDescriptionTyped(event.description)
+        is OnClickUpload -> onClickUpload()
     }
 
     private fun onClickAddVideo() {
@@ -144,6 +150,28 @@ class UploadingVideoViewModel @Inject constructor(
         _state.update {
             it.copy(videoEndTime = time)
         }
+    }
+
+    private fun onTitleTyped(title: String) {
+        _state.update {
+            it.copy(
+                title = title,
+                isUploadEnabled = title.isNotEmpty() && state.value.description.isNotEmpty()
+            )
+        }
+    }
+
+    private fun onDescriptionTyped(description: String) {
+        _state.update {
+            it.copy(
+                description = description,
+                isUploadEnabled = description.isNotEmpty() && state.value.title.isNotEmpty()
+            )
+        }
+    }
+
+    private fun onClickUpload() {
+
     }
 
     companion object {
