@@ -97,8 +97,7 @@ class VideoTrimmer(
                     val newTrackIndex = mediaMuxer.addTrack(format)
                     indexMap[i] = newTrackIndex
                     if (format.containsKey(MediaFormat.KEY_MAX_INPUT_SIZE)) {
-                        val newSize = format.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE)
-                        bufferSize = if (newSize > bufferSize) newSize else bufferSize
+                        bufferSize = maxOf(bufferSize, format.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE))
                     }
                 }
             } ?: run {
