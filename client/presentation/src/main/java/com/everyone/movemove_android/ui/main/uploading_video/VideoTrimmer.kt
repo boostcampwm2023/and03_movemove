@@ -69,7 +69,7 @@ class VideoTrimmer(
 
             mediaMuxer.stop()
         } catch (e: IllegalStateException) {
-            mediaMuxer.release()
+            releaseComponents()
         }
     }
 
@@ -102,7 +102,7 @@ class VideoTrimmer(
                     }
                 }
             } ?: run {
-                // todo: Error handling
+                releaseComponents()
             }
         }
     }
@@ -117,6 +117,16 @@ class VideoTrimmer(
             if (degrees >= 0) {
                 mediaMuxer.setOrientationHint(degrees)
             }
+        }
+    }
+
+    private fun releaseComponents() {
+        try {
+            mediaExtractor.release()
+            mediaMuxer.release()
+            mediaMetadataRetriever.release()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
