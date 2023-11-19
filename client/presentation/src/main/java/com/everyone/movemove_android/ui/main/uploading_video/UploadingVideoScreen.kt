@@ -37,11 +37,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
@@ -116,10 +116,10 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                 .background(color = MaterialTheme.colorScheme.background)
                 .addFocusCleaner()
         ) {
-            videoUri?.let {
+            videoInfo.uri?.let { uri ->
                 val videoDataSource by remember {
                     val dataSourceFactory = DefaultDataSource.Factory(context, DefaultDataSource.Factory(context))
-                    mutableStateOf(ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(videoUri)))
+                    mutableStateOf(ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(uri)))
                 }
                 val exoPlayer = remember {
                     ExoPlayer.Builder(context).build().apply {
@@ -132,7 +132,9 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                         addListener(object : Player.Listener {
                             override fun onPlaybackStateChanged(playbackState: Int) {
                                 if (duration > 0) {
-                                    event(OnVideoReady)
+                                    event(
+                                        OnVideoReady(duration = duration)
+                                    )
                                 }
                             }
                         })
@@ -185,7 +187,7 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                         if (isPlayAndPauseShowing) {
                             Icon(
                                 modifier = Modifier
-                                    .align(Alignment.Center)
+                                    .align(Center)
                                     .size(48.dp)
                                     .clickableWithoutRipple {
                                         if (isPlaying) exoPlayer.pause() else exoPlayer.play()
@@ -213,44 +215,55 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                     val boundWidthDp = 4.dp
 
                     timelineUnitWidthState = timelineWidthState.toLong() / 1000L
-                    videoLengthUnitState = exoPlayer.duration / 1000L
-                    if (videoEndTime == 0L && exoPlayer.duration > 0L) {
-                        event(SetVideoEndTime(exoPlayer.duration))
+                    videoLengthUnitState = videoInfo.duration / 1000L
+                    if (videoEndTime == 0L && videoInfo.duration > 0L) {
+                        event(SetVideoEndTime(videoInfo.duration))
                     }
 
                     if (exoPlayer.currentPosition < videoStartTime || exoPlayer.currentPosition > videoEndTime) {
                         exoPlayer.seekTo(videoStartTime)
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
-                    ) {
-                        var indicatorXPositionState by remember { mutableIntStateOf(0) }
-                        var lowerBoundDraggingState by remember { mutableStateOf(false) }
-                        var lowerBoundOffsetState by remember { mutableFloatStateOf(0f) }
-                        var upperBoundDraggingState by remember { mutableStateOf(false) }
-                        var upperBoundOffsetState by remember { mutableFloatStateOf(0f) }
-
-                        Row(
+                    if (videoEndTime > 0) {
+                        Box(
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = boundWidthDp)
-                                .onGloballyPositioned { timelineWidthState = it.size.width }
+                                .fillMaxWidth()
+                                .height(50.dp)
                         ) {
-                            thumbnailList.forEach { thumbnail ->
-                                Image(
-                                    modifier = Modifier
-                                        .height(50.dp)
-                                        .weight(1f),
-                                    bitmap = thumbnail.asImageBitmap(),
-                                    contentDescription = null
-                                )
-                            }
-                        }
+                            var indicatorXPositionState by remember { mutableIntStateOf(0) }
+                            var lowerBoundDraggingState by remember { mutableStateOf(false) }
+                            var lowerBoundOffsetState by remember { mutableFloatStateOf(0f) }
+                            var upperBoundDraggingState by remember { mutableStateOf(false) }
+                            var upperBoundOffsetState by remember { mutableFloatStateOf(0f) }
 
-                        if (videoEndTime > 0) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = boundWidthDp)
+                                    .onGloballyPositioned { timelineWidthState = it.size.width }
+                            ) {
+                                if (thumbnailList.isNotEmpty()) {
+                                    thumbnailList.forEach { thumbnail ->
+                                        Image(
+                                            modifier = Modifier
+                                                .fillMaxHeight()
+                                                .weight(1f),
+                                            bitmap = thumbnail,
+                                            contentDescription = null
+                                        )
+                                    }
+                                } else {
+                                    Box(modifier = Modifier.fillMaxSize()) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier
+                                                .align(Center)
+                                                .size(24.dp),
+                                            color = Point
+                                        )
+                                    }
+                                }
+                            }
+
                             Box(
                                 modifier = Modifier
                                     .absoluteOffset(x = lowerBoundOffsetState.pxToDp())
@@ -304,7 +317,8 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                                                 }
                                             }
                                         )
-                                    })
+                                    }
+                            )
 
                             Box(
                                 modifier = Modifier
@@ -328,13 +342,6 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                                     delay(100)
                                 }
                             }
-                        } else {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .size(24.dp),
-                                color = Point
-                            )
                         }
                     }
                 }
@@ -342,7 +349,6 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                 DisposableEffect(Unit) {
                     onDispose {
                         exoPlayer.release()
-                        // todo: release media extractor in viewmodel
                     }
                 }
             } ?: run {
@@ -354,7 +360,7 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                 ) {
 
                     Column(
-                        modifier = Modifier.align(Alignment.Center),
+                        modifier = Modifier.align(Center),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Image(

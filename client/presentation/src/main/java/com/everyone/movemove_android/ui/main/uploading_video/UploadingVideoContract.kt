@@ -1,19 +1,24 @@
 package com.everyone.movemove_android.ui.main.uploading_video
 
-import android.graphics.Bitmap
 import android.net.Uri
+import androidx.compose.ui.graphics.ImageBitmap
 import com.everyone.movemove_android.base.BaseContract
 
 interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, UploadingVideoContract.Event, UploadingVideoContract.Effect> {
     data class State(
         val isLoading: Boolean = false,
-        val videoUri: Uri? = null,
         val isPlaying: Boolean = false,
         val isPlayAndPauseShowing: Boolean = false,
         val isVideoReady: Boolean = false,
+        val videoInfo: VideoInfo = VideoInfo(),
         val videoStartTime: Long = 0L,
         val videoEndTime: Long = 0L,
-        val thumbnailList: List<Bitmap> = emptyList(),
+        val thumbnailList: List<ImageBitmap> = emptyList(),
+    )
+
+    data class VideoInfo(
+        val uri: Uri? = null,
+        val duration: Long = 0L
     )
 
     sealed interface Event {
@@ -22,7 +27,7 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         data object OnClickPlayAndPause : Event
         data object OnClickPlayer : Event
         data object OnPlayAndPauseTimeOut : Event
-        data object OnVideoReady : Event
+        data class OnVideoReady(val duration: Long) : Event
         data class SetVideoStartTime(val time: Long) : Event
         data class SetVideoEndTime(val time: Long) : Event
     }
