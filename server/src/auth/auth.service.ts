@@ -1,4 +1,5 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
 import { putObject } from 'src/ncpAPI/putObject';
@@ -7,10 +8,7 @@ import { User } from 'src/user/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    @Inject('USER_MODEL')
-    private userModel: Model<User>,
-  ) {}
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
   async create(userDto: UserDto, profileImage: Express.Multer.File) {
     if (await this.userModel.find({ uuid: userDto.uuid })) {
       throw new UserConflictException();

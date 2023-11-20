@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNotEmptyObject, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsUUID } from 'class-validator';
 
 export class UserDto {
   @ApiProperty({
@@ -14,6 +14,7 @@ export class UserDto {
     type: 'string',
     format: 'binary',
   })
+  // TODO file 유효성검사
   profileImage: Express.Multer.File;
   /**
    * 유저 닉네임
