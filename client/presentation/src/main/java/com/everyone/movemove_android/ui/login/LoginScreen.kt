@@ -50,6 +50,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen() {
+
     val context = LocalContext.current
     //Google
     val coroutineScope = rememberCoroutineScope()
@@ -146,11 +147,6 @@ class AuthResultContract(private val googleSignInClient: GoogleSignInClient) : A
     override fun createIntent(context: Context, input: Int): Intent {
         return googleSignInClient.signInIntent.putExtra("input", input)
     }
-}
-
-
-fun handleGoogleLogin(context: Context) {
-
 }
 
 fun handleKakaoLogin(context: Context) {
