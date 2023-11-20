@@ -33,6 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.everyone.movemove_android.BuildConfig
 import com.everyone.movemove_android.R.drawable
+import com.everyone.movemove_android.ui.login.LoginActivity.Companion.SIGN_IN_REQUEST_CODE
 import com.everyone.movemove_android.ui.theme.GoogleGray
 import com.everyone.movemove_android.ui.theme.KakaoYellow
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -54,7 +55,6 @@ fun LoginScreen() {
     val context = LocalContext.current
     //Google
     val coroutineScope = rememberCoroutineScope()
-    val signInRequestCode = 1
     val googleSignInClient = getGoogleSignInClient(context)
     val authResultLauncher = rememberLauncherForActivityResult(contract = AuthResultContract(googleSignInClient = googleSignInClient), onResult = {
         try {
@@ -106,7 +106,7 @@ fun LoginScreen() {
             Spacer(modifier = Modifier.height(10.dp))
             Button(
                 onClick = {
-                    authResultLauncher.launch(signInRequestCode)
+                    authResultLauncher.launch(SIGN_IN_REQUEST_CODE)
                 }, modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp), colors = ButtonDefaults.buttonColors(

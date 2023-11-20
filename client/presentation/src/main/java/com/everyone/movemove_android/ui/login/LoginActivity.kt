@@ -8,4 +8,8 @@ class LoginActivity : BaseActivity() {
     override fun InitComposeUi() {
         LoginScreen()
     }
+
+    companion object{
+        const val SIGN_IN_REQUEST_CODE = 1
+    }
 }
