@@ -1,5 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
+import { UserConflictException } from 'src/exceptions/conflict.exception';
 import { putObject } from 'src/ncpAPI/putObject';
 import { UserDto } from 'src/user/dto/user.dto';
 import { User } from 'src/user/schemas/user.schema';
@@ -10,7 +11,10 @@ export class AuthService {
     @Inject('USER_MODEL')
     private userModel: Model<User>,
   ) {}
-  create(userDto: UserDto, profileImage: Express.Multer.File) {
+  async create(userDto: UserDto, profileImage: Express.Multer.File) {
+    if (await this.userModel.find({ uuid: userDto.uuid })) {
+      throw new UserConflictException();
+    }
     const extension = profileImage.originalname.split('.').pop();
     putObject(
       process.env.PROFILE_BUCKET,
@@ -19,7 +23,7 @@ export class AuthService {
     );
     const newUser = new this.userModel(userDto);
     newUser.save();
-    return 'dd';
+    return '33';
     // return `create user ${userDto}`;
   }
 

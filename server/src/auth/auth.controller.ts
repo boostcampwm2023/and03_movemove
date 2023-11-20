@@ -21,7 +21,7 @@ export class AuthController {
     @Body() userDto: UserDto,
   ): string {
     //profileImage의 버퍼값을 dto에 저장
-    // userDto.profileImage = profileImage.buffer;
+    //userDto.profileImage = profileImage.buffer;
     return this.authService.create(userDto, profileImage);
   }
 
