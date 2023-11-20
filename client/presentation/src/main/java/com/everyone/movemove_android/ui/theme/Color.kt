@@ -17,6 +17,7 @@ val VideoDescriptionInDark = Color(0xFFE0E0E0)
 val FooterTopBackgroundInDark = Color(0xff282828)
 val FooterMiddleBackgroundInDark = Color(0xff191919)
 val FooterBottomBackgroundInDark = Color(0xff000000)
+val CategoryBackgroundInDark = Color(0xff1F2128)
 val EditorTimelineDim = Color(0x88000000)
 
 @Composable

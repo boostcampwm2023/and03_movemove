@@ -18,4 +18,5 @@
 
     <!--    watching-->
     <string name="scoreboard_title">점수를 남겨주세요!</string>
+    <string name="category_change_title">카테고리 변경</string>
 </resources>
