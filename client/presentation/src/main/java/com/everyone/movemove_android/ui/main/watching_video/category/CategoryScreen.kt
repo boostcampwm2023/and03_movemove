@@ -70,7 +70,6 @@ fun CategoryScreen(viewModel: WatchingVideoViewModel = hiltViewModel()) {
                         modifier = Modifier
                             .padding(top = 32.dp)
                             .clickableWithoutRipple {
-                                event(OnClickedCategory)
                                 event(OnSelectedCategory(selectedCategory = category))
                             }
                     )

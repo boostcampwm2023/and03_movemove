@@ -40,7 +40,10 @@ class WatchingVideoViewModel @Inject constructor() : ViewModel(), WatchingVideoC
 
     private fun onClickedCategory(selectedCategory: Category) {
         _state.update {
-            it.copy(selectedCategory = selectedCategory)
+            it.copy(
+                isClickedCategory = !it.isClickedCategory,
+                selectedCategory = selectedCategory
+            )
         }
     }
 }
