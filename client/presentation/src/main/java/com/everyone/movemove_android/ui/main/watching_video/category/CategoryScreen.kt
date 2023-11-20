@@ -65,7 +65,7 @@ fun CategoryScreen(viewModel: WatchingVideoViewModel = hiltViewModel()) {
             LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
                 items(state.categoryList) { category ->
                     CategoryItem(
-                        category = category.name,
+                        category = category.displayName,
                         modifier = Modifier
                             .padding(top = 32.dp)
                             .clickableWithoutRipple {
