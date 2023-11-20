@@ -3,7 +3,7 @@ package com.everyone.movemove_android.ui.main.watching_video
 import androidx.lifecycle.ViewModel
 import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Category
 import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Event.OnClickedCategory
-import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Event.OnSelectedCategory
+import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Event.OnCategorySelected
 import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Effect
 import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Event
 import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.State
@@ -28,7 +28,7 @@ class WatchingVideoViewModel @Inject constructor() : ViewModel(), WatchingVideoC
     override fun event(event: Event) {
         when (event) {
             is OnClickedCategory -> onClickedCategory()
-            is OnSelectedCategory -> onClickedCategory(selectedCategory = event.selectedCategory)
+            is OnCategorySelected -> onCategorySelected(selectedCategory = event.selectedCategory)
         }
     }
 
@@ -38,7 +38,7 @@ class WatchingVideoViewModel @Inject constructor() : ViewModel(), WatchingVideoC
         }
     }
 
-    private fun onClickedCategory(selectedCategory: Category) {
+    private fun onCategorySelected(selectedCategory: Category) {
         _state.update {
             it.copy(
                 isClickedCategory = !it.isClickedCategory,

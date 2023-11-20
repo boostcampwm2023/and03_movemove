@@ -18,7 +18,7 @@ interface WatchingVideoContract :
 
     sealed interface Event {
         data object OnClickedCategory : Event
-        data class OnSelectedCategory(val selectedCategory: Category) : Event
+        data class OnCategorySelected(val selectedCategory: Category) : Event
     }
 
     sealed interface Effect {}
