@@ -58,6 +58,25 @@ fun MultiServiceAds() {
 
     val pagerState = rememberPagerState(pageCount = { Int.MAX_VALUE })
 
+    LaunchedEffect(Unit) {
+        var initialPage = Int.MAX_VALUE / 2
+
+        while (initialPage % serviceAds.size != 0) {
+            initialPage++
+        }
+        pagerState.scrollToPage(initialPage)
+    }
+
+    LaunchedEffect(pagerState.currentPage) {
+        launch {
+            while (pagerState.currentPage + 1 < pagerState.pageCount) {
+                delay(autoPageChangeDelay)
+                withContext(NonCancellable) {
+                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                }
+            }
+        }
+    }
 
     Box {
         HorizontalPager(
