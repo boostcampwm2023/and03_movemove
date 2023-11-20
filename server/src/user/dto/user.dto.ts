@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNotEmptyObject, IsUUID } from 'class-validator';
 
 export class UserDto {
   @ApiProperty({
@@ -6,6 +7,7 @@ export class UserDto {
     format: 'uuid',
     example: '550e8400-e29b-41d4-a716-446655440000',
   })
+  @IsUUID()
   uuid: string;
   @ApiProperty({
     description: '유저 프로필 사진',
@@ -13,11 +15,16 @@ export class UserDto {
     format: 'binary',
   })
   profileImage: Express.Multer.File;
-  @ApiProperty({ description: '유저 닉네임', example: '페이커' })
+  /**
+   * 유저 닉네임
+   * @example '페이커'
+   */
+  @IsNotEmpty()
   nickname: string;
-  @ApiProperty({
-    description: '한줄 소개',
-    example: '모든 길은 저를 통할 것입니다',
-  })
+  /**
+   * 한줄 소개
+   * @example '역대 최연소 우승자, 역대 최고령 우승자'
+   */
+  @IsNotEmpty()
   statusMessage: string;
 }
