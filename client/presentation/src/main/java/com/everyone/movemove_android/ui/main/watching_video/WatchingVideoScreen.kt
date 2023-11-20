@@ -30,9 +30,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
+import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Event.OnClickedCategory
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +43,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -54,6 +54,7 @@ import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.everyone.movemove_android.R
+import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.main.watching_video.category.CategoryScreen
 import com.everyone.movemove_android.ui.theme.FooterBottomBackgroundInDark
@@ -65,10 +66,9 @@ import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WatchingVideoScreen() {
+fun WatchingVideoScreen(viewModel: WatchingVideoViewModel = hiltViewModel()) {
 
-    var isClickedCategory by remember { mutableStateOf(false) }
-    var selectedCategory by rememberSaveable { mutableStateOf("전체") }
+    val (state, event, effect) = use(viewModel)
 
     // TODO: 임시 url 수정 필요
     val videoURL = listOf(
@@ -135,23 +135,18 @@ fun WatchingVideoScreen() {
             }
         }
 
-        if (isClickedCategory) {
-            CategoryScreen(
-                onSelectCategory = {
-                    selectedCategory = it
-                    isClickedCategory = false
-                },
-                onCategoryClose = { isClickedCategory = false })
+        if (state.isClickedCategory) {
+            CategoryScreen()
         } else {
             MoveMoveCategory(
-                category = selectedCategory,
+                category = state.selectedCategory.categoryName,
                 modifier = Modifier
                     .padding(
                         start = 21.dp,
                         top = 21.dp
                     )
                     .align(Alignment.TopStart)
-                    .clickableWithoutRipple { isClickedCategory = true },
+                    .clickableWithoutRipple { event(OnClickedCategory) },
             )
         }
     }

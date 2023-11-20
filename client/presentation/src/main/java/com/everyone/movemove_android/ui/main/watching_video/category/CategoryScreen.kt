@@ -26,14 +26,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.everyone.movemove_android.R
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract
+import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Event.OnClickedCategory
+import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Event.OnSelectedCategory
+import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoViewModel
 import com.everyone.movemove_android.ui.theme.CategoryBackgroundInDark
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun CategoryScreen(onSelectCategory: (category: String) -> Unit, onCategoryClose: () -> Unit) {
+fun CategoryScreen(viewModel: WatchingVideoViewModel = hiltViewModel()) {
+
+    val (state, event, effect) = use(viewModel)
 
     Box(
         modifier = Modifier
@@ -46,9 +54,6 @@ fun CategoryScreen(onSelectCategory: (category: String) -> Unit, onCategoryClose
             modifier = Modifier.fillMaxSize()
         ) {
 
-            // TODO 카테고리 더미 데이터
-            val categoryDummy = listOf<String>("전체", "챌린지", "올드스쿨", "뉴스쿨", "Kpop")
-
             StyledText(
                 modifier = Modifier.padding(top = 28.dp),
                 text = stringResource(R.string.category_change_title),
@@ -58,15 +63,17 @@ fun CategoryScreen(onSelectCategory: (category: String) -> Unit, onCategoryClose
                 )
             )
 
-            LazyColumn(
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                items(categoryDummy) { category ->
+            LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
+                items(state.categoryList) { category ->
                     CategoryItem(
-                        category = category,
+                        category = category.categoryName,
                         modifier = Modifier
                             .padding(top = 32.dp)
-                            .clickableWithoutRipple { onSelectCategory(category) })
+                            .clickableWithoutRipple {
+                                event(OnClickedCategory)
+                                event(OnSelectedCategory(selectedCategory = category))
+                            }
+                    )
                 }
             }
         }
@@ -82,7 +89,7 @@ fun CategoryScreen(onSelectCategory: (category: String) -> Unit, onCategoryClose
                 top = 21.dp
             ),
             tint = Color.Black,
-            onClick = { onCategoryClose() }
+            onClick = { event(OnClickedCategory) }
         )
     }
 
