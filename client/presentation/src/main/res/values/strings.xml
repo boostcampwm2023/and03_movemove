@@ -9,6 +9,7 @@
 
     <!--    uploading-->
     <string name="add_video_description">갤러리에서 영상을 추가하세요</string>
+    <string name="video_re_select">재선택</string>
     <string name="title">제목</string>
     <string name="video_description">한 줄 설명</string>
     <string name="category">카테고리</string>
