@@ -3,26 +3,25 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
 import { putObject } from 'src/ncpAPI/putObject';
-import { UserDto } from 'src/user/dto/user.dto';
+import { SignupRequestDto } from './dto/signup-request.dto';
 import { User } from 'src/user/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
-  async create(userDto: UserDto, profileImage: Express.Multer.File) {
-    if (await this.userModel.find({ uuid: userDto.uuid })) {
+  async create(signupRequestDto: SignupRequestDto, profileImage: Express.Multer.File) {
+    if ((await this.userModel.find({ uuid: signupRequestDto.uuid }))?.length) {
       throw new UserConflictException();
     }
     const extension = profileImage.originalname.split('.').pop();
     putObject(
       process.env.PROFILE_BUCKET,
-      `${userDto.uuid}.${extension}`,
+      `${signupRequestDto.uuid}.${extension}`,
       profileImage.buffer,
     );
-    const newUser = new this.userModel(userDto);
+    const newUser = new this.userModel(signupRequestDto);
     newUser.save();
-    return '33';
-    // return `create user ${userDto}`;
+    return 
   }
 
   signin(uuid: string) {

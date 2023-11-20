@@ -12,8 +12,8 @@ import {
 import { createReadStream } from 'fs';
 import { join } from 'path';
 import { VideoService } from './video.service';
-import { VideoRatingDTO, VideoDto } from './dto/video.dto';
-
+import { VideoDto } from './dto/video.dto';
+import { VideoRatingDTO } from './dto/video-rating.dto';
 @Controller('videos')
 export class VideoController {
   constructor(private videoService: VideoService) {}

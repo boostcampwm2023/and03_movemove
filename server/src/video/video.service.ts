@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import { Injectable } from '@nestjs/common';
-import { VideoRatingDTO, VideoDto } from './dto/video.dto';
-
+import { VideoDto } from './dto/video.dto';
+import { VideoRatingDTO } from './dto/video-rating.dto';
 @Injectable()
 export class VideoService {
   getRandomVideo(category: string, limit: number) {

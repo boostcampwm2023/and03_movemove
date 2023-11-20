@@ -4,7 +4,7 @@ import { ErrorCodeEnum, ErrorMessage } from 'src/enum/exception.enum';
 
 export class BaseException extends HttpException {
   constructor(errorCode: ErrorCodeEnum, statusCode: HttpStatus) {
-    super('', statusCode);
+    super(ErrorMessage[errorCode], statusCode);
     this.errorCode = errorCode;
     this.message = ErrorMessage[errorCode];
   }
