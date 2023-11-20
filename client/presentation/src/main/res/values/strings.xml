@@ -14,4 +14,6 @@
     <string name="category">카테고리</string>
     <string name="select">선택</string>
     <string name="complete">완료</string>
+    <string name="kakao_login">카카오 로그인</string>
+    <string name="google_login">구글로 로그인</string>
 </resources>

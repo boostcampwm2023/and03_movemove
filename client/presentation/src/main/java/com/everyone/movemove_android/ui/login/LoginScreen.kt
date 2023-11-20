@@ -30,8 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.everyone.movemove_android.BuildConfig
+import com.everyone.movemove_android.R
 import com.everyone.movemove_android.R.drawable
 import com.everyone.movemove_android.ui.login.LoginActivity.Companion.SIGN_IN_REQUEST_CODE
 import com.everyone.movemove_android.ui.theme.GoogleGray
@@ -56,21 +58,23 @@ fun LoginScreen() {
     //Google
     val coroutineScope = rememberCoroutineScope()
     val googleSignInClient = getGoogleSignInClient(context)
-    val authResultLauncher = rememberLauncherForActivityResult(contract = AuthResultContract(googleSignInClient = googleSignInClient), onResult = {
-        try {
-            val account = it?.getResult(ApiException::class.java)
-            if (account == null) {
-                Log.d("에러상황", "발생")
-            } else {
-                coroutineScope.launch {
-                    Log.d("구글 로그인 성공", "${account.id}")
-                    Log.d("구글 로그인 성공2", "${account.idToken}")
+    val authResultLauncher = rememberLauncherForActivityResult(
+        contract = AuthResultContract(googleSignInClient = googleSignInClient),
+        onResult = {
+            try {
+                val account = it?.getResult(ApiException::class.java)
+                if (account == null) {
+                    Log.d("에러상황", "발생")
+                } else {
+                    coroutineScope.launch {
+                        Log.d("구글 로그인 성공", "${account.id}")
+                        Log.d("구글 로그인 성공2", "${account.idToken}")
+                    }
                 }
+            } catch (e: ApiException) {
+                Log.d("에러상황", "발생2")
             }
-        } catch (e: ApiException) {
-            Log.d("에러상황", "발생2")
-        }
-    })
+        })
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -84,44 +88,50 @@ fun LoginScreen() {
                 .padding(horizontal = 10.dp)
         ) {
             Button(
-                onClick = {
-                    handleKakaoLogin(context)
-                }, modifier = Modifier
+                onClick = { handleKakaoLogin(context) },
+                modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp), colors = ButtonDefaults.buttonColors(
-                    containerColor = KakaoYellow, contentColor = Color.Black
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = KakaoYellow,
+                    contentColor = Color.Black
                 ), shape = RoundedCornerShape(10.dp)
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Icon(
-                        painter = painterResource(id = drawable.ic_kakao_login), contentDescription = "null", modifier = Modifier.align(alignment = Alignment.CenterStart)
+                        painter = painterResource(id = drawable.ic_kakao_login),
+                        contentDescription = "null",
+                        modifier = Modifier.align(alignment = Alignment.CenterStart)
                     )
                     Text(
-                        //TODO 구글하고 같이 String.xml으로 추출
-                        text = "카카오 로그인",
+                        text = stringResource(R.string.kakao_login),
                         modifier = Modifier.align(alignment = Alignment.Center),
                     )
                 }
             }
             Spacer(modifier = Modifier.height(10.dp))
             Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
                 onClick = {
                     authResultLauncher.launch(SIGN_IN_REQUEST_CODE)
-                }, modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp), colors = ButtonDefaults.buttonColors(
-                    containerColor = GoogleGray, contentColor = Color.Black
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = GoogleGray,
+                    contentColor = Color.Black
                 ), shape = RoundedCornerShape(10.dp)
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Image(
-                        painter = painterResource(id = drawable.img_google_login), contentDescription = "null", modifier = Modifier
+                        painter = painterResource(id = drawable.img_google_login),
+                        contentDescription = "null",
+                        modifier = Modifier
                             .align(alignment = Alignment.CenterStart)
                             .size(18.dp)
                     )
                     Text(
-                        //TODO 구글하고 같이 String.xml으로 추출
-                        text = "구글로 로그인",
+                        text = stringResource(R.string.google_login),
                         modifier = Modifier.align(alignment = Alignment.Center),
                     )
                 }
