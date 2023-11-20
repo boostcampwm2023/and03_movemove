@@ -78,18 +78,18 @@ dependencies {
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
 
     //kakao
-    implementation ("com.kakao.sdk:v2-all:2.17.0") // 전체 모듈 설치, 2.11.0 버전부터 지원
-    implementation ("com.kakao.sdk:v2-user:2.17.0") // 카카오 로그인
-    implementation ("com.kakao.sdk:v2-talk:2.17.0") // 친구, 메시지(카카오톡)
-    implementation ("com.kakao.sdk:v2-story:2.17.0") // 카카오스토리
-    implementation ("com.kakao.sdk:v2-share:2.17.0") // 메시지(카카오톡 공유)
-    implementation ("com.kakao.sdk:v2-friend:2.17.0") // 카카오톡 소셜 피커, 리소스 번들 파일 포함
-    implementation ("com.kakao.sdk:v2-navi:2.17.0") // 카카오내비
-    implementation ("com.kakao.sdk:v2-cert:2.17.0") // 카카오 인증서비스
+    implementation(libs.kakao.all)
+    implementation(libs.kakao.user)
+    implementation(libs.kakao.talk)
+    implementation(libs.kakao.story)
+    implementation(libs.kakao.share)
+    implementation(libs.kakao.friend)
+    implementation(libs.kakao.navi)
+    implementation(libs.kakao.cert)
 
     //google
-    implementation ("com.google.gms:google-services:4.3.15")
-    implementation ("com.google.firebase:firebase-auth:22.0.0")
-    implementation ("com.google.firebase:firebase-bom:32.0.0")
-    implementation ("com.google.android.gms:play-services-auth:20.5.0")
+    implementation (libs.google.services)
+    implementation (libs.firebase.auth)
+    implementation (libs.firebase.bom)
+    implementation (libs.google.auth)
 }
