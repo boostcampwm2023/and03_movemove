@@ -58,7 +58,9 @@ fun CategoryScreen(onSelectCategory: (category: String) -> Unit, onCategoryClose
                 )
             )
 
-            LazyColumn {
+            LazyColumn(
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 items(categoryDummy) { category ->
                     CategoryItem(
                         category = category,
