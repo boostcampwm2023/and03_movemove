@@ -139,7 +139,7 @@ fun WatchingVideoScreen(viewModel: WatchingVideoViewModel = hiltViewModel()) {
             CategoryScreen()
         } else {
             MoveMoveCategory(
-                category = state.selectedCategory.categoryName,
+                category = state.selectedCategory.name,
                 modifier = Modifier
                     .padding(
                         start = 21.dp,
