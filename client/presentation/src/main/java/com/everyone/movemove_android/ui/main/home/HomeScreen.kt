@@ -2,17 +2,25 @@ package com.everyone.movemove_android.ui.main.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -20,9 +28,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
@@ -31,8 +44,48 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun HomeScreen() {
-    Column(modifier = Modifier.fillMaxSize()) {
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+    ) {
         MultiServiceAds()
+
+        Spacer(modifier = Modifier.height(44.dp))
+        StyledText(
+            modifier = Modifier.padding(start = 16.dp),
+            text = "Trending",
+            style = MaterialTheme.typography.titleLarge
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        MoveMoveVideos()
+
+        Spacer(modifier = Modifier.height(36.dp))
+        Text(
+            modifier = Modifier.padding(start = 16.dp),
+            style = MaterialTheme.typography.titleLarge,
+            text = getStyledText(
+                coloredText = "챌린지",
+                plainText = " TOP 10"
+            ),
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        MoveMoveVideos()
+
+        Spacer(modifier = Modifier.height(36.dp))
+        Text(
+            modifier = Modifier.padding(start = 16.dp),
+            style = MaterialTheme.typography.titleLarge,
+            text = getStyledText(
+                coloredText = "올드스쿨",
+                plainText = " TOP 10"
+            ),
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        MoveMoveVideos()
+
     }
 }
 
@@ -123,5 +176,71 @@ fun MultiServiceAdsItem(
             contentDescription = null,
             contentScale = ContentScale.Crop,
         )
+    }
+}
+
+@Composable
+fun MoveMoveVideos() {
+
+    // TODO 임시 값
+    val videoThumbnail = listOf<String>(
+        "https://www.ikbc.co.kr/data/kbc/image/2023/08/13/kbc202308130007.800x.0.jpg",
+        "https://www.ikbc.co.kr/data/kbc/image/2023/08/13/kbc202308130007.800x.0.jpg",
+        "https://www.ikbc.co.kr/data/kbc/image/2023/08/13/kbc202308130007.800x.0.jpg",
+        "https://www.ikbc.co.kr/data/kbc/image/2023/08/13/kbc202308130007.800x.0.jpg",
+        "https://www.ikbc.co.kr/data/kbc/image/2023/08/13/kbc202308130007.800x.0.jpg",
+        "https://www.ikbc.co.kr/data/kbc/image/2023/08/13/kbc202308130007.800x.0.jpg",
+        "https://www.ikbc.co.kr/data/kbc/image/2023/08/13/kbc202308130007.800x.0.jpg",
+        "https://www.ikbc.co.kr/data/kbc/image/2023/08/13/kbc202308130007.800x.0.jpg",
+        "https://www.ikbc.co.kr/data/kbc/image/2023/08/13/kbc202308130007.800x.0.jpg",
+        "https://www.ikbc.co.kr/data/kbc/image/2023/08/13/kbc202308130007.800x.0.jpg",
+    )
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 16.dp
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(180.dp)
+    ) {
+        items(videoThumbnail.size) {
+            VideoItem(videoThumbnail = videoThumbnail[it])
+        }
+    }
+}
+
+@Composable
+fun VideoItem(videoThumbnail: String) {
+    Card(
+        shape = RoundedCornerShape(size = 8.dp),
+        modifier = Modifier
+            .width(90.dp)
+            .height(180.dp)
+            .padding(bottom = 8.dp)
+
+
+    ) {
+        AsyncImage(
+            model = videoThumbnail,
+            modifier = Modifier.fillMaxSize(),
+            contentDescription = null,
+            contentScale = ContentScale.FillWidth,
+        )
+
+    }
+}
+
+fun getStyledText(coloredText: String, plainText: String): AnnotatedString {
+    return buildAnnotatedString {
+        withStyle(
+            style = SpanStyle(
+                color = Point
+            ),
+        ) {
+            append(coloredText)
+        }
+        append(plainText)
     }
 }
