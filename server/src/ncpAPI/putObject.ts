@@ -1,7 +1,11 @@
 import axios from 'axios';
 import { getTimeStamp, getAuthorization } from './common';
 
-export const putObject = (bucketName: string, objectName: string, data) => {
+export const putObject = async (
+  bucketName: string,
+  objectName: string,
+  data,
+) => {
   const endPoint = 'https://kr.object.ncloudstorage.com';
   const canonicalURI = `/${bucketName}/${objectName}`;
   const apiUrl = `${endPoint}${canonicalURI}`;

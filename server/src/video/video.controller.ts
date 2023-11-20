@@ -8,11 +8,17 @@ import {
   Body,
   StreamableFile,
   Header,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { join } from 'path';
+import { ApiConsumes } from '@nestjs/swagger';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { Express } from 'express';
 import { VideoService } from './video.service';
-import { VideoRatingDTO, VideoDto } from './dto/video.dto';
+import { VideoDto } from './dto/video.dto';
+import { VideoRatingDTO } from './dto/video-rating.dto';
 
 @Controller('videos')
 export class VideoController {
@@ -42,9 +48,14 @@ export class VideoController {
     return this.videoService.setVideoRating(videoId, videoRatingDto);
   }
 
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(AnyFilesInterceptor())
   @Post()
-  uploadVideo(@Body() videoDto: VideoDto) {
-    return this.videoService.uploadVideo(videoDto);
+  uploadVideo(
+    @UploadedFiles() files: Array<Express.Multer.File>,
+    @Body() videoDto: VideoDto,
+  ) {
+    return this.videoService.uploadVideo(files, videoDto);
   }
 
   @Get('top-rated')
