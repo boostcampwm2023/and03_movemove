@@ -44,7 +44,7 @@ export class VideoService {
     ]);
     await requestEncoding(process.env.INPUT_BUCKET, [videoName]);
 
-    return `upload video ${title} ${content} ${category}`;
+    return { video: videoDto };
   }
 
   deleteVideo(videoId: string) {
