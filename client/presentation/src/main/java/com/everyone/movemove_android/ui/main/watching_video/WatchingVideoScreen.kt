@@ -264,7 +264,7 @@ fun MoveMoveScoreboard() {
 @Composable
 fun MoveMoveFooter() {
     Box(
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .background(
                 alpha = 0.2f,

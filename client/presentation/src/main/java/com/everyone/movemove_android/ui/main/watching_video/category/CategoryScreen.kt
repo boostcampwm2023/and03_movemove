@@ -45,12 +45,12 @@ fun CategoryScreen(viewModel: WatchingVideoViewModel = hiltViewModel()) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(CategoryBackgroundInDark.copy(0.95f))
+            .background(CategoryBackgroundInDark.copy(alpha = 0.95f))
             .clickable(enabled = false) {}
     ) {
         Column(
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
         ) {
 
             StyledText(
@@ -65,12 +65,12 @@ fun CategoryScreen(viewModel: WatchingVideoViewModel = hiltViewModel()) {
             LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
                 items(state.categoryList) { category ->
                     CategoryItem(
-                        category = category.displayName,
                         modifier = Modifier
                             .padding(top = 32.dp)
                             .clickableWithoutRipple {
                                 event(OnCategorySelected(selectedCategory = category))
-                            }
+                            },
+                        category = category.displayName,
                     )
                 }
             }
@@ -116,13 +116,13 @@ fun MoveMoveIconButton(
             .padding(padding)
     ) {
         IconButton(
+            modifier = modifier,
             onClick = onClick,
-            modifier = modifier
         ) {
             Icon(
+                modifier = Modifier.size(16.dp),
                 painter = painterResource(id = iconButtonRes),
                 contentDescription = null,
-                modifier = Modifier.size(16.dp),
                 tint = tint
             )
         }
