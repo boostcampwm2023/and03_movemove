@@ -8,6 +8,7 @@ export class BaseException extends HttpException {
     this.errorCode = errorCode;
     this.message = ErrorMessage[errorCode];
   }
+
   @ApiProperty()
   errorCode: number;
 

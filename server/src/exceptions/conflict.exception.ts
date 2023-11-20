@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
-import { BaseException } from './base.exception';
 import { ErrorCodeEnum } from 'src/enum/exception.enum';
+import { BaseException } from './base.exception';
 
 export class UserConflictException extends BaseException {
   constructor() {

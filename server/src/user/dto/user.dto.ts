@@ -9,6 +9,7 @@ export class UserDto {
   })
   @IsUUID()
   uuid: string;
+
   @ApiProperty({
     description: '유저 프로필 사진',
     type: 'string',
@@ -16,12 +17,14 @@ export class UserDto {
   })
   // TODO file 유효성검사
   profileImage: Express.Multer.File;
+
   /**
    * 유저 닉네임
    * @example '페이커'
    */
   @IsNotEmpty()
   nickname: string;
+
   /**
    * 한줄 소개
    * @example '역대 최연소 우승자, 역대 최고령 우승자'

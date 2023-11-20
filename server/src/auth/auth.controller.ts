@@ -4,15 +4,21 @@ import {
   Body,
   UseInterceptors,
   UploadedFile,
-  HttpCode,
-  ConflictException,
+  UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { UserDto } from 'src/user/dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiAcceptedResponse, ApiBadRequestResponse, ApiConflictResponse, ApiConsumes, ApiCreatedResponse, ApiForbiddenResponse, ApiOkResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiConflictResponse,
+  ApiConsumes,
+  ApiCreatedResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { AuthService } from './auth.service';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { SignupRequestDto } from './dto/signup-request.dto';
+import { AuthGuard } from './auth.guard';
+
 @Controller('users')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -21,7 +27,7 @@ export class AuthController {
   @ApiConsumes('multipart/form-data')
   @ApiCreatedResponse({
     description: '회원가입 성공',
-    type: SignupResponseDto
+    type: SignupResponseDto,
   })
   @ApiBadRequestResponse()
   @ApiUnauthorizedResponse()
@@ -33,8 +39,8 @@ export class AuthController {
     @UploadedFile() profileImage: Express.Multer.File,
     @Body() signupRequestDto: SignupRequestDto,
   ) {
-    //profileImage의 버퍼값을 dto에 저장
-    //userDto.profileImage = profileImage.buffer;
+    // profileImage의 버퍼값을 dto에 저장
+    // userDto.profileImage = profileImage.buffer;
     return this.authService.create(signupRequestDto, profileImage);
   }
 
