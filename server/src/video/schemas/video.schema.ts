@@ -17,19 +17,19 @@ export class Video {
     require: true,
     default: 0,
   })
-  viewCount: string; //조회수
+  viewCount: string; // 조회수
 
   @Prop({
     require: true,
     default: 0,
   })
-  totalRating: number; //총별점
+  totalRating: number; // 총별점
 
   @Prop({
     require: true,
     default: 0,
   })
-  raterCount: number; //별점준사람 수
+  raterCount: number; // 별점준사람 수
 
   @Prop({
     require: true,
