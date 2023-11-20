@@ -18,6 +18,7 @@ android {
         versionName = "1.0"
 
         buildConfigField("String","KAKAO_NATIVE_APP_KEY", getApiKey("KAKAO_NATIVE_APP_KEY"))
+        buildConfigField("String","GOOGLE_CLIENT_ID", getApiKey("GOOGLE_CLIENT_ID"))
         resValue("string","KAKAO_OAUTH_HOST", getApiKey("KAKAO_OAUTH_HOST"))
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -85,4 +86,10 @@ dependencies {
     implementation ("com.kakao.sdk:v2-friend:2.17.0") // 카카오톡 소셜 피커, 리소스 번들 파일 포함
     implementation ("com.kakao.sdk:v2-navi:2.17.0") // 카카오내비
     implementation ("com.kakao.sdk:v2-cert:2.17.0") // 카카오 인증서비스
+
+    //google
+    implementation ("com.google.gms:google-services:4.3.15")
+    implementation ("com.google.firebase:firebase-auth:22.0.0")
+    implementation ("com.google.firebase:firebase-bom:32.0.0")
+    implementation ("com.google.android.gms:play-services-auth:20.5.0")
 }
