@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.lang)
@@ -15,6 +16,10 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String","KAKAO_NATIVE_APP_KEY", getApiKey("KAKAO_NATIVE_APP_KEY"))
+        buildConfigField("String","GOOGLE_CLIENT_ID", getApiKey("GOOGLE_CLIENT_ID"))
+        resValue("string","KAKAO_OAUTH_HOST", getApiKey("KAKAO_OAUTH_HOST"))
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -37,6 +42,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.4"
@@ -46,6 +52,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+
+fun getApiKey(propertyKey: String): String{
+    return gradleLocalProperties(rootDir).getProperty(propertyKey)
 }
 
 dependencies {
@@ -67,4 +77,10 @@ dependencies {
     debugImplementation(libs.compose.ui.test)
     debugImplementation(libs.compose.ui.tooling.debug)
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
+
+    //kakao
+    implementation(libs.kakao.user)
+
+    //google
+    implementation (libs.bundles.google)
 }
