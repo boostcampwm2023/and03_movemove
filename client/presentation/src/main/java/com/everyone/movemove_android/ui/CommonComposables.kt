@@ -57,7 +57,11 @@ inline fun RoundedCornerButton(
             .fillMaxWidth()
             .height(48.dp)
             .background(color = if (isEnabled) Point else DisabledInDark)
-            .clickableWithoutRipple { onClick() }
+            .clickableWithoutRipple {
+                if (isEnabled) {
+                    onClick()
+                }
+            }
     ) {
         StyledText(
             modifier = Modifier.align(Alignment.Center),

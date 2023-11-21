@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.bundles.android)
     implementation(libs.bundles.compose)
     implementation(libs.bundles.common)
+    implementation(libs.bundles.media3)
 
     // ksp
     ksp(libs.ksp.hilt)
