@@ -6,11 +6,7 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  ApiConflictResponse,
-  ApiConsumes,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { ApiConsumes } from '@nestjs/swagger';
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
