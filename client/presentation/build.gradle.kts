@@ -81,8 +81,5 @@ dependencies {
     implementation(libs.kakao.user)
 
     //google
-    implementation (libs.google.services)
-    implementation (libs.firebase.auth)
-    implementation (libs.firebase.bom)
-    implementation (libs.google.auth)
+    implementation (libs.bundles.google)
 }

@@ -84,7 +84,7 @@ google-auth = { group = "com.google.android.gms", name = "play-services-auth", v
 android = ["core-ktx", "lifecycle-runtime-ktx", "material", "lifecycle-extensions"]
 compose = ["activity-compose", "compose-lifecycle", "compose-ui", "compose-ui-graphics", "compose-ui-tooling-preview", "compose-material3", "compose-hilt-navigation"]
 common = ["hilt"]
-
+google = ["google-services", "firebase-auth", "firebase-bom", "google-auth"]
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
