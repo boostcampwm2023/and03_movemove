@@ -4,20 +4,20 @@ import {
   Body,
   UseInterceptors,
   UploadedFile,
-  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiConsumes,
-  ApiCreatedResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { AuthService } from './auth.service';
-import { SignupResponseDto } from './dto/signup-response.dto';
 import { SignupRequestDto } from './dto/signup-request.dto';
-import { AuthGuard } from './auth.guard';
+import { SignupResponseDto } from './dto/signup-response.dto';
+import { SigninResponseDto } from './dto/signin-response.dto';
+import { SigninRequestDto } from './dto/signin-request.dto';
 
 @Controller('users')
 export class AuthController {
@@ -25,9 +25,10 @@ export class AuthController {
 
   @Post('signup')
   @ApiConsumes('multipart/form-data')
-  @ApiCreatedResponse({
+  @ApiSuccessResponse({
+    statusCode: 201,
     description: '회원가입 성공',
-    type: SignupResponseDto,
+    model: SignupResponseDto,
   })
   @ApiBadRequestResponse()
   @ApiUnauthorizedResponse()
@@ -45,7 +46,12 @@ export class AuthController {
   }
 
   @Post('login')
-  signin(@Body('uuid') uuid: string) {
-    return this.authService.signin(uuid);
+  @ApiSuccessResponse({
+    statusCode: 201,
+    description: '로그인 성공',
+    model: SigninResponseDto,
+  })
+  signin(@Body() signinRequestDto: SigninRequestDto) {
+    return this.authService.signin(signinRequestDto);
   }
 }

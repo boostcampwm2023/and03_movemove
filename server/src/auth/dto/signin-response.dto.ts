@@ -1,8 +1,8 @@
 import { ProfileResponseDto } from 'src/user/dto/profile-response.dto';
 import { JwtResponseDto } from './jwt-response.dto';
 
-export class SignupResponseDto {
-  constructor(init: SignupResponseDto) {
+export class SigninResponseDto {
+  constructor(init: SigninResponseDto) {
     Object.assign(this, init);
   }
 
