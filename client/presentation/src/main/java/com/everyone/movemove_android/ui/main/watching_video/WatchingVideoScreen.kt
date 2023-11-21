@@ -139,7 +139,7 @@ fun WatchingVideoScreen(viewModel: WatchingVideoViewModel = hiltViewModel()) {
             CategoryScreen()
         } else {
             MoveMoveCategory(
-                category = state.selectedCategory.name,
+                category = state.selectedCategory.displayName,
                 modifier = Modifier
                     .padding(
                         start = 21.dp,
@@ -264,7 +264,7 @@ fun MoveMoveScoreboard() {
 @Composable
 fun MoveMoveFooter() {
     Box(
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .background(
                 alpha = 0.2f,

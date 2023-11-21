@@ -24,7 +24,7 @@ interface WatchingVideoContract :
 
     sealed interface Effect {}
 
-    enum class Category(name: String) {
+    enum class Category(val displayName: String) {
         TOTAL("전체"),
         CHALLENGE("챌린지"),
         OLD_SCHOOL("올드스쿨"),
