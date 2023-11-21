@@ -59,6 +59,7 @@ compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-manifest", ve
 datastore = { group = "androidx.datstore", name = "data-store-preferences", version.ref = "data-store" }
 datastore-core = { group = "androidx.datstore", name = "data-store-preferences-core", version.ref = "data-store" }
 hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 
 # ksp
 ksp-hilt = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
@@ -70,7 +71,7 @@ media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "medi
 media3-exoplayer-hls = { group = "androidx.media3", name = "media3-exoplayer-hls", version.ref = "media3" }
 
 [bundles]
-android = ["core-ktx", "lifecycle-runtime-ktx", "material", "lifecycle-extensions"]
+android = ["core-ktx", "lifecycle-runtime-ktx", "material", "lifecycle-extensions", "coil"]
 compose = ["activity-compose", "compose-lifecycle", "compose-ui", "compose-ui-graphics", "compose-ui-tooling-preview", "compose-material3", "compose-hilt-navigation", "compose-navigation"]
 common = ["hilt"]
 media3 = ["media3-common", "media3-exoplayer", "media3-ui", "media3-exoplayer-hls"]
