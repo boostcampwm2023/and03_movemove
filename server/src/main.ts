@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { TransformInterceptor } from 'transform.interceptor';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -23,6 +24,7 @@ async function bootstrap() {
       transform: true, // 타입 자동 변환
     }),
   );
+  app.useGlobalInterceptors(new TransformInterceptor());
   await app.listen(3000);
 }
 bootstrap();
