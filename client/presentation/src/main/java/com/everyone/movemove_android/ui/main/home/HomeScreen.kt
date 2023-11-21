@@ -235,14 +235,14 @@ fun MoveMoveVideos() {
         "https://www.ikbc.co.kr/data/kbc/image/2023/08/13/kbc202308130007.800x.0.jpg",
     )
     LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(180.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(
             start = 16.dp,
             end = 16.dp
         ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(180.dp)
     ) {
         items(videoThumbnail.size) {
             MoveMoveVideo(videoThumbnail = videoThumbnail[it])
@@ -253,20 +253,17 @@ fun MoveMoveVideos() {
 @Composable
 fun MoveMoveVideo(videoThumbnail: String) {
     Card(
-        shape = RoundedCornerShape(size = 8.dp),
         modifier = Modifier
             .width(90.dp)
             .height(180.dp)
-            .padding(bottom = 8.dp)
-
-
+            .padding(bottom = 8.dp),
+        shape = RoundedCornerShape(size = 8.dp),
     ) {
         AsyncImage(
-            model = videoThumbnail,
             modifier = Modifier.fillMaxSize(),
+            model = videoThumbnail,
             contentDescription = null,
             contentScale = ContentScale.FillWidth,
         )
-
     }
 }
