@@ -1,5 +1,7 @@
 package com.everyone.movemove_android.ui.main
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
@@ -27,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -72,10 +75,10 @@ fun MainScreen() {
             startDestination = Destination.HOME.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Destination.HOME.route) { HomeScreen(navigator = navigator) }
-            composable(Destination.WATCHING_VIDEO.route) { WatchingVideoScreen() }
-            composable(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
-            composable(Destination.MY.route) { MyScreen() }
+            navScreen(Destination.HOME.route) { HomeScreen() }
+            navScreen(Destination.WATCHING_VIDEO.route) { WatchingVideoScreen() }
+            navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
+            navScreen(Destination.MY.route) { MyScreen() }
         }
     }
 }
@@ -135,3 +138,16 @@ fun MoveMoveNavigationBar(
 @Composable
 fun rememberNavigator(navController: NavController) =
     remember(navController) { Navigator(navController) }
+
+fun NavGraphBuilder.navScreen(
+    destination: String,
+    content: @Composable () -> Unit
+) {
+    composable(
+        route = destination,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None }
+    ) { content() }
+}
