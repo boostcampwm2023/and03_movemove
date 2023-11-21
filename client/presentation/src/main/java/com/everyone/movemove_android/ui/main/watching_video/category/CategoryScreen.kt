@@ -26,28 +26,32 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.everyone.movemove_android.R
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Event.OnClickedCategory
+import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Event.OnCategorySelected
+import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoViewModel
 import com.everyone.movemove_android.ui.theme.CategoryBackgroundInDark
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun CategoryScreen(onSelectCategory: (category: String) -> Unit, onCategoryClose: () -> Unit) {
+fun CategoryScreen(viewModel: WatchingVideoViewModel = hiltViewModel()) {
+
+    val (state, event, effect) = use(viewModel)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(CategoryBackgroundInDark.copy(0.95f))
+            .background(CategoryBackgroundInDark.copy(alpha = 0.95f))
             .clickable(enabled = false) {}
     ) {
         Column(
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
         ) {
-
-            // TODO 카테고리 더미 데이터
-            val categoryDummy = listOf<String>("전체", "챌린지", "올드스쿨", "뉴스쿨", "Kpop")
 
             StyledText(
                 modifier = Modifier.padding(top = 28.dp),
@@ -58,13 +62,16 @@ fun CategoryScreen(onSelectCategory: (category: String) -> Unit, onCategoryClose
                 )
             )
 
-            LazyColumn {
-                items(categoryDummy) { category ->
+            LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
+                items(state.categoryList) { category ->
                     CategoryItem(
-                        category = category,
                         modifier = Modifier
                             .padding(top = 32.dp)
-                            .clickableWithoutRipple { onSelectCategory(category) })
+                            .clickableWithoutRipple {
+                                event(OnCategorySelected(selectedCategory = category))
+                            },
+                        category = category.displayName,
+                    )
                 }
             }
         }
@@ -80,7 +87,7 @@ fun CategoryScreen(onSelectCategory: (category: String) -> Unit, onCategoryClose
                 top = 21.dp
             ),
             tint = Color.Black,
-            onClick = { onCategoryClose() }
+            onClick = { event(OnClickedCategory) }
         )
     }
 
@@ -109,13 +116,13 @@ fun MoveMoveIconButton(
             .padding(padding)
     ) {
         IconButton(
+            modifier = modifier,
             onClick = onClick,
-            modifier = modifier
         ) {
             Icon(
+                modifier = Modifier.size(16.dp),
                 painter = painterResource(id = iconButtonRes),
                 contentDescription = null,
-                modifier = Modifier.size(16.dp),
                 tint = tint
             )
         }
