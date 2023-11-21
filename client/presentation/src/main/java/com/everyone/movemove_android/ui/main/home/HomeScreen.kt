@@ -35,6 +35,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
@@ -47,7 +48,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(
+    viewModel: HomeViewModel = hiltViewModel(),
+    onClickWatchingVideo: () -> Unit,
+) {
 
     val (state, event, effect) = use(viewModel)
 
@@ -67,7 +71,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
             style = MaterialTheme.typography.titleLarge
         )
         Spacer(modifier = Modifier.height(24.dp))
-        MoveMoveVideos()
+        MoveMoveVideos(onClickWatchingVideo = onClickWatchingVideo)
 
         Spacer(modifier = Modifier.height(36.dp))
         StyledColorText(
@@ -77,7 +81,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
             plainText = stringResource(R.string.top_10_title)
         )
         Spacer(modifier = Modifier.height(24.dp))
-        MoveMoveVideos()
+        MoveMoveVideos(onClickWatchingVideo = onClickWatchingVideo)
 
         Spacer(modifier = Modifier.height(36.dp))
         StyledColorText(
@@ -87,7 +91,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
             plainText = stringResource(R.string.top_10_title)
         )
         Spacer(modifier = Modifier.height(24.dp))
-        MoveMoveVideos()
+        MoveMoveVideos(onClickWatchingVideo = onClickWatchingVideo)
 
     }
 }
@@ -169,7 +173,6 @@ fun MultiServiceAdsItem(
     }
 }
 
-
 @Composable
 fun MultiServiceAdsPageNumber(
     modifier: Modifier,
@@ -219,7 +222,7 @@ fun StyledColorText(
 }
 
 @Composable
-fun MoveMoveVideos() {
+fun MoveMoveVideos(onClickWatchingVideo: () -> Unit) {
 
     // TODO 임시 값
     val videoThumbnail = listOf<String>(
@@ -245,15 +248,21 @@ fun MoveMoveVideos() {
         ),
     ) {
         items(videoThumbnail.size) {
-            MoveMoveVideo(videoThumbnail = videoThumbnail[it])
+            MoveMoveVideo(
+                modifier = Modifier.clickableWithoutRipple { onClickWatchingVideo() },
+                videoThumbnail = videoThumbnail[it],
+            )
         }
     }
 }
 
 @Composable
-fun MoveMoveVideo(videoThumbnail: String) {
+fun MoveMoveVideo(
+    modifier: Modifier,
+    videoThumbnail: String,
+) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .width(90.dp)
             .height(180.dp)
             .padding(bottom = 8.dp),
