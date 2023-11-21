@@ -78,14 +78,7 @@ dependencies {
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
 
     //kakao
-    implementation(libs.kakao.all)
     implementation(libs.kakao.user)
-    implementation(libs.kakao.talk)
-    implementation(libs.kakao.story)
-    implementation(libs.kakao.share)
-    implementation(libs.kakao.friend)
-    implementation(libs.kakao.navi)
-    implementation(libs.kakao.cert)
 
     //google
     implementation (libs.google.services)
