@@ -28,8 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -63,25 +63,21 @@ fun HomeScreen() {
         MoveMoveVideos()
 
         Spacer(modifier = Modifier.height(36.dp))
-        Text(
+        StyledColorText(
             modifier = Modifier.padding(start = 16.dp),
             style = MaterialTheme.typography.titleLarge,
-            text = getStyledText(
-                coloredText = "챌린지",
-                plainText = " TOP 10"
-            ),
+            coloredText = "챌린지",
+            plainText = " TOP 10"
         )
         Spacer(modifier = Modifier.height(24.dp))
         MoveMoveVideos()
 
         Spacer(modifier = Modifier.height(36.dp))
-        Text(
+        StyledColorText(
             modifier = Modifier.padding(start = 16.dp),
             style = MaterialTheme.typography.titleLarge,
-            text = getStyledText(
-                coloredText = "올드스쿨",
-                plainText = " TOP 10"
-            ),
+            coloredText = "올드스쿨",
+            plainText = " TOP 10"
         )
         Spacer(modifier = Modifier.height(24.dp))
         MoveMoveVideos()
@@ -193,6 +189,29 @@ fun MultiServiceAdsPageNumber(
 }
 
 @Composable
+fun StyledColorText(
+    modifier: Modifier,
+    style: TextStyle,
+    coloredText: String,
+    plainText: String
+) {
+    Text(
+        modifier = modifier,
+        style = style,
+        text = buildAnnotatedString {
+            withStyle(
+                style = SpanStyle(
+                    color = Point
+                ),
+            ) {
+                append(coloredText)
+            }
+            append(plainText)
+        },
+    )
+}
+
+@Composable
 fun MoveMoveVideos() {
 
     // TODO 임시 값
@@ -243,19 +262,4 @@ fun MoveMoveVideo(videoThumbnail: String) {
         )
 
     }
-}
-
-fun getStyledText(coloredText: String, plainText: String): AnnotatedString {
-    return buildAnnotatedString {
-        withStyle(
-            style = SpanStyle(
-                color = Point
-            ),
-        ) {
-            append(coloredText)
-        }
-        append(plainText)
-    }
-}
-
 }
