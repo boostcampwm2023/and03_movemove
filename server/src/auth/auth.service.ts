@@ -13,7 +13,7 @@ import { JwtResponseDto } from './dto/jwt-response.dto';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(User.name) private UserModel: Model<User>,
     private jwtService: JwtService,
   ) {}
 
@@ -22,7 +22,7 @@ export class AuthService {
     profileImage: Express.Multer.File,
   ) {
     const { uuid } = signupRequestDto;
-    if ((await this.userModel.find({ uuid }))?.length) {
+    if (!(await this.UserModel.findOne({ uuid }))) {
       throw new UserConflictException();
     }
     const extension = profileImage.originalname.split('.').pop();
@@ -31,10 +31,14 @@ export class AuthService {
       `${uuid}.${extension}`,
       profileImage.buffer,
     );
-    const newUser = new this.userModel(signupRequestDto);
+    const newUser = new this.UserModel(signupRequestDto);
     newUser.save();
     const jwt = await this.getTokens(uuid);
-    const profile = new ProfileResponseDto();
+    const profile = new ProfileResponseDto({
+      uuid: newUser.uuid,
+      nickname: newUser.nickname,
+      statusMessage: newUser.statusMessage,
+    });
     return new SignupResponseDto(jwt, profile);
   }
 
@@ -45,7 +49,15 @@ export class AuthService {
     };
   }
 
-  signin(uuid: string) {
-    return `signin user ${uuid}`;
+  async signin(uuid: string) {
+    const user = await this.UserModel.findOne({ uuid });
+
+    const jwt = await this.getTokens(uuid);
+    const profile = new ProfileResponseDto({
+      uuid: user.uuid,
+      nickname: user.nickname,
+      statusMessage: user.statusMessage,
+    });
+    return { jwt, profile };
   }
 }

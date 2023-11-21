@@ -1,6 +1,15 @@
-import { IsNotEmpty, IsUrl } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsUUID, IsUrl } from 'class-validator';
 
 export class ProfileResponseDto {
+  @ApiProperty({
+    description: 'UUID',
+    format: 'uuid',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @IsUUID()
+  uuid: string;
+
   /**
    * 유저 프로필 URL
    * @example https://movemove/users/profile/:id
@@ -21,4 +30,8 @@ export class ProfileResponseDto {
    */
   @IsNotEmpty()
   statusMessage: string;
+
+  constructor(init: Partial<ProfileResponseDto>) {
+    Object.assign(this, init);
+  }
 }
