@@ -88,25 +88,12 @@ fun MultiServiceAds() {
             )
         }
 
-        Box(
+        MultiServiceAdsPageNumber(
             modifier = Modifier
-                .padding(
-                    end = 8.dp,
-                    bottom = 8.dp
-                )
-                .clip(shape = RoundedCornerShape(16.dp))
-                .width(50.dp)
-                .background(Color.Black.copy(alpha = 0.3f))
                 .align(Alignment.BottomEnd),
-            contentAlignment = Alignment.Center,
-        ) {
-            StyledText(
-                text = "${(pagerState.currentPage % serviceAds.size) + 1} / ${serviceAds.size}",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.White
-            )
-        }
-
+            currentPage = pagerState.currentPage,
+            serviceAds = serviceAds
+        )
     }
 }
 
@@ -118,10 +105,35 @@ fun MultiServiceAdsItem(
 ) {
     serviceAds.getOrNull(index % serviceAds.size)?.let { imageUrl ->
         AsyncImage(
-            model = imageUrl,
             modifier = modifier.fillMaxSize(),
+            model = imageUrl,
             contentDescription = null,
             contentScale = ContentScale.Crop,
+        )
+    }
+}
+
+@Composable
+fun MultiServiceAdsPageNumber(
+    modifier: Modifier,
+    currentPage: Int,
+    serviceAds: List<String>,
+) {
+    Box(
+        modifier = modifier
+            .padding(
+                end = 8.dp,
+                bottom = 8.dp
+            )
+            .clip(shape = RoundedCornerShape(16.dp))
+            .width(50.dp)
+            .background(Color.Black.copy(alpha = 0.3f)),
+        contentAlignment = Alignment.Center,
+    ) {
+        StyledText(
+            text = "${(currentPage % serviceAds.size) + 1} / ${serviceAds.size}",
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.White
         )
     }
 }
