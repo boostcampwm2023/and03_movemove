@@ -15,6 +15,7 @@ import { InvalidUserIDException } from 'src/exceptions/invalid-userid.exception'
 import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
 import { BadTokenFormatException } from 'src/exceptions/bad-token-format.exception';
 import { OAuthFailedException } from 'src/exceptions/oauth-failed.exception';
+import { LoginFailException } from 'src/exceptions/login-fail.exception';
 import { AuthService } from './auth.service';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
@@ -49,13 +50,7 @@ export class AuthController {
     description: '로그인 성공',
     model: SigninResponseDto,
   })
-  @ApiFailResponse('인증 실패', [
-    InvalidTokenException,
-    InvalidUserIDException,
-    TokenExpiredException,
-    BadTokenFormatException,
-    OAuthFailedException,
-  ])
+  @ApiFailResponse('인증 실패', [LoginFailException, OAuthFailedException])
   signin(
     @Body() signinRequestDto: SigninRequestDto,
   ): Promise<SigninResponseDto> {

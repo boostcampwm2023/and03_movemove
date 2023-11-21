@@ -4,6 +4,6 @@ import { BaseException } from './base.exception';
 
 export class LoginFailException extends BaseException {
   constructor() {
-    super(ErrorCodeEnum.UserConflict, HttpStatus.UNAUTHORIZED);
+    super(ErrorCodeEnum.LoginFail, HttpStatus.UNAUTHORIZED);
   }
 }

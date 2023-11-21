@@ -21,9 +21,9 @@ const ErrorMessage = {
 };
 
 const ErrorDescription = {
-  [ErrorCodeEnum.UserConflict]: '회원가입 실패',
-  [ErrorCodeEnum.BadRequest]: 'Format 오류',
-  [ErrorCodeEnum.LoginFail]: '로그인 실패',
+  [ErrorCodeEnum.UserConflict]: '회원 userID가 중복됨',
+  [ErrorCodeEnum.BadRequest]: 'Format 오류, 관리자에게 문의',
+  [ErrorCodeEnum.LoginFail]: 'userID가 없음',
   [ErrorCodeEnum.TokenExpired]: 'AccessToken 재발급 필요',
   [ErrorCodeEnum.BadTokenFormat]: 'AccessToken의 Payload에 userID가 없음',
   [ErrorCodeEnum.OAuthFailed]: '소셜 토큰이 유효하지 않거나 userID가 다름',
