@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { JwtResponseDto } from './dto/jwt-response.dto';
+import { LoginFailException } from 'src/exceptions/login-fail.exception';
 
 @Injectable()
 export class AuthService {
@@ -39,7 +40,7 @@ export class AuthService {
       nickname: newUser.nickname,
       statusMessage: newUser.statusMessage,
     });
-    return new SignupResponseDto(jwt, profile);
+    return { jwt, profile };
   }
 
   async getTokens(uuid: string): Promise<JwtResponseDto> {
@@ -51,6 +52,10 @@ export class AuthService {
 
   async signin(uuid: string) {
     const user = await this.UserModel.findOne({ uuid });
+
+    if (!user) {
+      throw new LoginFailException();
+    }
 
     const jwt = await this.getTokens(uuid);
     const profile = new ProfileResponseDto({
