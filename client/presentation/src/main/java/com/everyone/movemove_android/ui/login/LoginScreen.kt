@@ -108,20 +108,26 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                                 if (error is ClientError && error.reason == ClientErrorCause.Cancelled) {
                                     return@loginWithKakaoTalk
                                 }
-                                kakaoSignInClient.loginWithKakaoAccount(context, callback = { _, _ -> })
+                                kakaoSignInClient.loginWithKakaoAccount(
+                                    context = context,
+                                    callback = { _, _ -> }
+                                )
                             } else if (token != null) {
                                 //success , use token.accessToken
                             }
                         }
                     } else {
-                        kakaoSignInClient.loginWithKakaoAccount(context, callback = { token, error ->
-                            if (error != null) {
-                                //fail without application login
-                            } else if (token != null) {
-                                //success, use token.accessToken,
-                                //kakaoSignInClient.me { user, _ -> user!!.id }
+                        kakaoSignInClient.loginWithKakaoAccount(
+                            context = context,
+                            callback = { token, error ->
+                                if (error != null) {
+                                    //fail without application login
+                                } else if (token != null) {
+                                    //success, use token.accessToken,
+                                    //kakaoSignInClient.me { user, _ -> user!!.id }
+                                }
                             }
-                        })
+                        )
                     }
                 }
 
@@ -152,7 +158,8 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                 colors = ButtonDefaults.buttonColors(
                     containerColor = KakaoYellow,
                     contentColor = Color.Black
-                ), shape = RoundedCornerShape(10.dp)
+                ),
+                shape = RoundedCornerShape(10.dp)
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Icon(
@@ -171,9 +178,7 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                onClick = {
-                    authResultLauncher.launch(SIGN_IN_REQUEST_CODE)
-                },
+                onClick = { authResultLauncher.launch(SIGN_IN_REQUEST_CODE) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = GoogleGray,
                     contentColor = Color.Black
