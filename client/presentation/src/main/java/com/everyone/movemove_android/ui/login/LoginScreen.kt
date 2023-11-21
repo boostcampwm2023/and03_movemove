@@ -161,8 +161,8 @@ fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
                         contentDescription = "null",
                     )
                     Text(
-                        text = stringResource(R.string.kakao_login),
                         modifier = Modifier.align(alignment = Alignment.Center),
+                        text = stringResource(R.string.kakao_login),
                     )
                 }
             }
