@@ -219,13 +219,13 @@ fun MoveMoveVideos() {
             .height(180.dp)
     ) {
         items(videoThumbnail.size) {
-            VideoItem(videoThumbnail = videoThumbnail[it])
+            MoveMoveVideo(videoThumbnail = videoThumbnail[it])
         }
     }
 }
 
 @Composable
-fun VideoItem(videoThumbnail: String) {
+fun MoveMoveVideo(videoThumbnail: String) {
     Card(
         shape = RoundedCornerShape(size = 8.dp),
         modifier = Modifier
