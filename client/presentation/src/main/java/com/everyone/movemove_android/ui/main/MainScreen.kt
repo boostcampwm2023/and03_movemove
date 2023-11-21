@@ -50,12 +50,22 @@ fun MainScreen() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
+    val mainRoutes = listOf(
+        Destination.HOME.route,
+        Destination.WATCHING_VIDEO.route,
+        Destination.UPLOADING_VIDEO.route,
+        Destination.MY.route
+    )
+
     Scaffold(
         bottomBar = {
-            MoveMoveNavigationBar(
-                currentDestination = currentDestination,
-                onNavigate = { navigator.navigateTo(it) },
-            )
+            if (currentDestination?.route in mainRoutes) {
+                MoveMoveNavigationBar(
+                    currentDestination = currentDestination,
+                    onNavigate = { navigator.navigateTo(it) },
+                )
+            }
+
         }) { innerPadding ->
         NavHost(
             navController = navController,
