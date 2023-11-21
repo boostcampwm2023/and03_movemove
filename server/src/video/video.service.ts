@@ -25,15 +25,16 @@ export class VideoService {
     return `set video rating ${videoId} ${videoRatingDto}`;
   }
 
-  async uploadVideo(files: Array<Express.Multer.File>, videoDto: VideoDto) {
+  async uploadVideo(files: any, videoDto: VideoDto) {
     const { title, content, category } = videoDto;
-    const video = files.find((file) => file.fieldname === 'video');
-    const thumbnail = files.find((file) => file.fieldname === 'thumbnail');
+    const video = files.video.pop();
+    const thumbnail = files.thumbnail.pop();
 
     const newVideo = new this.VideoModel({ title, content, category });
 
     const videoExtension = video.originalname.split('.').pop();
     const thumbnailExtension = thumbnail.originalname.split('.').pop();
+
     const videoName = `${newVideo._id}.${videoExtension}`;
     const thumbnailName = `${newVideo._id}.${thumbnailExtension}`;
 

@@ -14,15 +14,18 @@ import {
 import { createReadStream } from 'fs';
 import { join } from 'path';
 import { ApiConsumes } from '@nestjs/swagger';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
+import { FileExtensionPipe } from './video.pipe';
 
 @Controller('videos')
 export class VideoController {
-  constructor(private videoService: VideoService) {}
+  constructor(
+    private videoService: VideoService,
+    private fileExtensionPipe: FileExtensionPipe,
+  ) {}
 
   @Get('random')
   getRandomVideo(
@@ -49,12 +52,18 @@ export class VideoController {
   }
 
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(AnyFilesInterceptor())
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'video', maxCount: 1 },
+      { name: 'thumbnail', maxCount: 1 },
+    ]),
+  )
   @Post()
   uploadVideo(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() videoDto: VideoDto,
   ) {
+    this.fileExtensionPipe.transform(files);
     return this.videoService.uploadVideo(files, videoDto);
   }
 
