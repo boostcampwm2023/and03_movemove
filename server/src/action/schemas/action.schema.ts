@@ -10,6 +10,7 @@ export class Action {
   rating: number;
 
   @Prop({
+    type: Date,
     require: true,
     default: now(),
   })

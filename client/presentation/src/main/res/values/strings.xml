@@ -9,6 +9,7 @@
 
     <!--    uploading-->
     <string name="add_video_description">갤러리에서 영상을 추가하세요</string>
+    <string name="video_re_select">재선택</string>
     <string name="title">제목</string>
     <string name="video_description">한 줄 설명</string>
     <string name="category">카테고리</string>
@@ -17,4 +18,9 @@
 
     <!--    watching-->
     <string name="scoreboard_title">점수를 남겨주세요!</string>
+    <string name="category_change_title">카테고리 변경</string>
+    <string name="trending_title">Trending</string>
+    <string name="challenge_title">챌린지</string>
+    <string name="old_school_title">올드스쿨</string>
+    <string name="top_10_title">" TOP 10"</string>
 </resources>

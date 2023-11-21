@@ -1036,7 +1036,7 @@
 
 "@types/multer@^1.4.10":
   version "1.4.10"
-  resolved "https://registry.npmjs.org/@types/multer/-/multer-1.4.10.tgz"
+  resolved "https://registry.yarnpkg.com/@types/multer/-/multer-1.4.10.tgz#6bca159aaaf40ec130e99831a08e3d0ed54be611"
   integrity sha512-6l9mYMhUe8wbnz/67YIjc7ZJyQNZoKq7fRXVf7nMdgWgalD0KyzJ2ywI7hoATUSXSbTu9q2HBiEwzy0tNN1v2w==
   dependencies:
     "@types/express" "*"
