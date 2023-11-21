@@ -28,12 +28,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.everyone.movemove_android.R
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
@@ -56,7 +58,7 @@ fun HomeScreen() {
         Spacer(modifier = Modifier.height(44.dp))
         StyledText(
             modifier = Modifier.padding(start = 16.dp),
-            text = "Trending",
+            text = stringResource(R.string.trending_title),
             style = MaterialTheme.typography.titleLarge
         )
         Spacer(modifier = Modifier.height(24.dp))
@@ -66,8 +68,8 @@ fun HomeScreen() {
         StyledColorText(
             modifier = Modifier.padding(start = 16.dp),
             style = MaterialTheme.typography.titleLarge,
-            coloredText = "챌린지",
-            plainText = " TOP 10"
+            coloredText = stringResource(R.string.challenge_title),
+            plainText = stringResource(R.string.top_10_title)
         )
         Spacer(modifier = Modifier.height(24.dp))
         MoveMoveVideos()
@@ -76,8 +78,8 @@ fun HomeScreen() {
         StyledColorText(
             modifier = Modifier.padding(start = 16.dp),
             style = MaterialTheme.typography.titleLarge,
-            coloredText = "올드스쿨",
-            plainText = " TOP 10"
+            coloredText = stringResource(R.string.old_school_title),
+            plainText = stringResource(R.string.top_10_title)
         )
         Spacer(modifier = Modifier.height(24.dp))
         MoveMoveVideos()
