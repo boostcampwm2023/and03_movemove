@@ -72,9 +72,7 @@ fun MainScreen() {
             startDestination = Destination.HOME.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Destination.HOME.route) {
-                HomeScreen(onClickWatchingVideo = { navigator.navigateTo(Destination.WATCHING_VIDEO) })
-            }
+            composable(Destination.HOME.route) { HomeScreen(navigator = navigator) }
             composable(Destination.WATCHING_VIDEO.route) { WatchingVideoScreen() }
             composable(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
             composable(Destination.MY.route) { MyScreen() }

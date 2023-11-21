@@ -35,11 +35,12 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.main.navigation.Destination
+import com.everyone.movemove_android.ui.main.navigation.Navigator
 import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import kotlinx.coroutines.NonCancellable
@@ -50,7 +51,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    onClickWatchingVideo: () -> Unit,
+    navigator: Navigator
 ) {
 
     val (state, event, effect) = use(viewModel)
@@ -71,7 +72,7 @@ fun HomeScreen(
             style = MaterialTheme.typography.titleLarge
         )
         Spacer(modifier = Modifier.height(24.dp))
-        MoveMoveVideos(onClickWatchingVideo = onClickWatchingVideo)
+        MoveMoveVideos(navigator = navigator)
 
         Spacer(modifier = Modifier.height(36.dp))
         StyledColorText(
@@ -81,7 +82,7 @@ fun HomeScreen(
             plainText = stringResource(R.string.top_10_title)
         )
         Spacer(modifier = Modifier.height(24.dp))
-        MoveMoveVideos(onClickWatchingVideo = onClickWatchingVideo)
+        MoveMoveVideos(navigator = navigator)
 
         Spacer(modifier = Modifier.height(36.dp))
         StyledColorText(
@@ -91,7 +92,7 @@ fun HomeScreen(
             plainText = stringResource(R.string.top_10_title)
         )
         Spacer(modifier = Modifier.height(24.dp))
-        MoveMoveVideos(onClickWatchingVideo = onClickWatchingVideo)
+        MoveMoveVideos(navigator = navigator)
 
     }
 }
@@ -149,8 +150,7 @@ fun MultiServiceAds() {
         }
 
         MultiServiceAdsPageNumber(
-            modifier = Modifier
-                .align(Alignment.BottomEnd),
+            modifier = Modifier.align(Alignment.BottomEnd),
             currentPage = pagerState.currentPage,
             serviceAds = serviceAds
         )
@@ -222,7 +222,7 @@ fun StyledColorText(
 }
 
 @Composable
-fun MoveMoveVideos(onClickWatchingVideo: () -> Unit) {
+fun MoveMoveVideos(navigator: Navigator) {
 
     // TODO 임시 값
     val videoThumbnail = listOf<String>(
@@ -249,7 +249,7 @@ fun MoveMoveVideos(onClickWatchingVideo: () -> Unit) {
     ) {
         items(videoThumbnail.size) {
             MoveMoveVideo(
-                modifier = Modifier.clickableWithoutRipple { onClickWatchingVideo() },
+                modifier = Modifier.clickableWithoutRipple { navigator.navigateTo(Destination.WATCHING_VIDEO) },
                 videoThumbnail = videoThumbnail[it],
             )
         }
