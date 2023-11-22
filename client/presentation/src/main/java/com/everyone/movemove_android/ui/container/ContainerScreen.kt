@@ -75,7 +75,7 @@ fun MainScreen() {
             startDestination = Destination.HOME.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            navScreen(Destination.HOME.route) { HomeScreen() }
+            navScreen(Destination.HOME.route) { HomeScreen(navigator = navigator) }
             navScreen(Destination.WATCHING_VIDEO.route) { WatchingVideoScreen() }
             navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
             navScreen(Destination.MY.route) { MyScreen() }
