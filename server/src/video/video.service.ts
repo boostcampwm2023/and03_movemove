@@ -25,12 +25,17 @@ export class VideoService {
     return `set video rating ${videoId} ${videoRatingDto}`;
   }
 
-  async uploadVideo(files: any, videoDto: VideoDto) {
+  async uploadVideo(files: any, videoDto: VideoDto, uploaderId: string) {
     const { title, content, category } = videoDto;
     const video = files.video.pop();
     const thumbnail = files.thumbnail.pop();
 
-    const newVideo = new this.VideoModel({ title, content, category });
+    const newVideo = new this.VideoModel({
+      title,
+      content,
+      category,
+      uploaderId,
+    });
 
     const videoExtension = video.originalname.split('.').pop();
     const thumbnailExtension = thumbnail.originalname.split('.').pop();

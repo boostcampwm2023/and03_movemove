@@ -10,6 +10,8 @@ import {
   Header,
   UseInterceptors,
   UploadedFiles,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { join } from 'path';
@@ -58,13 +60,15 @@ export class VideoController {
       { name: 'thumbnail', maxCount: 1 },
     ]),
   )
+  @UseGuards(AuthGuard)
   @Post()
   uploadVideo(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() videoDto: VideoDto,
+    @Request() req,
   ) {
     this.fileExtensionPipe.transform(files);
-    return this.videoService.uploadVideo(files, videoDto);
+    return this.videoService.uploadVideo(files, videoDto, req.user.id);
   }
 
   @Get('top-rated')
