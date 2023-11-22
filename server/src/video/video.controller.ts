@@ -21,6 +21,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
 import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
+import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -100,6 +101,7 @@ export class VideoController {
   }
 
   @Delete(':id')
+  @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
   deleteVideo(@Param('id') videoId: string) {
     return this.videoService.deleteVideo(videoId);
   }

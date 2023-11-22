@@ -10,8 +10,7 @@ export class BaseExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
 
     response.status(status).json({
-      statusCode: status,
-      errorCode: exception.errorCode,
+      statusCode: exception.errorCode,
       message: exception.message,
     });
   }

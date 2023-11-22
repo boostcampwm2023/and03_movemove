@@ -21,6 +21,16 @@ export class Video {
 
   @Prop({
     require: true,
+  })
+  thumbnailExtension: string; // 썸네일 확장자
+
+  @Prop({
+    require: true,
+  })
+  videoExtension: string; // 비디오 확장자
+
+  @Prop({
+    require: true,
     default: 0, // default를 0으로 하는게 맞을까?
   })
   totalRating: number; // 총별점
@@ -36,7 +46,7 @@ export class Video {
     default: now(),
     type: Date,
   })
-  uploadTime: Date; // 업로드시간
+  uploadAt: Date; // 업로드시간
 
   @Prop({
     require: true,

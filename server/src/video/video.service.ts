@@ -37,15 +37,18 @@ export class VideoService {
     const thumbnail = files.thumbnail.pop();
 
     const uploader = await this.UserModel.findOne({ uuid });
+
+    const videoExtension = video.originalname.split('.').pop();
+    const thumbnailExtension = thumbnail.originalname.split('.').pop();
+
     const newVideo = new this.VideoModel({
       title,
       content,
       category,
       uploaderId: uploader._id,
+      thumbnailExtension,
+      videoExtension,
     });
-
-    const videoExtension = video.originalname.split('.').pop();
-    const thumbnailExtension = thumbnail.originalname.split('.').pop();
 
     const videoName = `${newVideo._id}.${videoExtension}`;
     const thumbnailName = `${newVideo._id}.${thumbnailExtension}`;
@@ -60,14 +63,30 @@ export class VideoService {
     return { video: videoDto };
   }
 
+  async deleteEncodedVideo(videoId: string) {
+    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
+    return Promise.all([
+      ...encodingSuffixes.map((suffix) =>
+        deleteObject(process.env.OUTPUT_BUCKET, `${videoId}_${suffix}.mp4`),
+      ),
+    ]);
+  }
+
   async deleteVideo(videoId: string) {
-    if (!(await this.VideoModel.findOne({ _id: videoId }))) {
+    const video = await this.VideoModel.findOne({ _id: videoId });
+    if (!video) {
       throw new VideoNotFoundException();
     }
     await Promise.all([
-      deleteObject(process.env.INPUT_BUCKET, `${videoId}.mp4`),
-      deleteObject(process.env.THUMBNAIL_BUCKET, `${videoId}.jpg`),
-      deleteObject(process.env.THUMBNAIL_BUCKET, `${videoId}.jpg`),
+      deleteObject(
+        process.env.INPUT_BUCKET,
+        `${videoId}.${video.videoExtension}}`,
+      ),
+      deleteObject(
+        process.env.THUMBNAIL_BUCKET,
+        `${videoId}.${video.thumbnailExtension}`,
+      ),
+      this.deleteEncodedVideo(videoId),
       this.VideoModel.deleteOne({ _id: videoId }),
     ]);
     return `delete video ${videoId}`;
