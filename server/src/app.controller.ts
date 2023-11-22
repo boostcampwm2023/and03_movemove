@@ -12,6 +12,7 @@ export class AppController {
 
   @Get('ads')
   getAds() {
+    console.log(process.env.JWT_SECRET_EXPIRATION_TIME);
     return this.appService.getAds();
   }
 

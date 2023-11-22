@@ -12,13 +12,16 @@ import { ApiFailResponse } from 'src/decorators/api-fail-response';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
 import { OAuthFailedException } from 'src/exceptions/oauth-failed.exception';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
+import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
 import { AuthService } from './auth.service';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { SigninResponseDto } from './dto/signin-response.dto';
 import { SigninRequestDto } from './dto/signin-request.dto';
+import { RefreshRequestDto } from './dto/refresh-request.dto';
+import { RefreshResponseDto } from './dto/refresh-response.dto';
 
-@Controller('users')
+@Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
@@ -50,5 +53,18 @@ export class AuthController {
     @Body() signinRequestDto: SigninRequestDto,
   ): Promise<SigninResponseDto> {
     return this.authService.signin(signinRequestDto);
+  }
+
+  @Post('refresh')
+  @ApiSuccessResponse({
+    statusCode: 201,
+    description: '토큰 재발급 성공',
+    model: RefreshResponseDto,
+  })
+  @ApiFailResponse('인증 실패', [InvalidRefreshTokenException])
+  refresh(
+    @Body() refreshRequestDto: RefreshRequestDto,
+  ): Promise<RefreshResponseDto> {
+    return this.authService.refresh(refreshRequestDto);
   }
 }

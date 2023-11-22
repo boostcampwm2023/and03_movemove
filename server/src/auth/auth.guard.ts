@@ -4,8 +4,10 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { Request } from 'express';
+import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
+import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -19,9 +21,13 @@ export class AuthGuard implements CanActivate {
     }
     try {
       const payload = await this.jwtService.verifyAsync(token);
-      request.user = { uuid: payload.uuid };
+      request.user = payload;
     } catch (e) {
-      throw new UnauthorizedException();
+      if (e instanceof TokenExpiredError) {
+        throw new TokenExpiredException();
+      } else {
+        throw new InvalidTokenException();
+      }
     }
     return true;
   }

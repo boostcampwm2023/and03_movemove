@@ -7,11 +7,14 @@ import { User } from 'src/user/schemas/user.schema';
 import { ProfileResponseDto } from 'src/user/dto/profile-response.dto';
 import { JwtService } from '@nestjs/jwt';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
+import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { JwtResponseDto } from './dto/jwt-response.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { SigninResponseDto } from './dto/signin-response.dto';
 import { SigninRequestDto } from './dto/signin-request.dto';
+import { RefreshRequestDto } from './dto/refresh-request.dto';
+import { RefreshResponseDto } from './dto/refresh-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -47,9 +50,34 @@ export class AuthService {
 
   async getTokens(uuid: string): Promise<JwtResponseDto> {
     return {
-      accessToken: await this.jwtService.signAsync({ uuid, isRefresh: false }),
-      refreshToken: await this.jwtService.signAsync({ uuid, isRefresh: true }),
+      accessToken: await this.jwtService.signAsync(
+        { id: uuid },
+        { expiresIn: process.env.JWT_SECRET_EXPIRATION_TIME },
+      ),
+      refreshToken: await this.jwtService.signAsync(
+        { id: uuid },
+        {
+          secret: process.env.JWT_REFRESH_SECRET,
+          expiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME,
+        },
+      ),
     };
+  }
+
+  async refresh(
+    refreshRequestDto: RefreshRequestDto,
+  ): Promise<RefreshResponseDto> {
+    const { refreshToken } = refreshRequestDto;
+    try {
+      const { uuid } = await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+      return new RefreshResponseDto({
+        accessToken: await this.jwtService.signAsync({ id: uuid }),
+      });
+    } catch (e) {
+      throw new InvalidRefreshTokenException();
+    }
   }
 
   async signin(signinRequestDto: SigninRequestDto): Promise<SigninResponseDto> {

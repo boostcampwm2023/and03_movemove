@@ -6,6 +6,7 @@ enum ErrorCodeEnum {
   InvalidToken = 1002,
   BadTokenFormat = 1003,
   OAuthFailed = 1004,
+  InvalidRefreshToken = 1005,
 }
 
 const ErrorMessage = {
@@ -13,9 +14,9 @@ const ErrorMessage = {
   [ErrorCodeEnum.BadRequest]: '잘못된 요청 형식',
   [ErrorCodeEnum.LoginFail]: '가입되지 않은 회원',
   [ErrorCodeEnum.TokenExpired]: 'AccessToken 만료',
-  [ErrorCodeEnum.BadTokenFormat]: 'AccessToken 형식 오류',
   [ErrorCodeEnum.InvalidToken]: 'AccessToken 검증 오류',
   [ErrorCodeEnum.OAuthFailed]: 'userID 검증 오류',
+  [ErrorCodeEnum.InvalidRefreshToken]: '유효하지 않은 RefreshToken',
 };
 
 const ErrorDescription = {
@@ -23,9 +24,8 @@ const ErrorDescription = {
   [ErrorCodeEnum.BadRequest]: 'Format 오류, 관리자에게 문의',
   [ErrorCodeEnum.LoginFail]: 'userID를 가진 유저가 없음',
   [ErrorCodeEnum.TokenExpired]: 'AccessToken 재발급 필요',
-  [ErrorCodeEnum.BadTokenFormat]: 'AccessToken의 Payload에 userID가 없음',
   [ErrorCodeEnum.OAuthFailed]: '소셜 토큰이 유효하지 않거나 userID가 다름',
-  [ErrorCodeEnum.InvalidToken]:
-    'AccessToken이 다른 시크릿키로 발급되었거나 위변조됨',
+  [ErrorCodeEnum.InvalidToken]: 'AccessToken이 위변조됨',
+  [ErrorCodeEnum.InvalidRefreshToken]: 'RefreshToken이 만료되었거나 위변조됨',
 };
 export { ErrorCodeEnum, ErrorMessage, ErrorDescription };
