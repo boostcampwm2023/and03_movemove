@@ -15,17 +15,8 @@ const ErrorMessage = {
   [ErrorCodeEnum.LoginFail]: '가입되지 않은 회원',
   [ErrorCodeEnum.TokenExpired]: 'AccessToken 만료',
   [ErrorCodeEnum.InvalidToken]: 'AccessToken 검증 오류',
-  [ErrorCodeEnum.OAuthFailed]: 'userID 검증 오류',
+  [ErrorCodeEnum.OAuthFailed]: '소셜 Token 인증 오류',
   [ErrorCodeEnum.InvalidRefreshToken]: '유효하지 않은 RefreshToken',
 };
 
-const ErrorDescription = {
-  [ErrorCodeEnum.UserConflict]: '회원 userID가 중복됨',
-  [ErrorCodeEnum.BadRequest]: 'Format 오류, 관리자에게 문의',
-  [ErrorCodeEnum.LoginFail]: 'userID를 가진 유저가 없음',
-  [ErrorCodeEnum.TokenExpired]: 'AccessToken 재발급 필요',
-  [ErrorCodeEnum.OAuthFailed]: '소셜 토큰이 유효하지 않거나 userID가 다름',
-  [ErrorCodeEnum.InvalidToken]: 'AccessToken이 위변조됨',
-  [ErrorCodeEnum.InvalidRefreshToken]: 'RefreshToken이 만료되었거나 위변조됨',
-};
-export { ErrorCodeEnum, ErrorMessage, ErrorDescription };
+export { ErrorCodeEnum, ErrorMessage };

@@ -10,7 +10,6 @@ export const ApiFailResponse = <TException extends Type<BaseException>>(
     const modelInstance = new model();
     return Object.assign(acc, {
       [modelInstance.statusCode]: {
-        description: modelInstance.description,
         value: {
           statusCode: modelInstance.statusCode,
           message: modelInstance.message,
