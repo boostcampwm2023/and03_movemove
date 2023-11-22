@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable class-methods-use-this */
 import { Injectable } from '@nestjs/common';
@@ -17,8 +18,19 @@ export class VideoService {
     @InjectModel('User') private UserModel: Model<User>,
   ) {}
 
-  getRandomVideo(category: string, limit: number) {
-    return `get random video ${category} ${limit}`;
+  async getRandomVideo(category: string, limit: number) {
+    const videos = await this.VideoModel.aggregate([
+      { $match: { category } },
+      { $sample: { size: limit } },
+    ]);
+    const videoData = videos.map((video) => {
+      const { totalRating, raterCount, _id, __v, ...videoInfo } = video;
+      const rating = totalRating / raterCount.toFixed(1);
+      return {
+        video: { ...videoInfo, rating },
+      };
+    });
+    return videoData;
   }
 
   updateVideoRating(videoId: string, videoRatingDto: VideoRatingDTO) {
