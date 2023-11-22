@@ -27,11 +27,7 @@ export class AuthController {
 
   @Post('signup')
   @ApiConsumes('multipart/form-data')
-  @ApiSuccessResponse({
-    statusCode: 201,
-    description: '회원가입 성공',
-    model: SignupResponseDto,
-  })
+  @ApiSuccessResponse(201, '회원가입 성공', SignupResponseDto)
   @ApiFailResponse('인증 실패', [OAuthFailedException])
   @ApiFailResponse('회원가입 실패', [UserConflictException])
   @UseInterceptors(FileInterceptor('profileImage'))
@@ -43,11 +39,7 @@ export class AuthController {
   }
 
   @Post('login')
-  @ApiSuccessResponse({
-    statusCode: 201,
-    description: '로그인 성공',
-    model: SigninResponseDto,
-  })
+  @ApiSuccessResponse(201, '로그인 성공', SigninResponseDto)
   @ApiFailResponse('인증 실패', [LoginFailException, OAuthFailedException])
   signin(
     @Body() signinRequestDto: SigninRequestDto,
@@ -56,11 +48,7 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @ApiSuccessResponse({
-    statusCode: 201,
-    description: '토큰 재발급 성공',
-    model: RefreshResponseDto,
-  })
+  @ApiSuccessResponse(201, '토큰 재발급 성공', RefreshResponseDto)
   @ApiFailResponse('인증 실패', [InvalidRefreshTokenException])
   refresh(
     @Body() refreshRequestDto: RefreshRequestDto,
