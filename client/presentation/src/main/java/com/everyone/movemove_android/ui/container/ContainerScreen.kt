@@ -36,7 +36,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.home.HomeScreen
-import com.everyone.movemove_android.ui.screens.my.MyScreen
+import com.everyone.movemove_android.ui.screens.profile.ProfileScreen
 import com.everyone.movemove_android.ui.container.navigation.Destination
 import com.everyone.movemove_android.ui.container.navigation.Navigator
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoScreen
@@ -57,7 +57,7 @@ fun MainScreen() {
         Destination.HOME.route,
         Destination.WATCHING_VIDEO.route,
         Destination.UPLOADING_VIDEO.route,
-        Destination.MY.route
+        Destination.PROFILE.route
     )
 
     Scaffold(
@@ -78,7 +78,7 @@ fun MainScreen() {
             navScreen(Destination.HOME.route) { HomeScreen(navigator = navigator) }
             navScreen(Destination.WATCHING_VIDEO.route) { WatchingVideoScreen() }
             navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
-            navScreen(Destination.MY.route) { MyScreen() }
+            navScreen(Destination.PROFILE.route) { ProfileScreen() }
         }
     }
 }
