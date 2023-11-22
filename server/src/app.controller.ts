@@ -65,8 +65,8 @@ export class AppController {
   @Get('test/deleteObject')
   testDeleteObject() {
     return deleteObject(
-      'video-thimbnail-bucket',
-      '655dbb9212ea915c1eaea5a3.png',
+      'video-output-bucket',
+      'movemove/655e0362fab34506f32bd9ea_AVC_HD_1Pass_30fps.mp4',
     )
       .then((response) => {
         return `delete success:${response.data}`;

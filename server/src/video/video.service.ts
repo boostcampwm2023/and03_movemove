@@ -60,14 +60,18 @@ export class VideoService {
     ]);
     await requestEncoding(process.env.INPUT_BUCKET, [videoName]);
 
-    return { video: videoDto };
+    return { video: videoDto, videoId: newVideo._id };
   }
 
   async deleteEncodedVideo(videoId: string) {
-    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
+    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(' ');
+    const fileNamePrefix = `${process.env.VIDEO_OUTPUT_PATH}/${videoId}`;
     return Promise.all([
       ...encodingSuffixes.map((suffix) =>
-        deleteObject(process.env.OUTPUT_BUCKET, `${videoId}_${suffix}.mp4`),
+        deleteObject(
+          process.env.OUTPUT_BUCKET,
+          `${fileNamePrefix}_${suffix}.mp4`,
+        ),
       ),
     ]);
   }
@@ -80,7 +84,7 @@ export class VideoService {
     await Promise.all([
       deleteObject(
         process.env.INPUT_BUCKET,
-        `${videoId}.${video.videoExtension}}`,
+        `${videoId}.${video.videoExtension}`,
       ),
       deleteObject(
         process.env.THUMBNAIL_BUCKET,
