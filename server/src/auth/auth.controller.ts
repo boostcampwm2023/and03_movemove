@@ -10,10 +10,6 @@ import { ApiConsumes } from '@nestjs/swagger';
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
-import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
-import { InvalidUserIDException } from 'src/exceptions/invalid-userid.exception';
-import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
-import { BadTokenFormatException } from 'src/exceptions/bad-token-format.exception';
 import { OAuthFailedException } from 'src/exceptions/oauth-failed.exception';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
 import { AuthService } from './auth.service';
@@ -30,7 +26,6 @@ export class AuthController {
   @ApiConsumes('multipart/form-data')
   @ApiSuccessResponse({
     statusCode: 201,
-
     description: '회원가입 성공',
     model: SignupResponseDto,
   })
