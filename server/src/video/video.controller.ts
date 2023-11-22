@@ -15,8 +15,9 @@ import {
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { join } from 'path';
-import { ApiConsumes } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -61,6 +62,7 @@ export class VideoController {
     ]),
   )
   @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @Post()
   uploadVideo(
     @UploadedFiles() files: Array<Express.Multer.File>,
