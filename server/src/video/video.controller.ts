@@ -24,6 +24,8 @@ import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { Request } from 'express';
+import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
+import { RequestUser, User } from 'src/decorators/request-user';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -74,10 +76,10 @@ export class VideoController {
   uploadVideo(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() videoDto: VideoDto,
-    @Req() req: Request & { user: { id: string } },
+    @RequestUser() user: User,
   ) {
     this.fileExtensionPipe.transform(files);
-    return this.videoService.uploadVideo(files, videoDto, req.user.id);
+    return this.videoService.uploadVideo(files, videoDto, user.id);
   }
 
   @Get('top-rated')
@@ -104,11 +106,9 @@ export class VideoController {
 
   @Delete(':id')
   @ApiSuccessResponse(200, '비디오 삭제 성공')
+  @ApiFailResponse('업로더만이 삭제할 수 있음', [NotYourVideoException])
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
-  deleteVideo(
-    @Param('id') videoId: string,
-    @Req() req: Request & { user: { id: string } },
-  ) {
-    return this.videoService.deleteVideo(videoId, req.user.id);
+  deleteVideo(@Param('id') videoId: string, @RequestUser() user: User) {
+    return this.videoService.deleteVideo(videoId, user.id);
   }
 }
