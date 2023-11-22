@@ -23,6 +23,7 @@ import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
 import { FileExtensionPipe } from './video.pipe';
+import { RandomVideoQueryDto } from './dto/random-video-query.dto';
 
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
@@ -34,11 +35,8 @@ export class VideoController {
   ) {}
 
   @Get('random')
-  getRandomVideo(
-    @Query('category') category: string,
-    @Query('limit') limit: number,
-  ) {
-    return this.videoService.getRandomVideo(category, limit);
+  getRandomVideo(@Query() query: RandomVideoQueryDto) {
+    return this.videoService.getRandomVideo(query.category, query.limit);
   }
 
   @Put(':id/rating')
