@@ -28,7 +28,7 @@ export class AuthService {
     profileImage: Express.Multer.File,
   ): Promise<SignupResponseDto> {
     const { uuid } = signupRequestDto;
-    if (!(await this.UserModel.findOne({ uuid }))) {
+    if (await this.UserModel.findOne({ uuid })) {
       throw new UserConflictException();
     }
     const extension = profileImage.originalname.split('.').pop();

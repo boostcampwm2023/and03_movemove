@@ -1,11 +1,11 @@
 /* eslint-disable max-classes-per-file */
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ErrorCodeEnum, ErrorMessage } from 'src/enum/exception.enum';
+import { ErrorCode, ErrorMessage } from 'src/enum/exception.enum';
 
 export class BaseException extends HttpException {
-  errorCode: ErrorCodeEnum;
+  errorCode: ErrorCode;
 
-  constructor(errorCode: ErrorCodeEnum, statusCode: HttpStatus) {
+  constructor(errorCode: ErrorCode, statusCode: HttpStatus) {
     super(ErrorMessage[errorCode], statusCode);
     this.errorCode = errorCode;
   }
