@@ -8,6 +8,7 @@ import { requestEncoding } from 'src/ncpAPI/requestEncoding';
 import { User } from 'src/user/schemas/user.schema';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
+import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
 import { Video } from './schemas/video.schema';
@@ -76,10 +77,15 @@ export class VideoService {
     ]);
   }
 
-  async deleteVideo(videoId: string) {
-    const video = await this.VideoModel.findOne({ _id: videoId });
+  async deleteVideo(videoId: string, uuid: string) {
+    const video = await this.VideoModel.findOne({ _id: videoId }).populate(
+      'uploaderId',
+    );
     if (!video) {
       throw new VideoNotFoundException();
+    }
+    if (video.uploaderId.uuid !== uuid) {
+      throw new NotYourVideoException();
     }
     await Promise.all([
       deleteObject(
@@ -93,7 +99,6 @@ export class VideoService {
       this.deleteEncodedVideo(videoId),
       this.VideoModel.deleteOne({ _id: videoId }),
     ]);
-    return `delete video ${videoId}`;
   }
 
   getTrendVideo(limit: number) {

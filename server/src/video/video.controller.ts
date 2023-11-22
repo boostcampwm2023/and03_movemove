@@ -11,7 +11,7 @@ import {
   UseInterceptors,
   UploadedFiles,
   UseGuards,
-  Request,
+  Req,
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { join } from 'path';
@@ -23,6 +23,7 @@ import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
+import { Request } from 'express';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -73,7 +74,7 @@ export class VideoController {
   uploadVideo(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() videoDto: VideoDto,
-    @Request() req,
+    @Req() req: Request & { user: { id: string } },
   ) {
     this.fileExtensionPipe.transform(files);
     return this.videoService.uploadVideo(files, videoDto, req.user.id);
@@ -104,7 +105,10 @@ export class VideoController {
   @Delete(':id')
   @ApiSuccessResponse(200, '비디오 삭제 성공')
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
-  deleteVideo(@Param('id') videoId: string) {
-    return this.videoService.deleteVideo(videoId);
+  deleteVideo(
+    @Param('id') videoId: string,
+    @Req() req: Request & { user: { id: string } },
+  ) {
+    return this.videoService.deleteVideo(videoId, req.user.id);
   }
 }
