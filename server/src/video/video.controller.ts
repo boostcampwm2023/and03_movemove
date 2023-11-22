@@ -18,11 +18,17 @@ import { join } from 'path';
 import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { ApiFailResponse } from 'src/decorators/api-fail-response';
+import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
+import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
 import { FileExtensionPipe } from './video.pipe';
 
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
+@ApiFailResponse('인증 실패', [InvalidTokenException, TokenExpiredException])
 @Controller('videos')
 export class VideoController {
   constructor(
@@ -61,8 +67,6 @@ export class VideoController {
       { name: 'thumbnail', maxCount: 1 },
     ]),
   )
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth()
   @Post()
   uploadVideo(
     @UploadedFiles() files: Array<Express.Multer.File>,

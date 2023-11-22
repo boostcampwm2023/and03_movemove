@@ -6,6 +6,8 @@ import { Model } from 'mongoose';
 import { putObject } from 'src/ncpAPI/putObject';
 import { requestEncoding } from 'src/ncpAPI/requestEncoding';
 import { User } from 'src/user/schemas/user.schema';
+import { deleteObject } from 'src/ncpAPI/deleteObject';
+import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
 import { Video } from './schemas/video.schema';
@@ -58,7 +60,16 @@ export class VideoService {
     return { video: videoDto };
   }
 
-  deleteVideo(videoId: string) {
+  async deleteVideo(videoId: string) {
+    if (!(await this.VideoModel.findOne({ _id: videoId }))) {
+      throw new VideoNotFoundException();
+    }
+    await Promise.all([
+      deleteObject(process.env.INPUT_BUCKET, `${videoId}.mp4`),
+      deleteObject(process.env.THUMBNAIL_BUCKET, `${videoId}.jpg`),
+      deleteObject(process.env.THUMBNAIL_BUCKET, `${videoId}.jpg`),
+      this.VideoModel.deleteOne({ _id: videoId }),
+    ]);
     return `delete video ${videoId}`;
   }
 

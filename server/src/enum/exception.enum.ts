@@ -7,6 +7,7 @@ enum ErrorCode {
   BadTokenFormat = 1003,
   OAuthFailed = 1004,
   InvalidRefreshToken = 1005,
+  VideoNotFound = 4000,
   BadVideoFormat = 8000,
   BadThumbnailFormat = 8100,
 }
@@ -21,6 +22,7 @@ const ErrorMessage = {
   [ErrorCode.InvalidRefreshToken]: '유효하지 않은 RefreshToken',
   [ErrorCode.BadVideoFormat]: '비디오 포맷 오류',
   [ErrorCode.BadThumbnailFormat]: '썸네일 포맷 오류',
+  [ErrorCode.VideoNotFound]: '비디오를 찾을 수 없음',
 };
 
 export { ErrorCode, ErrorMessage };
