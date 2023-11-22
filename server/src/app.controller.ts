@@ -1,9 +1,10 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { requestEncoding } from './ncpAPI/requestEncoding';
 import { putObject } from './ncpAPI/putObject';
 import { getObject } from './ncpAPI/getObject';
 import { deleteObject } from './ncpAPI/deleteObject';
+import { AuthGuard } from './auth/auth.guard';
 
 @Controller()
 export class AppController {
@@ -47,6 +48,7 @@ export class AppController {
   }
 
   @Get('test/getObject')
+  @UseGuards(AuthGuard)
   testGetObject() {
     return getObject('video-thimbnail-bucket', 'sample-object2.txt')
       .then((response) => {

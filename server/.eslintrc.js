@@ -19,6 +19,7 @@ module.exports = {
   },
   ignorePatterns: ['.eslintrc.js'],
   rules: {
+    'new-cap': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
     'class-methods-use-this': 'off',
     'import/prefer-default-export': 'off',

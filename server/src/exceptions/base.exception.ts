@@ -1,24 +1,13 @@
 /* eslint-disable max-classes-per-file */
 import { HttpException, HttpStatus } from '@nestjs/common';
-
-enum ErrorCode {
-  UserConflict = 3001,
-  BadRequest = 2000,
-  BadVideoFormat = 8000,
-  BadThumbnailFormat = 8100,
-}
-
-const ErrorMessage = {
-  [ErrorCode.UserConflict]: '이미 가입된 회원입니다',
-  [ErrorCode.BadRequest]: '잘못된 요청 형식입니다',
-};
+import { ErrorCodeEnum, ErrorMessage } from 'src/enum/exception.enum';
 
 export class BaseException extends HttpException {
-  constructor(
-    public errorCode: number,
-    statusCode: HttpStatus,
-  ) {
+  errorCode: ErrorCodeEnum;
+
+  constructor(errorCode: ErrorCodeEnum, statusCode: HttpStatus) {
     super(ErrorMessage[errorCode], statusCode);
+    this.errorCode = errorCode;
   }
 }
 
