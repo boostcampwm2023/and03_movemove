@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.main
+package com.everyone.movemove_android.ui.container
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -35,12 +35,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.main.home.HomeScreen
-import com.everyone.movemove_android.ui.main.my.MyScreen
-import com.everyone.movemove_android.ui.main.navigation.Destination
-import com.everyone.movemove_android.ui.main.navigation.Navigator
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoScreen
-import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoScreen
+import com.everyone.movemove_android.ui.screens.home.HomeScreen
+import com.everyone.movemove_android.ui.screens.profile.ProfileScreen
+import com.everyone.movemove_android.ui.container.navigation.Destination
+import com.everyone.movemove_android.ui.container.navigation.Navigator
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoScreen
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoScreen
 import com.everyone.movemove_android.ui.theme.BackgroundInDark
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.InActiveInDark
@@ -57,7 +57,7 @@ fun MainScreen() {
         Destination.HOME.route,
         Destination.WATCHING_VIDEO.route,
         Destination.UPLOADING_VIDEO.route,
-        Destination.MY.route
+        Destination.PROFILE.route
     )
 
     Scaffold(
@@ -75,10 +75,10 @@ fun MainScreen() {
             startDestination = Destination.HOME.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            navScreen(Destination.HOME.route) { HomeScreen() }
+            navScreen(Destination.HOME.route) { HomeScreen(navigator = navigator) }
             navScreen(Destination.WATCHING_VIDEO.route) { WatchingVideoScreen() }
             navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
-            navScreen(Destination.MY.route) { MyScreen() }
+            navScreen(Destination.PROFILE.route) { ProfileScreen() }
         }
     }
 }

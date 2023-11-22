@@ -27,4 +27,5 @@
     <!--    login-->
     <string name="kakao_login">카카오 로그인</string>
     <string name="google_login">구글로 로그인</string>
+    <string name="navigation_profile">프로필</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.main.home
+package com.everyone.movemove_android.ui.screens.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -39,8 +39,8 @@ import coil.compose.AsyncImage
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.main.navigation.Destination
-import com.everyone.movemove_android.ui.main.navigation.Navigator
+import com.everyone.movemove_android.ui.container.navigation.Destination
+import com.everyone.movemove_android.ui.container.navigation.Navigator
 import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import kotlinx.coroutines.NonCancellable

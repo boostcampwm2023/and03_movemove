@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.main.navigation
+package com.everyone.movemove_android.ui.container.navigation
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -25,14 +25,14 @@ enum class Destination(
         iconRes = R.drawable.ic_uploading_video,
         labelResId = R.string.navigation_uploading_video
     ),
-    MY(
-        route = ROUTE_MY,
+    PROFILE(
+        route = ROUTE_PROFILE,
         iconRes = R.drawable.ic_my,
-        labelResId = R.string.navigation_my
+        labelResId = R.string.navigation_profile
     )
 }
 
 private const val ROUTE_HOME = "home"
 private const val ROUTE_VIDEO = "video"
 private const val ROUTE_VIDEO_ADD = "videoAdd"
-private const val ROUTE_MY = "my"
+private const val ROUTE_PROFILE = "profile"

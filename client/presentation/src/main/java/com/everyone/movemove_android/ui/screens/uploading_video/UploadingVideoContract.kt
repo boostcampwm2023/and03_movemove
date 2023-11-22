@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.main.uploading_video
+package com.everyone.movemove_android.ui.screens.uploading_video
 
 import android.net.Uri
 import androidx.compose.ui.graphics.ImageBitmap
