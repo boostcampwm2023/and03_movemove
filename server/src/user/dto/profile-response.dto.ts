@@ -1,15 +1,10 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsUUID, IsUrl } from 'class-validator';
+import { OmitType } from '@nestjs/swagger';
+import { IsUrl } from 'class-validator';
+import { UserDto } from './user.dto';
 
-export class ProfileResponseDto {
-  @ApiProperty({
-    description: 'UUID',
-    format: 'uuid',
-    example: '550e8400-e29b-41d4-a716-446655440000',
-  })
-  @IsUUID()
-  uuid: string;
-
+export class ProfileResponseDto extends OmitType(UserDto, [
+  'profileImage',
+] as const) {
   /**
    * 유저 프로필 URL
    * @example https://movemove/users/profile/:id
@@ -17,21 +12,9 @@ export class ProfileResponseDto {
   @IsUrl()
   profileImage: string;
 
-  /**
-   * 유저 닉네임
-   * @example '페이커'
-   */
-  @IsNotEmpty()
-  nickname: string;
-
-  /**
-   * 한줄 소개
-   * @example '역대 최연소 우승자, 역대 최고령 우승자'
-   */
-  @IsNotEmpty()
-  statusMessage: string;
-
-  constructor(init: Partial<ProfileResponseDto>) {
+  constructor(init: Omit<ProfileResponseDto, 'profileImage'>) {
+    super();
     Object.assign(this, init);
+    this.profileImage = `/users/profile/${this.uuid}`;
   }
 }
