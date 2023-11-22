@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.main.watching_video
+package com.everyone.movemove_android.ui.screens.watching_video
 
 import android.annotation.SuppressLint
 import android.net.Uri
@@ -31,7 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
-import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Event.OnClickedCategory
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnClickedCategory
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,7 +56,7 @@ import androidx.media3.ui.PlayerView
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.main.watching_video.category.CategoryScreen
+import com.everyone.movemove_android.ui.screens.watching_video.category.CategoryScreen
 import com.everyone.movemove_android.ui.theme.FooterBottomBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterMiddleBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterTopBackgroundInDark

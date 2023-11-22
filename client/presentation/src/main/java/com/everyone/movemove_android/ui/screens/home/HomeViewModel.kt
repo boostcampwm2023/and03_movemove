@@ -1,7 +1,7 @@
-package com.everyone.movemove_android.ui.main.home
+package com.everyone.movemove_android.ui.screens.home
 
 import androidx.lifecycle.ViewModel
-import com.everyone.movemove_android.ui.main.home.HomeContract.*
+import com.everyone.movemove_android.ui.screens.home.HomeContract.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

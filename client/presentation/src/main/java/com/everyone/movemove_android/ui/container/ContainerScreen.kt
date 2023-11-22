@@ -1,5 +1,7 @@
-package com.everyone.movemove_android.ui.main
+package com.everyone.movemove_android.ui.container
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
@@ -27,17 +29,18 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.main.home.HomeScreen
-import com.everyone.movemove_android.ui.main.my.MyScreen
-import com.everyone.movemove_android.ui.main.navigation.Destination
-import com.everyone.movemove_android.ui.main.navigation.Navigator
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoScreen
-import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoScreen
+import com.everyone.movemove_android.ui.screens.home.HomeScreen
+import com.everyone.movemove_android.ui.screens.profile.ProfileScreen
+import com.everyone.movemove_android.ui.container.navigation.Destination
+import com.everyone.movemove_android.ui.container.navigation.Navigator
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoScreen
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoScreen
 import com.everyone.movemove_android.ui.theme.BackgroundInDark
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.InActiveInDark
@@ -54,7 +57,7 @@ fun MainScreen() {
         Destination.HOME.route,
         Destination.WATCHING_VIDEO.route,
         Destination.UPLOADING_VIDEO.route,
-        Destination.MY.route
+        Destination.PROFILE.route
     )
 
     Scaffold(
@@ -72,10 +75,10 @@ fun MainScreen() {
             startDestination = Destination.HOME.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Destination.HOME.route) { HomeScreen(navigator = navigator) }
-            composable(Destination.WATCHING_VIDEO.route) { WatchingVideoScreen() }
-            composable(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
-            composable(Destination.MY.route) { MyScreen() }
+            navScreen(Destination.HOME.route) { HomeScreen(navigator = navigator) }
+            navScreen(Destination.WATCHING_VIDEO.route) { WatchingVideoScreen() }
+            navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
+            navScreen(Destination.PROFILE.route) { ProfileScreen() }
         }
     }
 }
@@ -135,3 +138,16 @@ fun MoveMoveNavigationBar(
 @Composable
 fun rememberNavigator(navController: NavController) =
     remember(navController) { Navigator(navController) }
+
+fun NavGraphBuilder.navScreen(
+    destination: String,
+    content: @Composable () -> Unit
+) {
+    composable(
+        route = destination,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None }
+    ) { content() }
+}

@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import { TransformInterceptor } from 'transform.interceptor';
 import { AppModule } from './app.module';
+import { TransformInterceptor } from './transform.interceptor';
+import { BaseExceptionFilter } from './http-Exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,7 +18,6 @@ async function bootstrap() {
   // Swagger UI에 대한 path를 연결함
   // .setup('swagger ui endpoint', app, swagger_document)
   SwaggerModule.setup('api', app, document);
-
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // DTO에 정의되지 않은 속성 제거
@@ -25,6 +25,7 @@ async function bootstrap() {
     }),
   );
   app.useGlobalInterceptors(new TransformInterceptor());
+  app.useGlobalFilters(new BaseExceptionFilter());
   await app.listen(3000);
 }
 bootstrap();

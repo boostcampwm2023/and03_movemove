@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.main.uploading_video
+package com.everyone.movemove_android.ui.screens.uploading_video
 
 import android.content.Context
 import android.media.MediaMetadataRetriever
@@ -7,24 +7,28 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.everyone.domain.model.Category
 import com.everyone.movemove_android.di.DefaultDispatcher
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Effect
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickPlayAndPause
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickPlayer
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickSelectVideo
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickUpload
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnGetUri
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnTitleTyped
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnVideoReady
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.SetVideoEndTime
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.SetVideoStartTime
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.State
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnBottomSheetHide
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnCategorySelected
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickPlayAndPause
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickPlayer
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickSelectCategory
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickSelectVideo
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickUpload
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnGetUri
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTitleTyped
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnVideoReady
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoEndTime
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoStartTime
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.State
 import com.everyone.movemove_android.ui.util.getVideoFilePath
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -67,6 +71,9 @@ class UploadingVideoViewModel @Inject constructor(
         is OnTitleTyped -> onTitleTyped(event.title)
         is OnDescriptionTyped -> onDescriptionTyped(event.description)
         is OnClickUpload -> onClickUpload()
+        is OnBottomSheetHide -> onBottomSheetHide()
+        is OnClickSelectCategory -> onClickSelectCategory()
+        is OnCategorySelected -> onCategorySelected(event.category)
     }
 
     private fun onClickAddVideo() {
@@ -79,6 +86,8 @@ class UploadingVideoViewModel @Inject constructor(
         _state.update {
             it.copy(videoInfo = it.videoInfo.copy(uri = uri))
         }
+
+        checkUploadEnable()
     }
 
     private fun onClickPlayAndPause() {
@@ -159,20 +168,18 @@ class UploadingVideoViewModel @Inject constructor(
 
     private fun onTitleTyped(title: String) {
         _state.update {
-            it.copy(
-                title = title,
-                isUploadEnabled = title.isNotEmpty() && state.value.description.isNotEmpty()
-            )
+            it.copy(title = title)
         }
+
+        checkUploadEnable()
     }
 
     private fun onDescriptionTyped(description: String) {
         _state.update {
-            it.copy(
-                description = description,
-                isUploadEnabled = description.isNotEmpty() && state.value.title.isNotEmpty()
-            )
+            it.copy(description = description)
         }
+
+        checkUploadEnable()
     }
 
     private fun onClickUpload() {
@@ -193,6 +200,42 @@ class UploadingVideoViewModel @Inject constructor(
             }
         } else {
             // todo: Not Initialized
+        }
+    }
+
+    private fun onBottomSheetHide() {
+        _state.update {
+            it.copy(isBottomSheetShowing = false)
+        }
+    }
+
+    private fun onClickSelectCategory() {
+        _state.update {
+            it.copy(isBottomSheetShowing = true)
+        }
+    }
+
+    private fun onCategorySelected(category: Category) {
+        _state.update {
+            it.copy(
+                isBottomSheetShowing = false,
+                category = category
+            )
+        }
+
+        checkUploadEnable()
+    }
+
+    private fun checkUploadEnable() {
+        with(state.value) {
+            _state.update {
+                it.copy(
+                    isUploadEnabled = videoInfo.uri != null &&
+                            title.isNotEmpty() &&
+                            description.isNotEmpty() &&
+                            category != null
+                )
+            }
         }
     }
 
