@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.main.home
+package com.everyone.movemove_android.ui.screens.home
 
 import com.everyone.movemove_android.base.BaseContract
 

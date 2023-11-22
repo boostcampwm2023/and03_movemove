@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.main.navigation
+package com.everyone.movemove_android.ui.container.navigation
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes

@@ -1,12 +1,12 @@
-package com.everyone.movemove_android.ui.main.watching_video
+package com.everyone.movemove_android.ui.screens.watching_video
 
 import androidx.lifecycle.ViewModel
-import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Category
-import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Event.OnClickedCategory
-import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Event.OnCategorySelected
-import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Effect
-import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.Event
-import com.everyone.movemove_android.ui.main.watching_video.WatchingVideoContract.State
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Category
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnClickedCategory
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnCategorySelected
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Effect
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.main.uploading_video
+package com.everyone.movemove_android.ui.screens.uploading_video
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -63,18 +63,18 @@ import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickPlayAndPause
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickPlayer
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickSelectVideo
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnClickUpload
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnGetUri
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnTitleTyped
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.OnVideoReady
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.SetVideoEndTime
-import com.everyone.movemove_android.ui.main.uploading_video.UploadingVideoContract.Event.SetVideoStartTime
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickPlayAndPause
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickPlayer
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickSelectVideo
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickUpload
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnGetUri
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTitleTyped
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnVideoReady
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoEndTime
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoStartTime
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.EditorTimelineDim
 import com.everyone.movemove_android.ui.theme.Point
