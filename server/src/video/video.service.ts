@@ -7,6 +7,7 @@ import { Model } from 'mongoose';
 import { putObject } from 'src/ncpAPI/putObject';
 import { requestEncoding } from 'src/ncpAPI/requestEncoding';
 import { User } from 'src/user/schemas/user.schema';
+import { getObject } from 'src/ncpAPI/getObject';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
 import { Video } from './schemas/video.schema';
@@ -22,14 +23,32 @@ export class VideoService {
     const videos = await this.VideoModel.aggregate([
       { $match: { category } },
       { $sample: { size: limit } },
+      { $project: { __v: 0 } },
     ]);
-    const videoData = videos.map((video) => {
-      const { totalRating, raterCount, _id, __v, ...videoInfo } = video;
-      const rating = totalRating / raterCount.toFixed(1);
-      return {
-        video: { ...videoInfo, rating },
-      };
+
+    await this.UserModel.populate(videos, {
+      path: 'uploaderId',
+      select: '-_id -actions -__v',
     });
+
+    const videoData = await Promise.all(
+      videos.map(async (video) => {
+        const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
+        const rating = totalRating / raterCount.toFixed(1);
+
+        const { profileImageExtension, uuid, ...uploaderInfo } =
+          uploaderId._doc;
+        const profileImage = await getObject(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${profileImageExtension}`,
+        );
+
+        return {
+          video: { ...videoInfo, rating },
+          uploader: { ...uploaderInfo, profileImage, uuid },
+        };
+      }),
+    );
     return videoData;
   }
 
