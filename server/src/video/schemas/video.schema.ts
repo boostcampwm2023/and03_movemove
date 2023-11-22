@@ -11,7 +11,7 @@ export class Video {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   })
-  uploaderId: mongoose.Schema.Types.ObjectId;
+  uploaderId: User;
 
   @Prop({
     require: true,

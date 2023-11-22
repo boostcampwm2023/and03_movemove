@@ -5,13 +5,17 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { putObject } from 'src/ncpAPI/putObject';
 import { requestEncoding } from 'src/ncpAPI/requestEncoding';
+import { User } from 'src/user/schemas/user.schema';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
 import { Video } from './schemas/video.schema';
 
 @Injectable()
 export class VideoService {
-  constructor(@InjectModel('Video') private VideoModel: Model<Video>) {}
+  constructor(
+    @InjectModel('Video') private VideoModel: Model<Video>,
+    @InjectModel('User') private UserModel: Model<User>,
+  ) {}
 
   getRandomVideo(category: string, limit: number) {
     return `get random video ${category} ${limit}`;
@@ -25,16 +29,17 @@ export class VideoService {
     return `set video rating ${videoId} ${videoRatingDto}`;
   }
 
-  async uploadVideo(files: any, videoDto: VideoDto, uploaderId: string) {
+  async uploadVideo(files: any, videoDto: VideoDto, uuid: string) {
     const { title, content, category } = videoDto;
     const video = files.video.pop();
     const thumbnail = files.thumbnail.pop();
 
+    const uploader = await this.UserModel.findOne({ uuid });
     const newVideo = new this.VideoModel({
       title,
       content,
       category,
-      uploaderId,
+      uploaderId: uploader._id,
     });
 
     const videoExtension = video.originalname.split('.').pop();
