@@ -42,12 +42,11 @@ export class VideoService {
         const { profileImageExtension, uuid, ...uploaderInfo } =
           uploaderId._doc;
         const profileImage = profileImageExtension
-          ? getObject(
+          ? await getObject(
               process.env.PROFILE_BUCKET,
               `${uuid}.${profileImageExtension}`,
             )
           : null;
-
         const uploader = {
           ...uploaderInfo,
           ...(profileImage && { profileImage }),
