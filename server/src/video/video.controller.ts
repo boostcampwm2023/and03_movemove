@@ -12,6 +12,7 @@ import {
   UploadedFiles,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { join } from 'path';
@@ -22,7 +23,10 @@ import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
 import { FileExtensionPipe } from './video.pipe';
+import { RandomVideoQueryDto } from './dto/random-video-query.dto';
 
+@UseGuards(AuthGuard)
+@ApiBearerAuth()
 @Controller('videos')
 export class VideoController {
   constructor(
@@ -31,11 +35,8 @@ export class VideoController {
   ) {}
 
   @Get('random')
-  getRandomVideo(
-    @Param('category') category: string,
-    @Param('limit') limit: number,
-  ) {
-    return this.videoService.getRandomVideo(category, limit);
+  getRandomVideo(@Query() query: RandomVideoQueryDto) {
+    return this.videoService.getRandomVideo(query.category, query.limit);
   }
 
   @Put(':id/rating')
@@ -61,8 +62,6 @@ export class VideoController {
       { name: 'thumbnail', maxCount: 1 },
     ]),
   )
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth()
   @Post()
   uploadVideo(
     @UploadedFiles() files: Array<Express.Multer.File>,

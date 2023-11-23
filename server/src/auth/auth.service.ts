@@ -31,13 +31,16 @@ export class AuthService {
     if (await this.UserModel.findOne({ uuid })) {
       throw new UserConflictException();
     }
-    const extension = profileImage.originalname.split('.').pop();
+    const profileImageExtension = profileImage.originalname.split('.').pop();
     putObject(
       process.env.PROFILE_BUCKET,
-      `${uuid}.${extension}`,
+      `${uuid}.${profileImageExtension}`,
       profileImage.buffer,
     );
-    const newUser = new this.UserModel(signupRequestDto);
+    const newUser = new this.UserModel({
+      ...signupRequestDto,
+      profileImageExtension,
+    });
     newUser.save();
     const jwt = await this.getTokens(uuid);
     const profile = new ProfileResponseDto({
