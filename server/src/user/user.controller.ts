@@ -7,7 +7,6 @@ import {
   Param,
   UseInterceptors,
   UploadedFile,
-  Post,
 } from '@nestjs/common';
 import { RequestUser, User } from 'src/decorators/request-user';
 import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';

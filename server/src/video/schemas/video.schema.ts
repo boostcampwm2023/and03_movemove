@@ -43,10 +43,10 @@ export class Video {
 
   @Prop({
     require: true,
-    default: now(),
+    default: Date.now,
     type: Date,
   })
-  uploadAt: Date; // 업로드시간
+  uploadedAt: Date; // 업로드시간
 
   @Prop({
     require: true,

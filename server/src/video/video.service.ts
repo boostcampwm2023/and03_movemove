@@ -36,33 +36,35 @@ export class VideoService {
     });
 
     const videoData = await Promise.all(
-      videos.map(async (video) => {
-        const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
-        const rating = totalRating / raterCount.toFixed(1);
-        const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.MANIFEST_URL_SUFFIX}`;
-
-        const { profileImageExtension, uuid, ...uploaderInfo } =
-          uploaderId._doc;
-        const profileImage = profileImageExtension
-          ? await getObject(
-              process.env.PROFILE_BUCKET,
-              `${uuid}.${profileImageExtension}`,
-            )
-          : null;
-
-        const uploader = {
-          ...uploaderInfo,
-          ...(profileImage && { profileImage }),
-          uuid,
-        };
-
-        return {
-          video: { ...videoInfo, manifest, rating },
-          uploader,
-        };
-      }),
+      videos.map((video) => this.getVideoInfo(video)),
     );
     return videoData;
+  }
+
+  async getVideoInfo(video: any) {
+    const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
+    const rating = totalRating / raterCount.toFixed(1);
+    const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.MANIFEST_URL_SUFFIX}`;
+
+    const { profileImageExtension, uuid, ...uploaderInfo } =
+      '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
+    const profileImage = profileImageExtension
+      ? await getObject(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${profileImageExtension}`,
+        )
+      : null;
+
+    const uploader = {
+      ...uploaderInfo,
+      ...(profileImage && { profileImage }),
+      uuid,
+    };
+
+    return {
+      video: { ...videoInfo, manifest, rating },
+      uploader,
+    };
   }
 
   updateVideoRating(videoId: string, videoRatingDto: VideoRatingDTO) {
@@ -102,7 +104,7 @@ export class VideoService {
     ]);
     await requestEncoding(process.env.INPUT_BUCKET, [videoName]);
 
-    return { video: videoDto, videoId: newVideo._id };
+    return { video: { _id: newVideo._id, ...videoDto } };
   }
 
   async deleteEncodedVideo(videoId: string) {
@@ -119,9 +121,10 @@ export class VideoService {
   }
 
   async deleteVideo(videoId: string, uuid: string) {
-    const video = await this.VideoModel.findOne({ _id: videoId }).populate(
-      'uploaderId',
-    );
+    const video = await this.VideoModel.findOne(
+      { _id: videoId },
+      '-__v',
+    ).populate('uploaderId', '-_id -actions -__v');
     if (!video) {
       throw new VideoNotFoundException();
     }
@@ -140,6 +143,7 @@ export class VideoService {
       this.deleteEncodedVideo(videoId),
       this.VideoModel.deleteOne({ _id: videoId }),
     ]);
+    return this.getVideoInfo(video.toObject());
   }
 
   getTrendVideo(limit: number) {
@@ -150,7 +154,15 @@ export class VideoService {
     return `get top rated video ${category}`;
   }
 
-  getVideo(videoId: string) {
-    return `get video ${videoId}`;
+  async getVideo(videoId: string) {
+    const video = await this.VideoModel.findOne(
+      { _id: videoId },
+      '-__v',
+    ).populate('uploaderId', '-_id -actions -__v');
+
+    if (!video) {
+      throw new VideoNotFoundException();
+    }
+    return this.getVideoInfo(video.toObject());
   }
 }
