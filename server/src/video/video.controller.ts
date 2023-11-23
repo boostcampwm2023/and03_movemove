@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { join } from 'path';
-import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
@@ -41,6 +41,7 @@ export class VideoController {
     private fileExtensionPipe: FileExtensionPipe,
   ) {}
 
+  @ApiTags('COMPLETE')
   @Get('random')
   getRandomVideo(@Query() query: RandomVideoQueryDto) {
     return this.videoService.getRandomVideo(query.category, query.limit);
@@ -69,6 +70,7 @@ export class VideoController {
       { name: 'thumbnail', maxCount: 1 },
     ]),
   )
+  @ApiTags('COMPLETE')
   @Post()
   uploadVideo(
     @UploadedFiles() files: Array<Express.Multer.File>,
@@ -102,6 +104,7 @@ export class VideoController {
   }
 
   @Delete(':id')
+  @ApiTags('COMPLETE')
   @ApiSuccessResponse(200, '비디오 삭제 성공')
   @ApiFailResponse('업로더만이 삭제할 수 있음', [NotYourVideoException])
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
