@@ -7,6 +7,7 @@ import {
   Param,
   UseInterceptors,
   UploadedFile,
+  Post,
 } from '@nestjs/common';
 import { RequestUser, User } from 'src/decorators/request-user';
 import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
@@ -34,9 +35,10 @@ export class UserController {
     return this.userService.getProfile(userId);
   }
 
-  @Patch('profile')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('profileImage'))
+  @ApiSuccessResponse(200, '프로필 변경 성공', ProfileDto)
+  @Patch('profile')
   patchProfile(
     @UploadedFile() profileImage: Express.Multer.File,
     @Body() profileDto: ProfileDto,

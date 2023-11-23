@@ -1,4 +1,5 @@
 import { PickType } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 import { UserDto } from './user.dto';
 
 export class ProfileDto extends PickType(UserDto, ['profileImage'] as const) {
