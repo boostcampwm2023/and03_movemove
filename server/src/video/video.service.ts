@@ -39,6 +39,7 @@ export class VideoService {
       videos.map(async (video) => {
         const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
         const rating = totalRating / raterCount.toFixed(1);
+        const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.MANIFEST_URL_SUFFIX}`;
 
         const { profileImageExtension, uuid, ...uploaderInfo } =
           uploaderId._doc;
@@ -48,6 +49,7 @@ export class VideoService {
               `${uuid}.${profileImageExtension}`,
             )
           : null;
+
         const uploader = {
           ...uploaderInfo,
           ...(profileImage && { profileImage }),
@@ -55,7 +57,7 @@ export class VideoService {
         };
 
         return {
-          video: { ...videoInfo, rating },
+          video: { ...videoInfo, manifest, rating },
           uploader,
         };
       }),
