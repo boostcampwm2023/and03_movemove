@@ -28,4 +28,9 @@
     <string name="kakao_login">카카오 로그인</string>
     <string name="google_login">구글로 로그인</string>
     <string name="navigation_profile">프로필</string>
+
+    <!--    signup-->
+    <string name="sign_up">회원가입</string>
+    <string name="nickname">닉네임</string>
+    <string name="one_line_introduce">한 줄 소개</string>
 </resources>
