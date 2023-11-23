@@ -57,7 +57,6 @@ fun SignUpScreen() {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(500.dp)
         ) {
             Spacer(modifier = Modifier.height(42.dp))
 
@@ -129,7 +128,6 @@ fun SignUpScreen() {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
                     .padding(horizontal = 16.dp)
             ) {
                 StyledText(
