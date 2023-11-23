@@ -15,7 +15,7 @@ export class UserDto {
     format: 'binary',
   })
   // TODO file 유효성검사
-  profileImage: Express.Multer.File;
+  profileImage?: Express.Multer.File;
 
   /**
    * 유저 닉네임
