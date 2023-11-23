@@ -56,10 +56,7 @@ export class AuthService {
 
   async getTokens(uuid: string): Promise<JwtResponseDto> {
     return {
-      accessToken: await this.jwtService.signAsync(
-        { id: uuid },
-        { expiresIn: process.env.JWT_SECRET_EXPIRATION_TIME },
-      ),
+      accessToken: await this.jwtService.signAsync({ id: uuid }),
       refreshToken: await this.jwtService.signAsync(
         { id: uuid },
         {

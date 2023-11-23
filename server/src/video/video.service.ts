@@ -23,8 +23,9 @@ export class VideoService {
   ) {}
 
   async getRandomVideo(category: string, limit: number) {
+    const condition = category === '전체' ? {} : { category };
     const videos = await this.VideoModel.aggregate([
-      { $match: { category } },
+      { $match: condition },
       { $sample: { size: limit } },
       { $project: { __v: 0 } },
     ]);
@@ -103,7 +104,7 @@ export class VideoService {
   }
 
   async deleteEncodedVideo(videoId: string) {
-    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(' ');
+    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
     const fileNamePrefix = `${process.env.VIDEO_OUTPUT_PATH}/${videoId}`;
     return Promise.all([
       ...encodingSuffixes.map((suffix) =>
