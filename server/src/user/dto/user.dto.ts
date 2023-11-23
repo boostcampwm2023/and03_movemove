@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class UserDto {
   /**
@@ -13,6 +13,7 @@ export class UserDto {
     description: '유저 프로필 사진',
     type: 'string',
     format: 'binary',
+    example: '인코딩된 이미지 파일',
   })
   // TODO file 유효성검사
   profileImage?: Express.Multer.File;
@@ -26,7 +27,7 @@ export class UserDto {
 
   /**
    * 한줄 소개
-   * @example '역대 최연소 우승자, 역대 최고령 우승자'
+   * @example 'Unkillable Demon King'
    */
   @IsNotEmpty()
   statusMessage: string;

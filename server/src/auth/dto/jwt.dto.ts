@@ -1,6 +1,6 @@
 import { IsJWT } from 'class-validator';
 
-export class JwtResponseDto {
+export class JwtDto {
   /**
    * @example 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1dWlkIjoiMTIzNDU2Nzg5MCIsImlzUmVmcmVzaCI6ZmFsc2V9.h3z-CqF_57tdGn18inYCStZFWT9BcN9Ng67_Ir8ojq0'
    */

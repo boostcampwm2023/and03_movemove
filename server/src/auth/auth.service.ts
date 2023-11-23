@@ -4,12 +4,12 @@ import { Model } from 'mongoose';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
 import { putObject } from 'src/ncpAPI/putObject';
 import { User, UserDocument } from 'src/user/schemas/user.schema';
-import { ProfileResponseDto } from 'src/user/dto/profile-response.dto';
 import { JwtService } from '@nestjs/jwt';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
 import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
+import { UserInfoDto } from 'src/user/dto/user-info.dto';
 import { SignupRequestDto } from './dto/signup-request.dto';
-import { JwtResponseDto } from './dto/jwt-response.dto';
+import { JwtDto } from './dto/jwt.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { SigninResponseDto } from './dto/signin-response.dto';
 import { SigninRequestDto } from './dto/signin-request.dto';
@@ -31,7 +31,6 @@ export class AuthService {
     if (await this.UserModel.findOne({ uuid })) {
       throw new UserConflictException();
     }
-    console.log(profileImage);
     // TODO 프로필 이미지 예외처리
     const profileImageExtension = profileImage
       ? profileImage.originalname.split('.').pop()
@@ -50,11 +49,11 @@ export class AuthService {
     });
     newUser.save();
     return this.getLoginInfo(newUser).then(
-      (loginInfo) => new SigninResponseDto(loginInfo),
+      (loginInfo) => new SignupResponseDto(loginInfo),
     );
   }
 
-  async getTokens(uuid: string): Promise<JwtResponseDto> {
+  async getTokens(uuid: string): Promise<JwtDto> {
     return {
       accessToken: await this.jwtService.signAsync({ id: uuid }),
       refreshToken: await this.jwtService.signAsync(
@@ -83,9 +82,11 @@ export class AuthService {
     }
   }
 
-  async getLoginInfo(user: UserDocument) {
+  async getLoginInfo(
+    user: UserDocument,
+  ): Promise<{ jwt: JwtDto; profile: UserInfoDto }> {
     const jwt = await this.getTokens(user.uuid);
-    const profile = new ProfileResponseDto({
+    const profile = new UserInfoDto({
       uuid: user.uuid,
       nickname: user.nickname,
       statusMessage: user.statusMessage,
