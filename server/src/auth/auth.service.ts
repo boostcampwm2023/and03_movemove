@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
 import { putObject } from 'src/ncpAPI/putObject';
-import { User } from 'src/user/schemas/user.schema';
+import { User, UserDocument } from 'src/user/schemas/user.schema';
 import { ProfileResponseDto } from 'src/user/dto/profile-response.dto';
 import { JwtService } from '@nestjs/jwt';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
@@ -31,24 +31,27 @@ export class AuthService {
     if (await this.UserModel.findOne({ uuid })) {
       throw new UserConflictException();
     }
-    const profileImageExtension = profileImage.originalname.split('.').pop();
-    putObject(
-      process.env.PROFILE_BUCKET,
-      `${uuid}.${profileImageExtension}`,
-      profileImage.buffer,
-    );
+    console.log(profileImage);
+    // TODO 프로필 이미지 예외처리
+    const profileImageExtension = profileImage
+      ? profileImage.originalname.split('.').pop()
+      : null;
+    if (profileImage) {
+      putObject(
+        process.env.PROFILE_BUCKET,
+        `${uuid}.${profileImageExtension}`,
+        profileImage.buffer,
+      );
+    }
+
     const newUser = new this.UserModel({
       ...signupRequestDto,
       profileImageExtension,
     });
     newUser.save();
-    const jwt = await this.getTokens(uuid);
-    const profile = new ProfileResponseDto({
-      uuid: newUser.uuid,
-      nickname: newUser.nickname,
-      statusMessage: newUser.statusMessage,
-    });
-    return new SignupResponseDto({ jwt, profile });
+    return this.getLoginInfo(newUser).then(
+      (loginInfo) => new SigninResponseDto(loginInfo),
+    );
   }
 
   async getTokens(uuid: string): Promise<JwtResponseDto> {
@@ -83,19 +86,24 @@ export class AuthService {
     }
   }
 
+  async getLoginInfo(user: UserDocument) {
+    const jwt = await this.getTokens(user.uuid);
+    const profile = new ProfileResponseDto({
+      uuid: user.uuid,
+      nickname: user.nickname,
+      statusMessage: user.statusMessage,
+    });
+    return { jwt, profile };
+  }
+
   async signin(signinRequestDto: SigninRequestDto): Promise<SigninResponseDto> {
     const { uuid } = signinRequestDto;
     const user = await this.UserModel.findOne({ uuid });
     if (!user) {
       throw new LoginFailException();
     }
-    const jwt = await this.getTokens(uuid);
-    const profile = new ProfileResponseDto({
-      uuid: user.uuid,
-      nickname: user.nickname,
-      statusMessage: user.statusMessage,
-    });
-
-    return new SigninResponseDto({ jwt, profile });
+    return this.getLoginInfo(user).then(
+      (loginInfo) => new SigninResponseDto(loginInfo),
+    );
   }
 }
