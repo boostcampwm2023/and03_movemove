@@ -11,7 +11,7 @@ import {
   UseInterceptors,
   UploadedFiles,
   UseGuards,
-  Req,
+  Query,
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { join } from 'path';
@@ -23,13 +23,13 @@ import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
-import { Request } from 'express';
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { RequestUser, User } from 'src/decorators/request-user';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
 import { FileExtensionPipe } from './video.pipe';
+import { RandomVideoQueryDto } from './dto/random-video-query.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
@@ -42,11 +42,8 @@ export class VideoController {
   ) {}
 
   @Get('random')
-  getRandomVideo(
-    @Param('category') category: string,
-    @Param('limit') limit: number,
-  ) {
-    return this.videoService.getRandomVideo(category, limit);
+  getRandomVideo(@Query() query: RandomVideoQueryDto) {
+    return this.videoService.getRandomVideo(query.category, query.limit);
   }
 
   @Put(':id/rating')

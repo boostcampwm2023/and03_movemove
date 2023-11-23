@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable class-methods-use-this */
 import { Injectable } from '@nestjs/common';
@@ -9,6 +10,7 @@ import { User } from 'src/user/schemas/user.schema';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
+import { getObject } from 'src/ncpAPI/getObject';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
 import { Video } from './schemas/video.schema';
@@ -20,8 +22,37 @@ export class VideoService {
     @InjectModel('User') private UserModel: Model<User>,
   ) {}
 
-  getRandomVideo(category: string, limit: number) {
-    return `get random video ${category} ${limit}`;
+  async getRandomVideo(category: string, limit: number) {
+    const videos = await this.VideoModel.aggregate([
+      { $match: { category } },
+      { $sample: { size: limit } },
+      { $project: { __v: 0 } },
+    ]);
+
+    await this.UserModel.populate(videos, {
+      path: 'uploaderId',
+      select: '-_id -actions -__v',
+    });
+
+    const videoData = await Promise.all(
+      videos.map(async (video) => {
+        const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
+        const rating = totalRating / raterCount.toFixed(1);
+
+        const { profileImageExtension, uuid, ...uploaderInfo } =
+          uploaderId._doc;
+        const profileImage = await getObject(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${profileImageExtension}`,
+        );
+
+        return {
+          video: { ...videoInfo, rating },
+          uploader: { ...uploaderInfo, profileImage, uuid },
+        };
+      }),
+    );
+    return videoData;
   }
 
   updateVideoRating(videoId: string, videoRatingDto: VideoRatingDTO) {
