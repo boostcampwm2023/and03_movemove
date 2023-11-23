@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Date, HydratedDocument, now } from 'mongoose';
+import mongoose, { Date, HydratedDocument } from 'mongoose';
 import { User } from 'src/user/schemas/user.schema';
 
 export type VideoDocument = HydratedDocument<Video>;
@@ -43,10 +43,10 @@ export class Video {
 
   @Prop({
     require: true,
-    default: now(),
+    default: Date.now,
     type: Date,
   })
-  uploadAt: Date; // 업로드시간
+  uploadedAt: Date; // 업로드시간
 
   @Prop({
     require: true,
