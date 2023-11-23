@@ -11,7 +11,6 @@ import {
   UseInterceptors,
   UploadedFiles,
   UseGuards,
-  Request,
   Query,
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
@@ -19,14 +18,22 @@ import { join } from 'path';
 import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { ApiFailResponse } from 'src/decorators/api-fail-response';
+import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
+import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
+import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
+import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
+import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
+import { RequestUser, User } from 'src/decorators/request-user';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
 import { FileExtensionPipe } from './video.pipe';
 import { RandomVideoQueryDto } from './dto/random-video-query.dto';
 
-@UseGuards(AuthGuard)
 @ApiBearerAuth()
+@UseGuards(AuthGuard)
+@ApiFailResponse('인증 실패', [InvalidTokenException, TokenExpiredException])
 @Controller('videos')
 export class VideoController {
   constructor(
@@ -66,10 +73,10 @@ export class VideoController {
   uploadVideo(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() videoDto: VideoDto,
-    @Request() req,
+    @RequestUser() user: User,
   ) {
     this.fileExtensionPipe.transform(files);
-    return this.videoService.uploadVideo(files, videoDto, req.user.id);
+    return this.videoService.uploadVideo(files, videoDto, user.id);
   }
 
   @Get('top-rated')
@@ -95,7 +102,10 @@ export class VideoController {
   }
 
   @Delete(':id')
-  deleteVideo(@Param('id') videoId: string) {
-    return this.videoService.deleteVideo(videoId);
+  @ApiSuccessResponse(200, '비디오 삭제 성공')
+  @ApiFailResponse('업로더만이 삭제할 수 있음', [NotYourVideoException])
+  @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
+  deleteVideo(@Param('id') videoId: string, @RequestUser() user: User) {
+    return this.videoService.deleteVideo(videoId, user.id);
   }
 }

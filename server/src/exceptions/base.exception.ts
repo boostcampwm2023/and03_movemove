@@ -1,9 +1,16 @@
 /* eslint-disable max-classes-per-file */
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
 import { ErrorCode, ErrorMessage } from 'src/enum/exception.enum';
 
 export class BaseException extends HttpException {
   errorCode: ErrorCode;
+
+  @ApiProperty()
+  statusCode: string;
+
+  @ApiProperty()
+  message: string;
 
   constructor(errorCode: ErrorCode, statusCode: HttpStatus) {
     super(ErrorMessage[errorCode], statusCode);
