@@ -20,10 +20,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,11 +43,9 @@ import com.everyone.movemove_android.ui.theme.Typography
 @Composable
 fun SignUpScreen() {
     val context = LocalContext.current
-    var imageUri by remember {
-        mutableStateOf<Uri?>(null)
-    }
+
     val launch = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
-        imageUri = uri
+        //imageUri = uri
     }
 
     Column(
