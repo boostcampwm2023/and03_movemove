@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
-  getProfile() {
-    return 'get profile';
+  getProfile(userId: string) {
+    return `get profile ${userId}`;
   }
 
-  patchProfile(userDto) {
-    return `patch profile ${userDto}`;
+  patchProfile(userDto: UserDto, uuid: string) {
+    return `patch profile ${userDto} ${uuid}`;
   }
 }
