@@ -20,13 +20,13 @@ export const ApiFailResponse = <TException extends Type<BaseException>>(
   const modelInstance = new models[0]();
 
   return applyDecorators(
-    ApiExtraModels(...(models instanceof Array ? models : [models])),
+    ApiExtraModels(BaseException),
     ApiResponse({
       status: modelInstance.getStatus(),
       description,
       content: {
         'application/json': {
-          schema: { $ref: getSchemaPath(models[0]) },
+          schema: { $ref: getSchemaPath(BaseException) },
 
           examples,
         },
