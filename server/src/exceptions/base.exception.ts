@@ -1,16 +1,31 @@
+/* eslint-disable max-classes-per-file */
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { ErrorCodeEnum, ErrorMessage } from 'src/enum/exception.enum';
+import { ErrorCode, ErrorMessage } from 'src/exceptions/enum/exception.enum';
 
 export class BaseException extends HttpException {
-  constructor(errorCode: ErrorCodeEnum, statusCode: HttpStatus) {
-    super('', statusCode);
-    this.errorCode = errorCode;
-    this.message = ErrorMessage[errorCode];
-  }
+  errorCode: ErrorCode;
+
   @ApiProperty()
-  errorCode: number;
+  statusCode: string;
 
   @ApiProperty()
   message: string;
+
+  constructor(errorCode: ErrorCode, statusCode: HttpStatus) {
+    super(ErrorMessage[errorCode], statusCode);
+    this.errorCode = errorCode;
+  }
+}
+
+export class VideoFormatException extends BaseException {
+  constructor() {
+    super(ErrorCode.BadVideoFormat, HttpStatus.BAD_REQUEST);
+  }
+}
+
+export class ThumbnailFormatException extends BaseException {
+  constructor() {
+    super(ErrorCode.BadThumbnailFormat, HttpStatus.BAD_REQUEST);
+  }
 }

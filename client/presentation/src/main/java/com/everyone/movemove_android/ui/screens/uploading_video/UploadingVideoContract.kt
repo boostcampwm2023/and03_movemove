@@ -2,6 +2,7 @@ package com.everyone.movemove_android.ui.screens.uploading_video
 
 import android.net.Uri
 import androidx.compose.ui.graphics.ImageBitmap
+import com.everyone.domain.model.Category
 import com.everyone.movemove_android.base.BaseContract
 
 interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, UploadingVideoContract.Event, UploadingVideoContract.Effect> {
@@ -17,6 +18,8 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         val title: String = "",
         val description: String = "",
         val isUploadEnabled: Boolean = false,
+        val isBottomSheetShowing: Boolean = false,
+        val category: Category? = null,
     )
 
     data class VideoInfo(
@@ -36,6 +39,9 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         data class OnTitleTyped(val title: String) : Event
         data class OnDescriptionTyped(val description: String) : Event
         data object OnClickUpload : Event
+        data object OnClickSelectCategory : Event
+        data class OnCategorySelected(val category: Category) : Event
+        data object OnBottomSheetHide : Event
     }
 
     sealed interface Effect {

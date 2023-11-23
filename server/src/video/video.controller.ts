@@ -8,22 +8,43 @@ import {
   Body,
   StreamableFile,
   Header,
+  UseInterceptors,
+  UploadedFiles,
+  UseGuards,
+  Query,
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { join } from 'path';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { ApiFailResponse } from 'src/decorators/api-fail-response';
+import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
+import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
+import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
+import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
+import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
+import { RequestUser, User } from 'src/decorators/request-user';
 import { VideoService } from './video.service';
-import { VideoRatingDTO, VideoDto } from './dto/video.dto';
+import { VideoDto } from './dto/video.dto';
+import { VideoRatingDTO } from './dto/video-rating.dto';
+import { FileExtensionPipe } from './video.pipe';
+import { RandomVideoQueryDto } from './dto/random-video-query.dto';
 
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
+@ApiFailResponse('인증 실패', [InvalidTokenException, TokenExpiredException])
 @Controller('videos')
 export class VideoController {
-  constructor(private videoService: VideoService) {}
+  constructor(
+    private videoService: VideoService,
+    private fileExtensionPipe: FileExtensionPipe,
+  ) {}
 
+  @ApiTags('COMPLETE')
   @Get('random')
-  getRandomVideo(
-    @Param('category') category: string,
-    @Param('limit') limit: number,
-  ) {
-    return this.videoService.getRandomVideo(category, limit);
+  getRandomVideo(@Query() query: RandomVideoQueryDto) {
+    return this.videoService.getRandomVideo(query.category, query.limit);
   }
 
   @Put(':id/rating')
@@ -42,9 +63,22 @@ export class VideoController {
     return this.videoService.setVideoRating(videoId, videoRatingDto);
   }
 
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'video', maxCount: 1 },
+      { name: 'thumbnail', maxCount: 1 },
+    ]),
+  )
+  @ApiTags('COMPLETE')
   @Post()
-  uploadVideo(@Body() videoDto: VideoDto) {
-    return this.videoService.uploadVideo(videoDto);
+  uploadVideo(
+    @UploadedFiles() files: Array<Express.Multer.File>,
+    @Body() videoDto: VideoDto,
+    @RequestUser() user: User,
+  ) {
+    this.fileExtensionPipe.transform(files);
+    return this.videoService.uploadVideo(files, videoDto, user.id);
   }
 
   @Get('top-rated')
@@ -70,7 +104,11 @@ export class VideoController {
   }
 
   @Delete(':id')
-  deleteVideo(@Param('id') videoId: string) {
-    return this.videoService.deleteVideo(videoId);
+  @ApiTags('COMPLETE')
+  @ApiSuccessResponse(200, '비디오 삭제 성공')
+  @ApiFailResponse('업로더만이 삭제할 수 있음', [NotYourVideoException])
+  @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
+  deleteVideo(@Param('id') videoId: string, @RequestUser() user: User) {
+    return this.videoService.deleteVideo(videoId, user.id);
   }
 }

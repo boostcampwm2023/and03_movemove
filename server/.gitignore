@@ -1,4 +1,3 @@
-.DS_Store
 .env
 
 # compiled output
@@ -36,3 +35,7 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+#docker
+.dockerignore
+Dockerfile

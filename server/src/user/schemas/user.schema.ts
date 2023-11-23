@@ -15,15 +15,14 @@ export class User {
   @Prop({ type: [{ type: ActionSchema }] })
   actions: Action[];
 
-  @Prop({
-    require: true,
-  })
+  @Prop({ require: true })
   nickname: string;
 
-  @Prop({
-    require: true,
-  })
+  @Prop({ require: true })
   statusMessage: string;
+
+  @Prop()
+  profileImageExtension: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

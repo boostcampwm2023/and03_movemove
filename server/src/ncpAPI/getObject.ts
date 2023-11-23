@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getTimeStamp, getAuthorization } from './common';
 
-export const getObject = (bucketName: string, objectName: string) => {
+export const getObject = async (bucketName: string, objectName: string) => {
   const endPoint = 'https://kr.object.ncloudstorage.com';
   const canonicalURI = `/${bucketName}/${objectName}`;
   const apiUrl = `${endPoint}${canonicalURI}`;
@@ -14,7 +14,7 @@ export const getObject = (bucketName: string, objectName: string) => {
   };
 
   const method = 'GET';
-  return axios.get(apiUrl, {
+  const response = await axios.get(apiUrl, {
     headers: {
       Authorization: getAuthorization(
         method,
@@ -25,4 +25,5 @@ export const getObject = (bucketName: string, objectName: string) => {
       ...defaultHeaders,
     },
   });
+  return response.data;
 };

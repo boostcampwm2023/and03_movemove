@@ -3,29 +3,104 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
 import { putObject } from 'src/ncpAPI/putObject';
-import { UserDto } from 'src/user/dto/user.dto';
-import { User } from 'src/user/schemas/user.schema';
+import { User, UserDocument } from 'src/user/schemas/user.schema';
+import { ProfileResponseDto } from 'src/user/dto/profile-response.dto';
+import { JwtService } from '@nestjs/jwt';
+import { LoginFailException } from 'src/exceptions/login-fail.exception';
+import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
+import { SignupRequestDto } from './dto/signup-request.dto';
+import { JwtResponseDto } from './dto/jwt-response.dto';
+import { SignupResponseDto } from './dto/signup-response.dto';
+import { SigninResponseDto } from './dto/signin-response.dto';
+import { SigninRequestDto } from './dto/signin-request.dto';
+import { RefreshRequestDto } from './dto/refresh-request.dto';
+import { RefreshResponseDto } from './dto/refresh-response.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
-  async create(userDto: UserDto, profileImage: Express.Multer.File) {
-    if (await this.userModel.find({ uuid: userDto.uuid })) {
+  constructor(
+    @InjectModel(User.name) private UserModel: Model<User>,
+    private jwtService: JwtService,
+  ) {}
+
+  async create(
+    signupRequestDto: SignupRequestDto,
+    profileImage: Express.Multer.File,
+  ): Promise<SignupResponseDto> {
+    const { uuid } = signupRequestDto;
+    if (await this.UserModel.findOne({ uuid })) {
       throw new UserConflictException();
     }
-    const extension = profileImage.originalname.split('.').pop();
-    putObject(
-      process.env.PROFILE_BUCKET,
-      `${userDto.uuid}.${extension}`,
-      profileImage.buffer,
-    );
-    const newUser = new this.userModel(userDto);
+    console.log(profileImage);
+    // TODO 프로필 이미지 예외처리
+    const profileImageExtension = profileImage
+      ? profileImage.originalname.split('.').pop()
+      : null;
+    if (profileImage) {
+      putObject(
+        process.env.PROFILE_BUCKET,
+        `${uuid}.${profileImageExtension}`,
+        profileImage.buffer,
+      );
+    }
+
+    const newUser = new this.UserModel({
+      ...signupRequestDto,
+      profileImageExtension,
+    });
     newUser.save();
-    return '33';
-    // return `create user ${userDto}`;
+    return this.getLoginInfo(newUser).then(
+      (loginInfo) => new SigninResponseDto(loginInfo),
+    );
   }
 
-  signin(uuid: string) {
-    return `signin user ${uuid}`;
+  async getTokens(uuid: string): Promise<JwtResponseDto> {
+    return {
+      accessToken: await this.jwtService.signAsync({ id: uuid }),
+      refreshToken: await this.jwtService.signAsync(
+        { id: uuid },
+        {
+          secret: process.env.JWT_REFRESH_SECRET,
+          expiresIn: process.env.JWT_REFRESH_EXPIRATION_TIME,
+        },
+      ),
+    };
+  }
+
+  async refresh(
+    refreshRequestDto: RefreshRequestDto,
+  ): Promise<RefreshResponseDto> {
+    const { refreshToken } = refreshRequestDto;
+    try {
+      const { uuid } = await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+      return new RefreshResponseDto({
+        accessToken: await this.jwtService.signAsync({ id: uuid }),
+      });
+    } catch (e) {
+      throw new InvalidRefreshTokenException();
+    }
+  }
+
+  async getLoginInfo(user: UserDocument) {
+    const jwt = await this.getTokens(user.uuid);
+    const profile = new ProfileResponseDto({
+      uuid: user.uuid,
+      nickname: user.nickname,
+      statusMessage: user.statusMessage,
+    });
+    return { jwt, profile };
+  }
+
+  async signin(signinRequestDto: SigninRequestDto): Promise<SigninResponseDto> {
+    const { uuid } = signinRequestDto;
+    const user = await this.UserModel.findOne({ uuid });
+    if (!user) {
+      throw new LoginFailException();
+    }
+    return this.getLoginInfo(user).then(
+      (loginInfo) => new SigninResponseDto(loginInfo),
+    );
   }
 }
