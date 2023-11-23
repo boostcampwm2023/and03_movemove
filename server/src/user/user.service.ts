@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserDto } from './dto/user.dto';
+import { ProfileDto } from './dto/profile.dto';
 
 @Injectable()
 export class UserService {
@@ -7,7 +7,11 @@ export class UserService {
     return `get profile ${userId}`;
   }
 
-  patchProfile(userDto: UserDto, uuid: string) {
-    return `patch profile ${userDto} ${uuid}`;
+  patchProfile(
+    profileDto: ProfileDto,
+    profileImage: Express.Multer.File,
+    uuid: string,
+  ) {
+    return `patch profile ${profileDto} ${uuid}`;
   }
 }
