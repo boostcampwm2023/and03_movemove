@@ -30,9 +30,15 @@
     <string name="google_login">구글로 로그인</string>
     <string name="navigation_profile">프로필</string>
 
+
     <!--    common-->
     <string name="challenge">챌린지</string>
     <string name="old_school">올드스쿨</string>
     <string name="new_school">뉴스쿨</string>
     <string name="k_pop">K-POP</string>
+  
+      <!--    signup-->
+    <string name="sign_up">회원가입</string>
+    <string name="nickname">닉네임</string>
+    <string name="one_line_introduce">한 줄 소개</string>
 </resources>
