@@ -23,8 +23,9 @@ export class VideoService {
   ) {}
 
   async getRandomVideo(category: string, limit: number) {
+    const condition = category === '전체' ? {} : { category };
     const videos = await this.VideoModel.aggregate([
-      { $match: { category } },
+      { $match: condition },
       { $sample: { size: limit } },
       { $project: { __v: 0 } },
     ]);
@@ -38,11 +39,12 @@ export class VideoService {
       videos.map(async (video) => {
         const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
         const rating = totalRating / raterCount.toFixed(1);
+        const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.MANIFEST_URL_SUFFIX}`;
 
         const { profileImageExtension, uuid, ...uploaderInfo } =
           uploaderId._doc;
         const profileImage = profileImageExtension
-          ? getObject(
+          ? await getObject(
               process.env.PROFILE_BUCKET,
               `${uuid}.${profileImageExtension}`,
             )
@@ -55,7 +57,7 @@ export class VideoService {
         };
 
         return {
-          video: { ...videoInfo, rating },
+          video: { ...videoInfo, manifest, rating },
           uploader,
         };
       }),
@@ -104,7 +106,7 @@ export class VideoService {
   }
 
   async deleteEncodedVideo(videoId: string) {
-    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(' ');
+    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
     const fileNamePrefix = `${process.env.VIDEO_OUTPUT_PATH}/${videoId}`;
     return Promise.all([
       ...encodingSuffixes.map((suffix) =>
