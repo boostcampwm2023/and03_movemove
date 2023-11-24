@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Video } from 'src/video/schemas/video.schema';
+import { getObject } from 'src/ncpAPI/getObject';
 import { User } from './schemas/user.schema';
 
 @Injectable()
@@ -21,24 +22,55 @@ export class UserService {
   }
 
   async getUploadedVideos(uuid: string, limit: number, lastId: string) {
-    const uploaderId = await this.UserModel.findOne({ uuid });
-    const condition = lastId
-      ? { uploaderId, _id: { $lt: lastId } }
-      : { uploaderId };
+    const uploaderData = await this.UserModel.findOne(
+      { uuid },
+      { __v: 0, actions: 0 },
+    );
+    // eslint-disable-next-line prettier/prettier
+    const { _id: uploaderId, profileImageExtension, ...uploaderInfo } = uploaderData.toObject();
+    const profileImage = await this.getBucketImage(
+      process.env.PROFILE_BUCKET,
+      profileImageExtension,
+      uuid,
+    );
+    const uploader = { ...uploaderInfo, ...(profileImage && { profileImage }) };
 
+    const condition = {
+      uploaderId,
+      ...(lastId && { _id: { $lt: lastId } }),
+    };
     const videoData = await this.VideoModel.find(condition, {
       uploaderId: 0,
-      thumbnailExtension: 0,
       videoExtension: 0,
       __v: 0,
     })
       .sort({ _id: -1 })
       .limit(limit);
 
-    const videos = videoData.map((video) => {
-      const manifest = `${process.env.MANIFEST_URL_PREFIX}${video._id}_,${process.env.ENCODING_SUFFIXES}${process.env.MANIFEST_URL_SUFFIX}`;
-      return { ...video.toObject(), manifest };
-    });
-    return { videos };
+    const videos = await this.getVideos(videoData);
+    return { videos, uploader };
+  }
+
+  async getVideos(videoData) {
+    const videos = await Promise.all(
+      videoData.map(async (video) => {
+        const { thumbnailExtension, ...videoInfo } = video.toObject();
+        const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.MANIFEST_URL_SUFFIX}`;
+        const thumbnailImage = await this.getBucketImage(
+          process.env.THUMBNAIL_BUCKET,
+          thumbnailExtension,
+          videoInfo._id,
+        );
+        return { ...videoInfo, manifest, thumbnailImage };
+      }),
+    );
+    return videos;
+  }
+
+  async getBucketImage(bucket: string, ImageExtension: string, uuid: string) {
+    const bucketImage = ImageExtension
+      ? await getObject(bucket, `${uuid}.${ImageExtension}`)
+      : null;
+    return bucketImage;
   }
 }
