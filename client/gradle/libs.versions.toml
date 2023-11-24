@@ -95,6 +95,7 @@ ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref =
 ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
 ktor-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-gson = { group = "io.ktor", name = "ktor-serialization-gson", version.ref = "ktor" }
+ktor-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
 
 [bundles]
 android = ["core-ktx", "lifecycle-runtime-ktx", "material", "lifecycle-extensions", "coil"]
@@ -102,7 +103,7 @@ compose = ["activity-compose", "compose-lifecycle", "compose-ui", "compose-ui-gr
 common = ["hilt"]
 media3 = ["media3-common", "media3-exoplayer", "media3-ui", "media3-exoplayer-hls"]
 google = ["google-services", "firebase-auth", "firebase-bom", "google-auth"]
-ktor = ["ktor-client-core", "ktor-client-cio", "ktor-negotiation", "ktor-gson"]
+ktor = ["ktor-client-core", "ktor-client-cio", "ktor-negotiation", "ktor-gson", "ktor-logging"]
 
 
 [plugins]
