@@ -1,10 +1,11 @@
 /* eslint-disable no-underscore-dangle */
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Document, Model } from 'mongoose';
 import { Video } from 'src/video/schemas/video.schema';
 import { getObject } from 'src/ncpAPI/getObject';
 import { User } from './schemas/user.schema';
+import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 
 @Injectable()
 export class UserService {
@@ -21,7 +22,11 @@ export class UserService {
     return `patch profile ${userDto}`;
   }
 
-  async getUploadedVideos(uuid: string, limit: number, lastId: string) {
+  async getUploadedVideos(
+    uuid: string,
+    limit: number,
+    lastId: string,
+  ): Promise<UploadedVideoResponseDto> {
     const uploaderData = await this.UserModel.findOne(
       { uuid },
       { __v: 0, actions: 0 },
@@ -51,7 +56,7 @@ export class UserService {
     return { videos, uploader };
   }
 
-  async getVideos(videoData) {
+  async getVideos(videoData: Array<Document>) {
     const videos = await Promise.all(
       videoData.map(async (video) => {
         const { thumbnailExtension, ...videoInfo } = video.toObject();

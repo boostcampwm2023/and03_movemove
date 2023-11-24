@@ -8,5 +8,8 @@ export class UserUploadedVideoQueryDto {
   @IsPositive()
   limit: number;
 
+  /**
+   * 마지막으로 조회한 비디오 ID
+   */
   lastId?: string;
 }
