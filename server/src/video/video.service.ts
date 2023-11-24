@@ -48,12 +48,18 @@ export class VideoService {
 
     const { profileImageExtension, uuid, ...uploaderInfo } =
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
-    const profileImage = profileImageExtension
-      ? await getObject(
-          process.env.PROFILE_BUCKET,
-          `${uuid}.${profileImageExtension}`,
-        )
-      : null;
+    const [profileImage, thumbnailImage] = await Promise.all([
+      profileImageExtension
+        ? getObject(
+            process.env.PROFILE_BUCKET,
+            `${uuid}.${profileImageExtension}`,
+          )
+        : null,
+      getObject(
+        process.env.THUMBNAIL_BUCKET,
+        `${videoInfo._id}.${videoInfo.thumbnailExtension}`,
+      ),
+    ]);
 
     const uploader = {
       ...uploaderInfo,
@@ -62,7 +68,7 @@ export class VideoService {
     };
 
     return {
-      video: { ...videoInfo, manifest, rating },
+      video: { ...videoInfo, manifest, rating, thumbnailImage },
       uploader,
     };
   }
