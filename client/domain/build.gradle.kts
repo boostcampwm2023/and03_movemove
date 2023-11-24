@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.lang)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.parcelize)
 }
 
 android {

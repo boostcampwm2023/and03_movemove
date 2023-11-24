@@ -1,11 +1,9 @@
 [versions]
 # plugins
 kotlin-lang = "1.9.20"
-kotlin-parcelize = "1.9.10"
 android-gradle-plugin = "8.1.1"
 
 # libraries
-## default
 ktx = "1.12.0"
 core-ktx = "1.9.0"
 app-compat = "1.6.1"
@@ -38,6 +36,9 @@ google-services = "4.3.15"
 firebase-auth = "22.0.0"
 firebase-bom = "32.0.0"
 google-play-services-auth = "20.5.0"
+
+# ktor
+ktor = "2.3.6"
 
 [libraries]
 # default
@@ -89,12 +90,21 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 google-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "google-play-services-auth" }
 
+# ktor
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
+ktor-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-gson = { group = "io.ktor", name = "ktor-serialization-gson", version.ref = "ktor" }
+ktor-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
+
 [bundles]
 android = ["core-ktx", "lifecycle-runtime-ktx", "material", "lifecycle-extensions", "coil"]
 compose = ["activity-compose", "compose-lifecycle", "compose-ui", "compose-ui-graphics", "compose-ui-tooling-preview", "compose-material", "compose-material3", "compose-hilt-navigation", "compose-navigation"]
 common = ["hilt"]
 media3 = ["media3-common", "media3-exoplayer", "media3-ui", "media3-exoplayer-hls"]
 google = ["google-services", "firebase-auth", "firebase-bom", "google-auth"]
+ktor = ["ktor-client-core", "ktor-client-cio", "ktor-negotiation", "ktor-gson", "ktor-logging"]
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
@@ -102,3 +112,4 @@ android-library = { id = "com.android.library", version.ref = "android-gradle-pl
 kotlin-lang = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin-lang" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version = "1.9.0-1.0.12" }
+parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin-lang" }
