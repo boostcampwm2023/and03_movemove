@@ -1,11 +1,11 @@
 package com.everyone.data.remote
 
 class UrlParamsBuilder {
-    private var pathList = mutableListOf<String>()
+    private var pathArray: Array<out String> = arrayOf()
     private var queryList = mutableListOf<Pair<String, String>>()
 
     fun addPaths(vararg paths: String): UrlParamsBuilder {
-        pathList.addAll(paths)
+        pathArray = paths
         return this
     }
 
@@ -15,7 +15,7 @@ class UrlParamsBuilder {
     }
 
     fun build() = UrlParams(
-        pathArray = pathList.toTypedArray(),
+        pathArray = pathArray,
         queryList = queryList
     )
 }
