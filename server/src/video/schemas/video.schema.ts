@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Date, HydratedDocument, now } from 'mongoose';
+import mongoose, { Date, HydratedDocument } from 'mongoose';
 import { User } from 'src/user/schemas/user.schema';
 
 export type VideoDocument = HydratedDocument<Video>;

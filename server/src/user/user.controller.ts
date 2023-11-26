@@ -1,3 +1,6 @@
+import { UserDto } from 'src/user/dto/user.dto';
+import { UserUploadedVideoQueryDto } from './dto/uploaded-video-request.dto';
+import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import {
   Controller,
   Get,
@@ -44,5 +47,21 @@ export class UserController {
     @RequestUser() user: User,
   ) {
     return this.userService.patchProfile(profileDto, profileImage, user.id);
+  }
+
+  /**
+   * 특정 유저가 업로드 한 비디오 정보 반환
+   */
+  @Get(':userId/vidoes/uploaded')
+  @ApiSuccessResponse(200, '비디오 반환 성공', UploadedVideoResponseDto)
+  getUploadedVideos(
+    @Param('userId') userId: string,
+    @Query() query: UserUploadedVideoQueryDto,
+  ): Promise<UploadedVideoResponseDto> {
+    return this.userService.getUploadedVideos(
+      userId,
+      query.limit,
+      query.lastId,
+    );
   }
 }
