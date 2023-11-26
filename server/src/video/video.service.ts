@@ -69,14 +69,6 @@ export class VideoService {
     };
   }
 
-  updateVideoRating(videoId: string, videoRatingDto: VideoRatingDTO) {
-    return `update video rating ${videoId} ${videoRatingDto}`;
-  }
-
-  setVideoRating(videoId: string, videoRatingDto: VideoRatingDTO) {
-    return `set video rating ${videoId} ${videoRatingDto}`;
-  }
-
   async uploadVideo(files: any, videoDto: VideoDto, uuid: string) {
     const { title, content, category } = videoDto;
     const video = files.video.pop();

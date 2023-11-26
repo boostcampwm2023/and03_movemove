@@ -25,6 +25,7 @@ import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { RequestUser, User } from 'src/decorators/request-user';
+import { ActionService } from 'src/action/action.service';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -42,6 +43,7 @@ import { VideoInfoDto } from './dto/video-info.dto';
 export class VideoController {
   constructor(
     private videoService: VideoService,
+    private actionService: ActionService,
     private fileExtensionPipe: FileExtensionPipe,
   ) {}
 
@@ -57,15 +59,7 @@ export class VideoController {
     @Param('id') videoId: string,
     @Body() videoRatingDto: VideoRatingDTO,
   ) {
-    return this.videoService.updateVideoRating(videoId, videoRatingDto);
-  }
-
-  @Post(':id/rating')
-  setVideoRating(
-    @Param('id') videoId: string,
-    @Body() videoRatingDto: VideoRatingDTO,
-  ) {
-    return this.videoService.setVideoRating(videoId, videoRatingDto);
+    return this.actionService.ratingVideo(videoId, videoRatingDto);
   }
 
   @ApiConsumes('multipart/form-data')
