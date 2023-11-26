@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Date } from 'mongoose';
 
 @Schema({ versionKey: false, timestamps: true })
 export class Action {

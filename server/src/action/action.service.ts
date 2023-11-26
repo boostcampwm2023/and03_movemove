@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { Model, startSession, createConnection, Connection } from 'mongoose';
+import { Model, Connection } from 'mongoose';
 import { User } from 'src/decorators/request-user';
 import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
 import { ReasonRequiredException } from 'src/exceptions/reason-required.exception';
@@ -88,6 +88,6 @@ export class ActionService {
     });
 
     session.endSession();
-    return `update video rating ${videoId} ${videoRatingDto}`;
+    return { videoId, ...videoRatingDto };
   }
 }

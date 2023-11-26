@@ -26,6 +26,8 @@ import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { RequestUser, User } from 'src/decorators/request-user';
 import { ActionService } from 'src/action/action.service';
+import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
+import { ReasonRequiredException } from 'src/exceptions/reason-required.exception';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -35,6 +37,7 @@ import { RandomVideoResponseDto } from './dto/random-video-response.dto';
 import { VideoSummaryResponseDto } from './dto/video-summary-response.dto';
 import { VideoResponseDto } from './dto/video-response.dto';
 import { VideoInfoDto } from './dto/video-info.dto';
+import { VideoRatingResponseDTO } from './dto/video-rating-response.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
@@ -47,6 +50,9 @@ export class VideoController {
     private fileExtensionPipe: FileExtensionPipe,
   ) {}
 
+  /**
+   * 랜덤으로 비디오 응답
+   */
   @ApiTags('COMPLETE')
   @Get('random')
   @ApiSuccessResponse(200, '랜덤 비디오 반환 성공', RandomVideoResponseDto)
@@ -54,7 +60,15 @@ export class VideoController {
     return this.videoService.getRandomVideo(query.category, query.limit);
   }
 
+  /**
+   * 비디오 별점 등록/수정
+   */
+  @ApiTags('COMPLETE')
   @Put(':id/rating')
+  @ApiSuccessResponse(200, '비디오 별점 등록/수정 성공', VideoRatingResponseDTO)
+  @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
+  @ApiFailResponse('별점 등록 실패', [NeverViewVideoException])
+  @ApiFailResponse('별점 사유 필요', [ReasonRequiredException])
   updateVideoRating(
     @Param('id') videoId: string,
     @Body() videoRatingDto: VideoRatingDTO,
@@ -63,6 +77,9 @@ export class VideoController {
     return this.actionService.ratingVideo(videoId, videoRatingDto, user.id);
   }
 
+  /**
+   * 비디오 업로드
+   */
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -99,6 +116,9 @@ export class VideoController {
     return this.videoService.getTrendVideo(limit);
   }
 
+  /**
+   * 썸네일 클릭 시 비디오 정보 반환
+   */
   @Get(':id')
   @ApiSuccessResponse(200, '비디오 조회 성공', VideoInfoDto)
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
@@ -106,6 +126,9 @@ export class VideoController {
     return this.videoService.getVideo(videoId);
   }
 
+  /**
+   * 비디오 삭제
+   */
   @Delete(':id')
   @ApiTags('COMPLETE')
   @ApiSuccessResponse(200, '비디오 삭제 성공', VideoSummaryResponseDto)
