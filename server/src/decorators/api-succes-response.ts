@@ -1,4 +1,4 @@
-import { Type, applyDecorators } from '@nestjs/common';
+import { HttpStatus, Type, applyDecorators } from '@nestjs/common';
 import { ApiExtraModels, ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
 export const ApiSuccessResponse = <TModel extends Type<any>>(
@@ -20,7 +20,7 @@ export const ApiSuccessResponse = <TModel extends Type<any>>(
             },
             message: {
               type: 'string',
-              example: description,
+              example: HttpStatus[statusCode],
             },
             ...(model && {
               data: {

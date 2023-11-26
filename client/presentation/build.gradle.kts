@@ -70,6 +70,15 @@ dependencies {
     // ksp
     ksp(libs.ksp.hilt)
 
+    // ktor
+    implementation(libs.bundles.ktor)
+
+    //kakao
+    implementation(libs.kakao.user)
+
+    //google
+    implementation (libs.bundles.google)
+
     // test
     testImplementation(libs.junit)
     androidTestImplementation(libs.junit.ext)
@@ -77,10 +86,4 @@ dependencies {
     debugImplementation(libs.compose.ui.test)
     debugImplementation(libs.compose.ui.tooling.debug)
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
-
-    //kakao
-    implementation(libs.kakao.user)
-
-    //google
-    implementation (libs.bundles.google)
 }
