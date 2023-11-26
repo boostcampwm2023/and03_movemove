@@ -73,11 +73,14 @@ dependencies {
     // ktor
     implementation(libs.bundles.ktor)
 
-    //kakao
+    // kakao
     implementation(libs.kakao.user)
 
-    //google
-    implementation (libs.bundles.google)
+    // google
+    implementation(libs.bundles.google)
+
+    // splash screen
+    implementation(libs.splash)
 
     // test
     testImplementation(libs.junit)
