@@ -3,6 +3,7 @@ import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Model, startSession, createConnection, Connection } from 'mongoose';
 import { User } from 'src/decorators/request-user';
 import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
+import { ReasonRequiredException } from 'src/exceptions/reason-required.exception';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { VideoRatingDTO } from 'src/video/dto/video-rating.dto';
 import { Video } from 'src/video/schemas/video.schema';
@@ -46,56 +47,47 @@ export class ActionService {
     videoRatingDto: VideoRatingDTO,
     userId: string,
   ) {
-    // userId의 action을 조회해서 videoId로 별점준적이 있는지 확인
     if (videoRatingDto.rating <= 2 && !videoRatingDto.reason) {
-      // throw new MustBeReason();
+      throw new ReasonRequiredException();
     }
-
+    // userId의 action을 조회해서 이전에 준 별점을 확인
     const user: any = await this.UserModel.findOne(
-      {
-        uuid: userId,
-      },
-      {
-        actions: { $elemMatch: { videoId } },
-      },
+      { uuid: userId },
+      { actions: { $elemMatch: { videoId } } },
     );
-    if (user.actions.length === 0) {
-      throw new NeverViewVideoException();
-    }
-    const prevRating = user.actions[0].rating;
-    const ratingDelta = videoRatingDto.rating - prevRating ?? 0;
-    // 별점 준적 없으면 raterCount 늘리고
-    // 트랜잭션 시작
-
-    const raterCountDelta = prevRating ? 0 : 1;
-
-    if (raterCountDelta || ratingDelta) {
-      await this.VideoModel.updateOne(
-        { _id: videoId },
-        { $inc: { raterCount: raterCountDelta, totalRating: ratingDelta } },
-      ).then((result) => {
-        if (result.modifiedCount === 0) {
-          throw new VideoNotFoundException();
-        }
-      });
-    }
-
+    if (user.actions.length === 0) throw new NeverViewVideoException();
     // 2점 이하
     const condition = {
       'actions.$[elem].rating': videoRatingDto.rating,
-      ...(videoRatingDto.reason && {
-        'actions.$[elem].reason': videoRatingDto.reason,
-      }),
+      'actions.$[elem].reason': videoRatingDto.reason,
     };
-    await this.UserModel.updateOne(
-      { uuid: userId },
-      { $set: condition },
-      { arrayFilters: [{ 'elem.videoId': videoId }] },
-    );
+    const prevRating = user.actions.pop().rating;
+    const ratingDelta = videoRatingDto.rating - prevRating ?? 0;
+    const raterCountDelta = prevRating ? 0 : 1;
 
-    // totalRating 늘리고 (별점 준적이 있으면 그 차만)
+    const session = await this.connection.startSession();
+    await session.withTransaction(async () => {
+      await this.UserModel.updateOne(
+        { uuid: userId },
+        { $set: condition },
+        { arrayFilters: [{ 'elem.videoId': videoId }] },
+      ).session(session);
 
-    // 트랜잭션 끝
+      if (raterCountDelta || ratingDelta) {
+        await this.VideoModel.updateOne(
+          { _id: videoId },
+          { $inc: { raterCount: raterCountDelta, totalRating: ratingDelta } },
+        )
+          .session(session)
+          .then((result) => {
+            if (result.modifiedCount === 0) {
+              throw new VideoNotFoundException();
+            }
+          });
+      }
+    });
+
+    session.endSession();
     return `update video rating ${videoId} ${videoRatingDto}`;
   }
 }
