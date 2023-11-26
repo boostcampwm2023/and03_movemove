@@ -14,7 +14,7 @@ export class Action {
     require: true,
     default: now(),
   })
-  time: Date;
+  updateAt: Date;
 }
 
 export const ActionSchema = SchemaFactory.createForClass(Action);

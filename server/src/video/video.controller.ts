@@ -58,8 +58,9 @@ export class VideoController {
   updateVideoRating(
     @Param('id') videoId: string,
     @Body() videoRatingDto: VideoRatingDTO,
+    @RequestUser() user: User,
   ) {
-    return this.actionService.ratingVideo(videoId, videoRatingDto);
+    return this.actionService.ratingVideo(videoId, videoRatingDto, user.id);
   }
 
   @ApiConsumes('multipart/form-data')
