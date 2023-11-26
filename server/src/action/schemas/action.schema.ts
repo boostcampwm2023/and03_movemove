@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Date, now } from 'mongoose';
+import { Date } from 'mongoose';
 
 @Schema({ versionKey: false })
 export class Action {
@@ -9,10 +9,13 @@ export class Action {
   @Prop()
   rating: number;
 
+  @Prop()
+  reason: string;
+
   @Prop({
-    type: Date,
     require: true,
-    default: now(),
+    default: Date.now,
+    type: Date,
   })
   updateAt: Date;
 }
