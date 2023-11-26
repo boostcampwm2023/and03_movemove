@@ -10,10 +10,11 @@ import { User } from 'src/user/schemas/user.schema';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
-import { getObject } from 'src/ncpAPI/getObject';
+import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
 import { Video } from './schemas/video.schema';
+import { CategoryEnum } from './enum/category.enum';
 
 @Injectable()
 export class VideoService {
@@ -23,16 +24,15 @@ export class VideoService {
   ) {}
 
   async getRandomVideo(category: string, limit: number) {
-    const condition = category === '전체' ? {} : { category };
+    const condition = category === CategoryEnum.전체 ? {} : { category };
     const videos = await this.VideoModel.aggregate([
       { $match: condition },
       { $sample: { size: limit } },
-      { $project: { __v: 0 } },
     ]);
 
     await this.UserModel.populate(videos, {
       path: 'uploaderId',
-      select: '-_id -actions -__v',
+      select: '-_id -actions',
     });
 
     const videoData = await Promise.all(
@@ -49,15 +49,11 @@ export class VideoService {
     const { profileImageExtension, uuid, ...uploaderInfo } =
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
     const [profileImage, thumbnailImage] = await Promise.all([
-      profileImageExtension
-        ? getObject(
-            process.env.PROFILE_BUCKET,
-            `${uuid}.${profileImageExtension}`,
-          )
-        : null,
-      getObject(
+      getBucketImage(process.env.PROFILE_BUCKET, profileImageExtension, uuid),
+      getBucketImage(
         process.env.THUMBNAIL_BUCKET,
-        `${videoInfo._id}.${videoInfo.thumbnailExtension}`,
+        videoInfo.thumbnailExtension,
+        videoInfo._id,
       ),
     ]);
 
@@ -110,7 +106,7 @@ export class VideoService {
     ]);
     await requestEncoding(process.env.INPUT_BUCKET, [videoName]);
 
-    return { video: { _id: newVideo._id, ...videoDto } };
+    return { _id: newVideo._id, ...videoDto };
   }
 
   async deleteEncodedVideo(videoId: string) {
@@ -127,10 +123,10 @@ export class VideoService {
   }
 
   async deleteVideo(videoId: string, uuid: string) {
-    const video = await this.VideoModel.findOne(
-      { _id: videoId },
-      '-__v',
-    ).populate('uploaderId', '-_id -actions -__v');
+    const video = await this.VideoModel.findOne({ _id: videoId }).populate(
+      'uploaderId',
+      '-_id -actions',
+    );
     if (!video) {
       throw new VideoNotFoundException();
     }
@@ -149,7 +145,12 @@ export class VideoService {
       this.deleteEncodedVideo(videoId),
       this.VideoModel.deleteOne({ _id: videoId }),
     ]);
-    return this.getVideoInfo(video.toObject());
+    return {
+      _id: videoId,
+      title: video.title,
+      content: video.content,
+      category: video.category,
+    };
   }
 
   getTrendVideo(limit: number) {
@@ -161,10 +162,10 @@ export class VideoService {
   }
 
   async getVideo(videoId: string) {
-    const video = await this.VideoModel.findOne(
-      { _id: videoId },
-      '-__v',
-    ).populate('uploaderId', '-_id -actions -__v');
+    const video = await this.VideoModel.findOne({ _id: videoId }).populate(
+      'uploaderId',
+      '-_id -actions',
+    );
 
     if (!video) {
       throw new VideoNotFoundException();

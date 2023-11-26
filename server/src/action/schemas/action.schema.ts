@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Date, now } from 'mongoose';
 
-@Schema()
+@Schema({ versionKey: false })
 export class Action {
   @Prop({ require: true })
   videoId: string;

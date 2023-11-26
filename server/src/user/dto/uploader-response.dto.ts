@@ -19,4 +19,10 @@ export class UploaderResponseDto {
    * @example "백엔드 마스터"
    */
   statusMessage: string;
+
+  /**
+   * 업로더 이미지
+   * @example "�PNG\r\n\u001a\n\u0000\u0000\u0000\"
+   */
+  profileImage: string;
 }

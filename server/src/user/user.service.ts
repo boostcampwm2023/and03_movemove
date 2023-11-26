@@ -4,19 +4,20 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model } from 'mongoose';
 import { Video } from 'src/video/schemas/video.schema';
 import { putObject } from 'src/ncpAPI/putObject';
-import { User } from './schemas/user.schema';
-import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { UserNotFoundException } from 'src/exceptions/user-not-found.exception';
-import { getObject } from 'src/ncpAPI/getObject';
 import * as _ from 'lodash';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
+import { getBucketImage } from 'src/ncpAPI/getBucketImage';
+import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
+import { User } from './schemas/user.schema';
 import { ProfileDto } from './dto/profile.dto';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel('Video') private VideoModel: Model<Video>,
-     @InjectModel(User.name) private UserModel: Model<User>) {}
+    @InjectModel(User.name) private UserModel: Model<User>,
+  ) {}
 
   async getProfile(userId: string) {
     const user = await this.UserModel.findOne({ uuid: userId });
@@ -25,12 +26,11 @@ export class UserService {
       throw new UserNotFoundException();
     }
     const { uuid, profileImageExtension, nickname, statusMessage } = user;
-    const profileImage = profileImageExtension
-      ? await getObject(
-          process.env.PROFILE_BUCKET,
-          `${uuid}.${profileImageExtension}`,
-        )
-      : null;
+    const profileImage = await getBucketImage(
+      process.env.PROFILE_BUCKET,
+      profileImageExtension,
+      uuid,
+    );
     return new ProfileDto({
       nickname,
       statusMessage,
@@ -89,13 +89,10 @@ export class UserService {
     limit: number,
     lastId: string,
   ): Promise<UploadedVideoResponseDto> {
-    const uploaderData = await this.UserModel.findOne(
-      { uuid },
-      { __v: 0, actions: 0 },
-    );
+    const uploaderData = await this.UserModel.findOne({ uuid }, { actions: 0 });
     // eslint-disable-next-line prettier/prettier
     const { _id: uploaderId, profileImageExtension, ...uploaderInfo } = uploaderData.toObject();
-    const profileImage = await this.getBucketImage(
+    const profileImage = await getBucketImage(
       process.env.PROFILE_BUCKET,
       profileImageExtension,
       uuid,
@@ -109,21 +106,20 @@ export class UserService {
     const videoData = await this.VideoModel.find(condition, {
       uploaderId: 0,
       videoExtension: 0,
-      __v: 0,
     })
       .sort({ _id: -1 })
       .limit(limit);
 
-    const videos = await this.getVideos(videoData);
+    const videos = await this.getVideoInfos(videoData);
     return { videos, uploader };
   }
 
-  async getVideos(videoData: Array<Document>) {
+  async getVideoInfos(videoData: Array<Document>) {
     const videos = await Promise.all(
       videoData.map(async (video) => {
         const { thumbnailExtension, ...videoInfo } = video.toObject();
         const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.MANIFEST_URL_SUFFIX}`;
-        const thumbnailImage = await this.getBucketImage(
+        const thumbnailImage = await getBucketImage(
           process.env.THUMBNAIL_BUCKET,
           thumbnailExtension,
           videoInfo._id,
@@ -132,12 +128,5 @@ export class UserService {
       }),
     );
     return videos;
-  }
-
-  async getBucketImage(bucket: string, ImageExtension: string, uuid: string) {
-    const bucketImage = ImageExtension
-      ? await getObject(bucket, `${uuid}.${ImageExtension}`)
-      : null;
-    return bucketImage;
   }
 }

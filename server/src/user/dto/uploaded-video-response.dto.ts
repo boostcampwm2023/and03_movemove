@@ -1,5 +1,4 @@
 import { VideoResponseDto } from 'src/video/dto/video-response.dto';
-import { ApiProperty } from '@nestjs/swagger';
 import { UploaderResponseDto } from './uploader-response.dto';
 
 export class UploadedVideoResponseDto {
@@ -9,6 +8,5 @@ export class UploadedVideoResponseDto {
 
   uploader: UploaderResponseDto;
 
-  @ApiProperty({ type: [VideoResponseDto] })
   videos: VideoResponseDto[];
 }
