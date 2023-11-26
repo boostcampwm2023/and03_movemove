@@ -3,8 +3,8 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
+  HttpStatus,
 } from '@nestjs/common';
-import { ServerResponse } from 'http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -24,7 +24,7 @@ export class TransformInterceptor<T>
   ): Observable<Response<T>> {
     const response = context.getArgByIndex(1);
     const { statusCode } = response;
-    const message = 'OK'; // 수정 필요
+    const message = HttpStatus[statusCode]; // 수정 필요
     return next.handle().pipe(map((data) => ({ statusCode, message, data })));
   }
 }
