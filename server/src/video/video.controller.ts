@@ -32,6 +32,8 @@ import { FileExtensionPipe } from './video.pipe';
 import { RandomVideoQueryDto } from './dto/random-video-query.dto';
 import { RandomVideoResponseDto } from './dto/random-video-response.dto';
 import { VideoSummaryResponseDto } from './dto/video-summary-response.dto';
+import { VideoResponseDto } from './dto/video-response.dto';
+import { VideoInfoDto } from './dto/video-info.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
@@ -103,6 +105,8 @@ export class VideoController {
   }
 
   @Get(':id')
+  @ApiSuccessResponse(200, '비디오 조회 성공', VideoInfoDto)
+  @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
   getVideo(@Param('id') videoId: string) {
     return this.videoService.getVideo(videoId);
   }

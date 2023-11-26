@@ -6,7 +6,7 @@ export class VideoInfoDto {
     Object.assign(this, init);
   }
 
-  uploader: UploaderResponseDto;
+  video: VideoResponseDto;
 
-  videos: VideoResponseDto;
+  uploader: UploaderResponseDto;
 }
