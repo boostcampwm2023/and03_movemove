@@ -26,6 +26,9 @@ import { RefreshResponseDto } from './dto/refresh-response.dto';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  /**
+   * 회원가입
+   */
   @Post('signup')
   @ApiConsumes('multipart/form-data')
   @ApiSuccessResponse(201, '회원가입 성공', SignupResponseDto)
@@ -39,6 +42,9 @@ export class AuthController {
     return this.authService.create(signupRequestDto, profileImage);
   }
 
+  /**
+   * 로그인
+   */
   @Post('login')
   @ApiSuccessResponse(201, '로그인 성공', SigninResponseDto)
   @ApiFailResponse('인증 실패', [LoginFailException, OAuthFailedException])
@@ -48,6 +54,9 @@ export class AuthController {
     return this.authService.signin(signinRequestDto);
   }
 
+  /**
+   * 토큰 재발급
+   */
   @Post('refresh')
   @ApiSuccessResponse(201, '토큰 재발급 성공', RefreshResponseDto)
   @ApiFailResponse('인증 실패', [InvalidRefreshTokenException])

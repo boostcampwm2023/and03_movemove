@@ -15,7 +15,12 @@ import {
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { join } from 'path';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
@@ -111,6 +116,9 @@ export class VideoController {
     return new StreamableFile(file);
   }
 
+  /**
+   * 인기 비디오 반환
+   */
   @Get('trend')
   getTrendVideo(@Param('limit') limit: number) {
     return this.videoService.getTrendVideo(limit);
@@ -120,6 +128,7 @@ export class VideoController {
    * 썸네일 클릭 시 비디오 정보 반환
    */
   @Get(':id')
+  @ApiTags('COMPLETE')
   @ApiSuccessResponse(200, '비디오 조회 성공', VideoInfoDto)
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
   getVideo(@Param('id') videoId: string) {
