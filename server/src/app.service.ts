@@ -12,10 +12,9 @@ export class AppService {
 
     const adList = _.map(jsonData.ListBucketResult.Contents, 'Key._text');
     const adImages = await Promise.all(
-      adList.map(async (ad: string) => {
-        const adImage = await getObject(process.env.ADVERTISEMENT_BUCKET, ad);
-        return adImage;
-      }),
+      adList.map(async (ad: string) =>
+        getObject(process.env.ADVERTISEMENT_BUCKET, ad),
+      ),
     );
 
     return { adImages };

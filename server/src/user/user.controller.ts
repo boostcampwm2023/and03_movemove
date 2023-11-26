@@ -54,6 +54,7 @@ export class UserController {
    */
   @Get(':userId/videos/uploaded')
   @ApiSuccessResponse(200, '비디오 반환 성공', UploadedVideoResponseDto)
+  @ApiFailResponse('조회 실패', [UserNotFoundException])
   getUploadedVideos(
     @Param('userId') userId: string,
     @Query() query: UserUploadedVideoQueryDto,
