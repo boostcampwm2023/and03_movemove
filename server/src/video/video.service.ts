@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable class-methods-use-this */
-import { Injectable } from '@nestjs/common';
+import { Injectable, StreamableFile } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { putObject } from 'src/ncpAPI/putObject';
@@ -11,8 +11,10 @@ import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
+import axios from 'axios';
+import { createReadStream } from 'fs';
+import { join } from 'path';
 import { VideoDto } from './dto/video.dto';
-import { VideoRatingDTO } from './dto/video-rating.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
 
@@ -39,6 +41,23 @@ export class VideoService {
       videos.map((video) => this.getVideoInfo(video)),
     );
     return videoData;
+  }
+
+  async getManifest(videoId: string) {
+    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
+    const manifestURL = `${process.env.MANIFEST_URL_PREFIX}${videoId}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
+    const manifest: string = await axios
+      .get(manifestURL)
+      .then((res) => res.data);
+
+    let index = -1;
+    const modifiedManifest = manifest.replace(/.*\.m3u8$/gm, () => {
+      index += 1;
+      return `${process.env.MANIFEST_URL_PREFIX}${videoId}_${encodingSuffixes[index]}${process.env.SBR_MANIFEST_URL_SUFFIX}`;
+    });
+    console.log(modifiedManifest);
+    const file = createReadStream(join(process.cwd(), 'package.json'));
+    return new StreamableFile(file);
   }
 
   async getVideoInfo(video: any) {

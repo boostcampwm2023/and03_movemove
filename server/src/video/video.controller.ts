@@ -15,12 +15,7 @@ import {
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { join } from 'path';
-import {
-  ApiBearerAuth,
-  ApiConsumes,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
@@ -40,7 +35,6 @@ import { FileExtensionPipe } from './video.pipe';
 import { RandomVideoQueryDto } from './dto/random-video-query.dto';
 import { RandomVideoResponseDto } from './dto/random-video-response.dto';
 import { VideoSummaryResponseDto } from './dto/video-summary-response.dto';
-import { VideoResponseDto } from './dto/video-response.dto';
 import { VideoInfoDto } from './dto/video-info.dto';
 import { VideoRatingResponseDTO } from './dto/video-rating-response.dto';
 
@@ -109,11 +103,10 @@ export class VideoController {
     return this.videoService.getTopRatedVideo(category);
   }
 
-  @Get('manifest')
+  @Get(':id/manifest')
   @Header('Content-Type', 'application/json')
-  getManifest() {
-    const file = createReadStream(join(process.cwd(), 'package.json'));
-    return new StreamableFile(file);
+  getManifest(@Param('id') videoId: string) {
+    return this.videoService.getManifest(videoId);
   }
 
   /**
