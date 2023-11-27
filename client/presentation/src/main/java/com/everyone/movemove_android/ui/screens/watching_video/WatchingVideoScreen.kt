@@ -114,7 +114,7 @@ fun WatchingVideoScreen(viewModel: WatchingVideoViewModel = hiltViewModel()) {
                 }
             }
 
-            when (pagerState.currentPage % 3) {
+            when (pagerState.settledPage % 3) {
                 0 -> {
                     exoPlayerPair.first.play()
                     exoPlayerPair.second.pause()
