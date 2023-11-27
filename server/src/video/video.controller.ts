@@ -15,12 +15,7 @@ import {
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { join } from 'path';
-import {
-  ApiBearerAuth,
-  ApiConsumes,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
@@ -40,7 +35,6 @@ import { FileExtensionPipe } from './video.pipe';
 import { RandomVideoQueryDto } from './dto/random-video-query.dto';
 import { RandomVideoResponseDto } from './dto/random-video-response.dto';
 import { VideoSummaryResponseDto } from './dto/video-summary-response.dto';
-import { VideoResponseDto } from './dto/video-response.dto';
 import { VideoInfoDto } from './dto/video-info.dto';
 import { VideoRatingResponseDTO } from './dto/video-rating-response.dto';
 
@@ -120,7 +114,7 @@ export class VideoController {
    * 인기 비디오 반환
    */
   @Get('trend')
-  getTrendVideo(@Param('limit') limit: number) {
+  getTrendVideo(@Query('limit') limit: number) {
     return this.videoService.getTrendVideo(limit);
   }
 

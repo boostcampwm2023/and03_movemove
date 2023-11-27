@@ -12,7 +12,6 @@ import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import { VideoDto } from './dto/video.dto';
-import { VideoRatingDTO } from './dto/video-rating.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
 
@@ -145,8 +144,42 @@ export class VideoService {
     };
   }
 
-  getTrendVideo(limit: number) {
-    return `get trend video ${limit}`;
+  async getTrendVideo(limit: number) {
+    const fields = Object.keys(this.VideoModel.schema.paths).reduce(
+      (acc, field) => {
+        acc[field] = 1;
+        return acc;
+      },
+      {},
+    );
+
+    const trendVideos = await this.VideoModel.aggregate([
+      {
+        $project: {
+          ...fields,
+          trendScore: {
+            $divide: [
+              '$viewCount',
+              { $pow: [{ $subtract: ['$$NOW', '$uploadedAt'] }, 1.8] },
+            ],
+          },
+        },
+      },
+      { $project: { trendScore: 0 } },
+      { $sort: { trendScore: -1 } },
+      { $limit: limit },
+    ]);
+
+    await this.UserModel.populate(trendVideos, {
+      path: 'uploaderId',
+      select: '-_id -actions',
+    });
+
+    const videos = await Promise.all(
+      trendVideos.map((video) => this.getVideoInfo(video)),
+    );
+
+    return videos;
   }
 
   getTopRatedVideo(category: string) {
