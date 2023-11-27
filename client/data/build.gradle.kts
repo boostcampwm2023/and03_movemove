@@ -33,6 +33,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain"))
+
     implementation(libs.bundles.common)
 
     // ksp
