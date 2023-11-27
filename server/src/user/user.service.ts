@@ -90,15 +90,7 @@ export class UserService {
     lastId: string,
   ): Promise<UploadedVideoResponseDto> {
     const uploaderData = await this.UserModel.findOne({ uuid }, { actions: 0 });
-    // eslint-disable-next-line prettier/prettier
-    const { _id: uploaderId, profileImageExtension, ...uploaderInfo } = uploaderData.toObject();
-    const profileImage = await getBucketImage(
-      process.env.PROFILE_BUCKET,
-      profileImageExtension,
-      uuid,
-    );
-    const uploader = { ...uploaderInfo, ...(profileImage && { profileImage }) };
-
+    const { uploader, uploaderId } = await this.getUserInfo(uuid, uploaderData);
     const condition = {
       uploaderId,
       ...(lastId && { _id: { $lt: lastId } }),
@@ -112,6 +104,18 @@ export class UserService {
 
     const videos = await this.getVideoInfos(videoData);
     return { videos, uploader };
+  }
+
+  async getUserInfo(uuid: string, uploaderData) {
+    // eslint-disable-next-line prettier/prettier
+    const { _id: uploaderId, profileImageExtension, ...uploaderInfo } = uploaderData.toObject();
+    const profileImage = await getBucketImage(
+      process.env.PROFILE_BUCKET,
+      profileImageExtension,
+      uuid,
+    );
+    const uploader = { ...uploaderInfo, ...(profileImage && { profileImage }) };
+    return { uploader, uploaderId };
   }
 
   async getVideoInfos(videoData: Array<Document>) {

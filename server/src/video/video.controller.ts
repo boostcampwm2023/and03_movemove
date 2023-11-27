@@ -15,12 +15,7 @@ import {
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { join } from 'path';
-import {
-  ApiBearerAuth,
-  ApiConsumes,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
@@ -40,7 +35,6 @@ import { FileExtensionPipe } from './video.pipe';
 import { RandomVideoQueryDto } from './dto/random-video-query.dto';
 import { RandomVideoResponseDto } from './dto/random-video-response.dto';
 import { VideoSummaryResponseDto } from './dto/video-summary-response.dto';
-import { VideoResponseDto } from './dto/video-response.dto';
 import { VideoInfoDto } from './dto/video-info.dto';
 import { VideoRatingResponseDTO } from './dto/video-rating-response.dto';
 
@@ -63,23 +57,6 @@ export class VideoController {
   @ApiSuccessResponse(200, '랜덤 비디오 반환 성공', RandomVideoResponseDto)
   getRandomVideo(@Query() query: RandomVideoQueryDto) {
     return this.videoService.getRandomVideo(query.category, query.limit);
-  }
-
-  /**
-   * 비디오 별점 등록/수정
-   */
-  @ApiTags('COMPLETE')
-  @Put(':id/rating')
-  @ApiSuccessResponse(200, '비디오 별점 등록/수정 성공', VideoRatingResponseDTO)
-  @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
-  @ApiFailResponse('별점 등록 실패', [NeverViewVideoException])
-  @ApiFailResponse('별점 사유 필요', [ReasonRequiredException])
-  updateVideoRating(
-    @Param('id') videoId: string,
-    @Body() videoRatingDto: VideoRatingDTO,
-    @RequestUser() user: User,
-  ) {
-    return this.actionService.ratingVideo(videoId, videoRatingDto, user.id);
   }
 
   /**
@@ -145,5 +122,22 @@ export class VideoController {
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
   deleteVideo(@Param('id') videoId: string, @RequestUser() user: User) {
     return this.videoService.deleteVideo(videoId, user.id);
+  }
+
+  /**
+   * 비디오 별점 등록/수정
+   */
+  @ApiTags('COMPLETE')
+  @Put(':id/rating')
+  @ApiSuccessResponse(200, '비디오 별점 등록/수정 성공', VideoRatingResponseDTO)
+  @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
+  @ApiFailResponse('별점 등록 실패', [NeverViewVideoException])
+  @ApiFailResponse('별점 사유 필요', [ReasonRequiredException])
+  updateVideoRating(
+    @Param('id') videoId: string,
+    @Body() videoRatingDto: VideoRatingDTO,
+    @RequestUser() user: User,
+  ) {
+    return this.actionService.ratingVideo(videoId, videoRatingDto, user.id);
   }
 }

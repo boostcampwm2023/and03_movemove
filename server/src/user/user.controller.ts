@@ -22,6 +22,7 @@ import { UserService } from './user.service';
 import { ProfileDto } from './dto/profile.dto';
 import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { UserUploadedVideoQueryDto } from './dto/uploaded-video-request.dto';
+import { UserRatedVideoQueryDto } from './dto/rated-video-request.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
