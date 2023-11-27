@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Date, now } from 'mongoose';
 
-@Schema({ versionKey: false })
+@Schema({ versionKey: false, timestamps: true })
 export class Action {
   @Prop({ require: true })
   videoId: string;
@@ -9,12 +8,8 @@ export class Action {
   @Prop()
   rating: number;
 
-  @Prop({
-    type: Date,
-    require: true,
-    default: now(),
-  })
-  time: Date;
+  @Prop()
+  reason: string;
 }
 
 export const ActionSchema = SchemaFactory.createForClass(Action);

@@ -4,7 +4,10 @@ import { User } from 'src/user/schemas/user.schema';
 
 export type VideoDocument = HydratedDocument<Video>;
 
-@Schema({ versionKey: false })
+@Schema({
+  versionKey: false,
+  timestamps: { createdAt: 'uploadedAt', updatedAt: false },
+})
 export class Video {
   @Prop({
     require: true,
@@ -40,13 +43,6 @@ export class Video {
     default: 0,
   })
   raterCount: number; // 별점준사람 수
-
-  @Prop({
-    require: true,
-    default: Date.now,
-    type: Date,
-  })
-  uploadedAt: Date; // 업로드시간
 
   @Prop({
     require: true,

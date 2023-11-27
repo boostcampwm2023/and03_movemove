@@ -15,7 +15,12 @@ import {
 } from '@nestjs/common';
 import { createReadStream } from 'fs';
 import { join } from 'path';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
@@ -25,6 +30,9 @@ import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { RequestUser, User } from 'src/decorators/request-user';
+import { ActionService } from 'src/action/action.service';
+import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
+import { ReasonRequiredException } from 'src/exceptions/reason-required.exception';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -34,6 +42,7 @@ import { RandomVideoResponseDto } from './dto/random-video-response.dto';
 import { VideoSummaryResponseDto } from './dto/video-summary-response.dto';
 import { VideoResponseDto } from './dto/video-response.dto';
 import { VideoInfoDto } from './dto/video-info.dto';
+import { VideoRatingResponseDTO } from './dto/video-rating-response.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
@@ -42,9 +51,13 @@ import { VideoInfoDto } from './dto/video-info.dto';
 export class VideoController {
   constructor(
     private videoService: VideoService,
+    private actionService: ActionService,
     private fileExtensionPipe: FileExtensionPipe,
   ) {}
 
+  /**
+   * 랜덤으로 비디오 응답
+   */
   @ApiTags('COMPLETE')
   @Get('random')
   @ApiSuccessResponse(200, '랜덤 비디오 반환 성공', RandomVideoResponseDto)
@@ -52,22 +65,26 @@ export class VideoController {
     return this.videoService.getRandomVideo(query.category, query.limit);
   }
 
+  /**
+   * 비디오 별점 등록/수정
+   */
+  @ApiTags('COMPLETE')
   @Put(':id/rating')
+  @ApiSuccessResponse(200, '비디오 별점 등록/수정 성공', VideoRatingResponseDTO)
+  @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
+  @ApiFailResponse('별점 등록 실패', [NeverViewVideoException])
+  @ApiFailResponse('별점 사유 필요', [ReasonRequiredException])
   updateVideoRating(
     @Param('id') videoId: string,
     @Body() videoRatingDto: VideoRatingDTO,
+    @RequestUser() user: User,
   ) {
-    return this.videoService.updateVideoRating(videoId, videoRatingDto);
+    return this.actionService.ratingVideo(videoId, videoRatingDto, user.id);
   }
 
-  @Post(':id/rating')
-  setVideoRating(
-    @Param('id') videoId: string,
-    @Body() videoRatingDto: VideoRatingDTO,
-  ) {
-    return this.videoService.setVideoRating(videoId, videoRatingDto);
-  }
-
+  /**
+   * 비디오 업로드
+   */
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -99,18 +116,28 @@ export class VideoController {
     return new StreamableFile(file);
   }
 
+  /**
+   * 인기 비디오 반환
+   */
   @Get('trend')
   getTrendVideo(@Param('limit') limit: number) {
     return this.videoService.getTrendVideo(limit);
   }
 
+  /**
+   * 썸네일 클릭 시 비디오 정보 반환
+   */
   @Get(':id')
+  @ApiTags('COMPLETE')
   @ApiSuccessResponse(200, '비디오 조회 성공', VideoInfoDto)
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
   getVideo(@Param('id') videoId: string) {
     return this.videoService.getVideo(videoId);
   }
 
+  /**
+   * 비디오 삭제
+   */
   @Delete(':id')
   @ApiTags('COMPLETE')
   @ApiSuccessResponse(200, '비디오 삭제 성공', VideoSummaryResponseDto)
