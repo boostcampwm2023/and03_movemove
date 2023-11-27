@@ -39,11 +39,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -66,7 +70,10 @@ import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WatchingVideoScreen(viewModel: WatchingVideoViewModel = hiltViewModel()) {
+fun WatchingVideoScreen(
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+    viewModel: WatchingVideoViewModel = hiltViewModel(),
+) {
 
     val (state, event, effect) = use(viewModel)
 
@@ -151,8 +158,39 @@ fun WatchingVideoScreen(viewModel: WatchingVideoViewModel = hiltViewModel()) {
         }
     }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                when (pagerState.settledPage % 3) {
+                    0 -> {
+                        exoPlayerPair.first.play()
+                        exoPlayerPair.second.pause()
+                        exoPlayerPair.third.pause()
+                    }
+
+                    1 -> {
+                        exoPlayerPair.first.pause()
+                        exoPlayerPair.second.play()
+                        exoPlayerPair.third.pause()
+                    }
+
+                    2 -> {
+                        exoPlayerPair.first.pause()
+                        exoPlayerPair.second.pause()
+                        exoPlayerPair.third.play()
+                    }
+                }
+            } else if (event == Lifecycle.Event.ON_STOP) {
+                exoPlayerPair.first.pause()
+                exoPlayerPair.second.pause()
+                exoPlayerPair.third.pause()
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
         onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
             exoPlayerPair.first.release()
             exoPlayerPair.second.release()
             exoPlayerPair.third.release()
