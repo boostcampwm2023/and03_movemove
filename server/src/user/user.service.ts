@@ -12,6 +12,7 @@ import { VideoService } from 'src/video/video.service';
 import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { User } from './schemas/user.schema';
 import { ProfileDto } from './dto/profile.dto';
+import { RatedVideoResponseDto } from './dto/rated-video-response.dto';
 
 @Injectable()
 export class UserService {
@@ -139,7 +140,11 @@ export class UserService {
     return videos;
   }
 
-  async getRatedVideos(uuid: string, limit: number, lastRatedAt: string) {
+  async getRatedVideos(
+    uuid: string,
+    limit: number,
+    lastRatedAt: string,
+  ): Promise<RatedVideoResponseDto> {
     const array = lastRatedAt
       ? {
           $filter: {
@@ -153,6 +158,7 @@ export class UserService {
       { $match: { uuid } },
       {
         $project: {
+          _id: 0,
           uuid: 1,
           nickname: 1,
           actions: {
