@@ -75,4 +75,19 @@ export class UserController {
       query.lastId,
     );
   }
+
+  /**
+   * 특정 유저가 별점을 준 비디오 정보 반환
+   */
+  @Get(':userId/videos/rated')
+  getRatedVideos(
+    @Param('userId') userId: string,
+    @Query() query: UserRatedVideoQueryDto,
+  ) {
+    return this.userService.getRatedVideos(
+      userId,
+      query.limit,
+      query.lastRatedAt,
+    );
+  }
 }

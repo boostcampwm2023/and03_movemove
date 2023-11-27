@@ -133,4 +133,29 @@ export class UserService {
     );
     return videos;
   }
+
+  async getRatedVideos(uuid: string, limit: number, lastRatedAt: string) {
+    const array = lastRatedAt
+      ? {
+          $filter: {
+            input: '$actions',
+            as: 'action',
+            cond: { $lte: ['$$action.updatedAt', new Date(lastRatedAt)] },
+          },
+        }
+      : '$actions';
+    const data = await this.UserModel.aggregate([
+      { $match: { uuid } },
+      {
+        $project: {
+          uuid: 1,
+          nickname: 1,
+          actions: {
+            $slice: [array, limit],
+          },
+        },
+      },
+    ]);
+    return data;
+  }
 }
