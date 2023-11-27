@@ -1,7 +1,8 @@
 package com.everyone.data.remote
 
 import android.util.Log
-import com.everyone.data.base.BaseResponse
+import com.everyone.data.remote.model.ApiResponse
+import com.everyone.data.remote.model.UrlParams
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -55,9 +56,9 @@ class NetworkHandler {
         method: HttpMethod,
         urlParams: UrlParams,
         noinline content: (ParametersBuilder.() -> Unit)?
-    ): Flow<BaseResponse<T>> = flow {
+    ): Flow<ApiResponse<T>> = flow {
         client.use { client ->
-            val response: BaseResponse.Success<T> = client.request {
+            val response: ApiResponse.Success<T> = client.request {
                 this.method = method
 
                 url {
@@ -76,7 +77,7 @@ class NetworkHandler {
                 emit(response)
             } ?: run {
                 emit(
-                    BaseResponse.Failure(
+                    ApiResponse.Failure(
                         statusCode = response.statusCode,
                         message = response.message
                     )
