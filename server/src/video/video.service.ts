@@ -149,7 +149,49 @@ export class VideoService {
     return `get trend video ${limit}`;
   }
 
-  getTopRatedVideo(category: string) {
+  async getTopRatedVideo(category: string) {
+    const videoTotal = await this.VideoModel.aggregate([
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+          totalRaterCount: { $sum: '$raterCount' },
+          totalRating: { $sum: '$totalRating' },
+        },
+      },
+    ]);
+    const avgRating = videoTotal[0].totalRating / videoTotal[0].totalRaterCount;
+    const percentile = 0.25;
+    const raterCountPercentile = await this.VideoModel.find(
+      {},
+      { raterCount: 1 },
+    )
+      .sort({ raterCount: 1 })
+      .skip(Math.floor(videoTotal[0].count * percentile))
+      .limit(1);
+    const confidentNumber = raterCountPercentile[0].raterCount;
+
+    const top10Videos = await this.VideoModel.aggregate([
+      {
+        $project: {
+          bayesian_avg: {
+            // (totalRating * raterCount + confidentNumber * avgRating )/ (raterCount + confidentNumber),
+            $divide: [
+              {
+                $add: [
+                  { $multiply: ['$totalRating', '$raterCount'] },
+                  confidentNumber * avgRating,
+                ],
+              },
+              { $add: ['$raterCount', confidentNumber] },
+            ],
+          },
+        },
+      },
+      { $sort: { bayesian_avg: -1 } },
+      { $limit: 10 },
+    ]);
+
     return `get top rated video ${category}`;
   }
 

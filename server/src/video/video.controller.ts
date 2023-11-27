@@ -109,7 +109,7 @@ export class VideoController {
     return this.videoService.getTopRatedVideo(category);
   }
 
-  @Get('manifest')
+  @Get(':id/manifest')
   @Header('Content-Type', 'application/json')
   getManifest() {
     const file = createReadStream(join(process.cwd(), 'package.json'));
