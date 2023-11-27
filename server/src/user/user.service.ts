@@ -8,6 +8,7 @@ import { UserNotFoundException } from 'src/exceptions/user-not-found.exception';
 import * as _ from 'lodash';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
+import { VideoService } from 'src/video/video.service';
 import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { User } from './schemas/user.schema';
 import { ProfileDto } from './dto/profile.dto';
@@ -17,6 +18,7 @@ export class UserService {
   constructor(
     @InjectModel('Video') private VideoModel: Model<Video>,
     @InjectModel(User.name) private UserModel: Model<User>,
+    private videoService: VideoService,
   ) {}
 
   async getProfile(userId: string) {
@@ -90,7 +92,10 @@ export class UserService {
     lastId: string,
   ): Promise<UploadedVideoResponseDto> {
     const uploaderData = await this.UserModel.findOne({ uuid }, { actions: 0 });
-    const { uploader, uploaderId } = await this.getUserInfo(uuid, uploaderData);
+    const { uploader, uploaderId } = await this.getUploaderInfo(
+      uuid,
+      uploaderData.toObject(),
+    );
     const condition = {
       uploaderId,
       ...(lastId && { _id: { $lt: lastId } }),
@@ -106,9 +111,9 @@ export class UserService {
     return { videos, uploader };
   }
 
-  async getUserInfo(uuid: string, uploaderData) {
+  async getUploaderInfo(uuid: string, uploaderData) {
     // eslint-disable-next-line prettier/prettier
-    const { _id: uploaderId, profileImageExtension, ...uploaderInfo } = uploaderData.toObject();
+    const { _id: uploaderId, profileImageExtension, ...uploaderInfo } = uploaderData;
     const profileImage = await getBucketImage(
       process.env.PROFILE_BUCKET,
       profileImageExtension,
@@ -156,6 +161,18 @@ export class UserService {
         },
       },
     ]);
-    return data;
+    const { actions, ...rater } = data.pop();
+    const videos = await Promise.all(
+      actions.map(async (action) => {
+        const videoData = await this.VideoModel.findOne({
+          _id: action.videoId,
+        }).populate('uploaderId', '-_id -actions');
+        const video = await this.videoService.getVideoInfo(
+          videoData.toObject(),
+        );
+        return { ...video, ratedAt: action.updatedAt };
+      }),
+    );
+    return { rater, videos };
   }
 }
