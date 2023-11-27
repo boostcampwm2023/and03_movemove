@@ -4,7 +4,7 @@ import { User } from 'src/user/schemas/user.schema';
 
 export type VideoDocument = HydratedDocument<Video>;
 
-@Schema()
+@Schema({ versionKey: false })
 export class Video {
   @Prop({
     require: true,

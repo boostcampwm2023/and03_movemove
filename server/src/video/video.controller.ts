@@ -30,6 +30,10 @@ import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
 import { FileExtensionPipe } from './video.pipe';
 import { RandomVideoQueryDto } from './dto/random-video-query.dto';
+import { RandomVideoResponseDto } from './dto/random-video-response.dto';
+import { VideoSummaryResponseDto } from './dto/video-summary-response.dto';
+import { VideoResponseDto } from './dto/video-response.dto';
+import { VideoInfoDto } from './dto/video-info.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
@@ -43,6 +47,7 @@ export class VideoController {
 
   @ApiTags('COMPLETE')
   @Get('random')
+  @ApiSuccessResponse(200, '랜덤 비디오 반환 성공', RandomVideoResponseDto)
   getRandomVideo(@Query() query: RandomVideoQueryDto) {
     return this.videoService.getRandomVideo(query.category, query.limit);
   }
@@ -72,6 +77,7 @@ export class VideoController {
   )
   @ApiTags('COMPLETE')
   @Post()
+  @ApiSuccessResponse(201, '비디오 업로드 성공', VideoSummaryResponseDto)
   uploadVideo(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() videoDto: VideoDto,
@@ -99,13 +105,15 @@ export class VideoController {
   }
 
   @Get(':id')
+  @ApiSuccessResponse(200, '비디오 조회 성공', VideoInfoDto)
+  @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
   getVideo(@Param('id') videoId: string) {
     return this.videoService.getVideo(videoId);
   }
 
   @Delete(':id')
   @ApiTags('COMPLETE')
-  @ApiSuccessResponse(200, '비디오 삭제 성공')
+  @ApiSuccessResponse(200, '비디오 삭제 성공', VideoSummaryResponseDto)
   @ApiFailResponse('업로더만이 삭제할 수 있음', [NotYourVideoException])
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
   deleteVideo(@Param('id') videoId: string, @RequestUser() user: User) {

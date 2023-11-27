@@ -4,7 +4,7 @@ import { Action, ActionSchema } from 'src/action/schemas/action.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
-@Schema()
+@Schema({ versionKey: false })
 export class User {
   @Prop({
     require: true,

@@ -1,6 +1,3 @@
-import { UserDto } from 'src/user/dto/user.dto';
-import { UserUploadedVideoQueryDto } from './dto/uploaded-video-request.dto';
-import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import {
   Controller,
   Get,
@@ -10,6 +7,7 @@ import {
   Param,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { RequestUser, User } from 'src/decorators/request-user';
 import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
@@ -22,6 +20,8 @@ import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { UserNotFoundException } from 'src/exceptions/user-not-found.exception';
 import { UserService } from './user.service';
 import { ProfileDto } from './dto/profile.dto';
+import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
+import { UserUploadedVideoQueryDto } from './dto/uploaded-video-request.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
@@ -30,10 +30,10 @@ import { ProfileDto } from './dto/profile.dto';
 export class UserController {
   constructor(private userService: UserService) {}
 
-  @Get(':id/profile')
+  @Get(':userId/profile')
   @ApiSuccessResponse(200, '프로필 조회 성공', ProfileDto)
   @ApiFailResponse('프로필 조회 실패', [UserNotFoundException])
-  getProfile(@Param('id') userId: string) {
+  getProfile(@Param('userId') userId: string) {
     return this.userService.getProfile(userId);
   }
 
@@ -52,8 +52,9 @@ export class UserController {
   /**
    * 특정 유저가 업로드 한 비디오 정보 반환
    */
-  @Get(':userId/vidoes/uploaded')
+  @Get(':userId/videos/uploaded')
   @ApiSuccessResponse(200, '비디오 반환 성공', UploadedVideoResponseDto)
+  @ApiFailResponse('조회 실패', [UserNotFoundException])
   getUploadedVideos(
     @Param('userId') userId: string,
     @Query() query: UserUploadedVideoQueryDto,

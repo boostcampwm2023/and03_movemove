@@ -6,7 +6,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 
 export interface Response<T> {
   statusCode: number;
@@ -22,9 +22,13 @@ export class TransformInterceptor<T>
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<Response<T>> {
+    const start = Date.now();
     const response = context.getArgByIndex(1);
     const { statusCode } = response;
-    const message = HttpStatus[statusCode]; // 수정 필요
-    return next.handle().pipe(map((data) => ({ statusCode, message, data })));
+    const message = HttpStatus[statusCode];
+    return next.handle().pipe(
+      tap(() => console.log(`After... ${Date.now() - start}ms`)),
+      map((data) => ({ statusCode, message, data })),
+    );
   }
 }
