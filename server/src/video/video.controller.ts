@@ -6,15 +6,12 @@ import {
   Post,
   Delete,
   Body,
-  StreamableFile,
   Header,
   UseInterceptors,
   UploadedFiles,
   UseGuards,
   Query,
 } from '@nestjs/common';
-import { createReadStream } from 'fs';
-import { join } from 'path';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -28,6 +25,7 @@ import { RequestUser, User } from 'src/decorators/request-user';
 import { ActionService } from 'src/action/action.service';
 import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
 import { ReasonRequiredException } from 'src/exceptions/reason-required.exception';
+import { IgnoreInterceptor } from 'src/decorators/ignore-interceptor';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -103,8 +101,9 @@ export class VideoController {
     return this.videoService.getTopRatedVideo(category);
   }
 
+  @IgnoreInterceptor()
   @Get(':id/manifest')
-  @Header('Content-Type', 'application/json')
+  @Header('content-type', 'application/vnd.apple.mpegurl')
   getManifest(@Param('id') videoId: string) {
     return this.videoService.getManifest(videoId);
   }

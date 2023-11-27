@@ -55,9 +55,7 @@ export class VideoService {
       index += 1;
       return `${process.env.MANIFEST_URL_PREFIX}${videoId}_${encodingSuffixes[index]}${process.env.SBR_MANIFEST_URL_SUFFIX}`;
     });
-    console.log(modifiedManifest);
-    const file = createReadStream(join(process.cwd(), 'package.json'));
-    return new StreamableFile(file);
+    return modifiedManifest;
   }
 
   async getVideoInfo(video: any) {
