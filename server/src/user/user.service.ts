@@ -163,7 +163,15 @@ export class UserService {
           uuid: 1,
           nickname: 1,
           actions: {
-            $slice: [array, limit],
+            $slice: [
+              {
+                $sortArray: {
+                  input: array,
+                  sortBy: { updatedAt: 1 },
+                },
+              },
+              limit,
+            ],
           },
         },
       },
@@ -172,6 +180,7 @@ export class UserService {
     if (!data.length) throw new UserNotFoundException();
 
     const { actions, ...rater } = data.pop();
+    console.log(actions);
     const videos = await Promise.all(
       actions.map(async (action) => {
         const videoData = await this.VideoModel.findOne({
