@@ -12,7 +12,6 @@ import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import { VideoDto } from './dto/video.dto';
-import { VideoRatingDTO } from './dto/video-rating.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
 
@@ -44,7 +43,7 @@ export class VideoService {
   async getVideoInfo(video: any) {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
     const rating = totalRating / raterCount.toFixed(1);
-    const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.MANIFEST_URL_SUFFIX}`;
+    const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
 
     const { profileImageExtension, uuid, ...uploaderInfo } =
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
@@ -151,6 +150,7 @@ export class VideoService {
 
   async getTopRatedVideo(category: string) {
     const videoTotal = await this.VideoModel.aggregate([
+      { $match: { category } },
       {
         $group: {
           _id: null,
@@ -163,26 +163,23 @@ export class VideoService {
     const avgRating = videoTotal[0].totalRating / videoTotal[0].totalRaterCount;
     const percentile = 0.25;
     const raterCountPercentile = await this.VideoModel.find(
-      {},
+      { category },
       { raterCount: 1 },
     )
       .sort({ raterCount: 1 })
       .skip(Math.floor(videoTotal[0].count * percentile))
       .limit(1);
     const confidentNumber = raterCountPercentile[0].raterCount;
-
+    // 베이즈 평균으로 TOP 10 추출
     const top10Videos = await this.VideoModel.aggregate([
+      { $match: { category } },
       {
         $project: {
+          data: '$$ROOT',
           bayesian_avg: {
-            // (totalRating * raterCount + confidentNumber * avgRating )/ (raterCount + confidentNumber),
+            // 베이즈 평균 = (totalRating + confidentNumber * avgRating )/ (raterCount + confidentNumber),
             $divide: [
-              {
-                $add: [
-                  { $multiply: ['$totalRating', '$raterCount'] },
-                  confidentNumber * avgRating,
-                ],
-              },
+              { $add: ['$totalRating', confidentNumber * avgRating] },
               { $add: ['$raterCount', confidentNumber] },
             ],
           },
@@ -190,9 +187,17 @@ export class VideoService {
       },
       { $sort: { bayesian_avg: -1 } },
       { $limit: 10 },
+      { $replaceRoot: { newRoot: '$data' } },
     ]);
+    await this.UserModel.populate(top10Videos, {
+      path: 'uploaderId',
+      select: '-_id -actions',
+    });
 
-    return `get top rated video ${category}`;
+    const videoData = await Promise.all(
+      top10Videos.map((video) => this.getVideoInfo(video)),
+    );
+    return videoData;
   }
 
   async getVideo(videoId: string) {

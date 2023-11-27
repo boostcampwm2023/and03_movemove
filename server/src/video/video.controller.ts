@@ -105,7 +105,7 @@ export class VideoController {
   }
 
   @Get('top-rated')
-  getTopRatedVideo(@Param('category') category: string) {
+  getTopRatedVideo(@Query('category') category: string) {
     return this.videoService.getTopRatedVideo(category);
   }
 
