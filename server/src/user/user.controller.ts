@@ -82,6 +82,7 @@ export class UserController {
    */
   @Get(':userId/videos/rated')
   @ApiSuccessResponse(200, '비디오 반환 성공', RatedVideoResponseDto)
+  @ApiFailResponse('존재하지 않는 user', [UserNotFoundException])
   getRatedVideos(
     @Param('userId') userId: string,
     @Query() query: UserRatedVideoQueryDto,

@@ -154,6 +154,7 @@ export class UserService {
           },
         }
       : '$actions';
+
     const data = await this.UserModel.aggregate([
       { $match: { uuid } },
       {
@@ -167,6 +168,9 @@ export class UserService {
         },
       },
     ]);
+
+    if (!data.length) throw new UserNotFoundException();
+
     const { actions, ...rater } = data.pop();
     const videos = await Promise.all(
       actions.map(async (action) => {
@@ -179,6 +183,7 @@ export class UserService {
         return { ...video, ratedAt: action.updatedAt };
       }),
     );
+
     return { rater, videos };
   }
 }
