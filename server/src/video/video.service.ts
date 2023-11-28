@@ -16,6 +16,7 @@ import { ActionService } from 'src/action/action.service';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
+import { VideoInfoDto } from './dto/video-info.dto';
 
 @Injectable()
 export class VideoService {
@@ -60,7 +61,7 @@ export class VideoService {
     return modifiedManifest;
   }
 
-  async getVideoInfo(video: any) {
+  async getVideoInfo(video: any): Promise<VideoInfoDto> {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
     const rating = totalRating / raterCount.toFixed(1);
     const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
@@ -163,8 +164,42 @@ export class VideoService {
     };
   }
 
-  getTrendVideo(limit: number) {
-    return `get trend video ${limit}`;
+  async getTrendVideo(limit: number) {
+    const fields = Object.keys(this.VideoModel.schema.paths).reduce(
+      (acc, field) => {
+        acc[field] = 1;
+        return acc;
+      },
+      {},
+    );
+
+    const trendVideos = await this.VideoModel.aggregate([
+      {
+        $project: {
+          ...fields,
+          trendScore: {
+            $divide: [
+              '$viewCount',
+              { $pow: [{ $subtract: ['$$NOW', '$uploadedAt'] }, 1.8] },
+            ],
+          },
+        },
+      },
+      { $sort: { trendScore: -1 } },
+      { $project: { trendScore: 0 } },
+      { $limit: limit },
+    ]);
+
+    await this.UserModel.populate(trendVideos, {
+      path: 'uploaderId',
+      select: '-_id -actions',
+    });
+
+    const videos = await Promise.all(
+      trendVideos.map((video) => this.getVideoInfo(video)),
+    );
+
+    return videos;
   }
 
   async getTopRatedVideo(category: string) {

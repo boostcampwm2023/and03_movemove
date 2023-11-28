@@ -124,7 +124,8 @@ export class VideoController {
    * 인기 비디오 반환
    */
   @Get('trend')
-  getTrendVideo(@Param('limit') limit: number) {
+  @ApiSuccessResponse(200, '비디오 조회 성공', VideoInfoDto)
+  getTrendVideo(@Query('limit') limit: number) {
     return this.videoService.getTrendVideo(limit);
   }
 
