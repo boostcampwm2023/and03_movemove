@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable class-methods-use-this */
-import { Injectable, StreamableFile } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { putObject } from 'src/ncpAPI/putObject';
@@ -12,8 +12,7 @@ import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import axios from 'axios';
-import { createReadStream } from 'fs';
-import { join } from 'path';
+import { ActionService } from 'src/action/action.service';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -23,6 +22,7 @@ export class VideoService {
   constructor(
     @InjectModel('Video') private VideoModel: Model<Video>,
     @InjectModel('User') private UserModel: Model<User>,
+    private actionService: ActionService,
   ) {}
 
   async getRandomVideo(category: string, limit: number) {
@@ -44,6 +44,8 @@ export class VideoService {
   }
 
   async getManifest(videoId: string, userId: string, seed: number) {
+    this.actionService.viewVideo(videoId, userId, seed);
+
     const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
     const manifestURL = `${process.env.MANIFEST_URL_PREFIX}${videoId}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
     const manifest: string = await axios
