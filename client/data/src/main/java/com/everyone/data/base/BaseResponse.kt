@@ -1,14 +1,5 @@
 package com.everyone.data.base
 
-sealed class BaseResponse<T> {
-    data class Success<T>(
-        val statusCode: Int?,
-        val message: String?,
-        val data: T
-    ) : BaseResponse<T>()
+import android.os.Parcelable
 
-    data class Failure<T>(
-        val statusCode: Int?,
-        val message: String?
-    ) : BaseResponse<T>()
-}
+interface BaseResponse : Parcelable

@@ -1,4 +1,4 @@
-package com.everyone.data.remote
+package com.everyone.data.remote.model
 
 data class UrlParams(
     val pathArray: Array<out String>,
