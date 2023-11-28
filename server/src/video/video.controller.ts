@@ -38,11 +38,10 @@ import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
 import { FileExtensionPipe } from './video.pipe';
 import { RandomVideoQueryDto } from './dto/random-video-query.dto';
-import { RandomVideoResponseDto } from './dto/random-video-response.dto';
 import { VideoSummaryResponseDto } from './dto/video-summary-response.dto';
-import { VideoResponseDto } from './dto/video-response.dto';
 import { VideoInfoDto } from './dto/video-info.dto';
 import { VideoRatingResponseDTO } from './dto/video-rating-response.dto';
+import { TopVideoQueryDto } from './dto/top-video-query.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
@@ -60,7 +59,7 @@ export class VideoController {
    */
   @ApiTags('COMPLETE')
   @Get('random')
-  @ApiSuccessResponse(200, '랜덤 비디오 반환 성공', RandomVideoResponseDto)
+  @ApiSuccessResponse(200, '랜덤 비디오 반환 성공', VideoInfoDto)
   getRandomVideo(@Query() query: RandomVideoQueryDto) {
     return this.videoService.getRandomVideo(query.category, query.limit);
   }
@@ -105,8 +104,10 @@ export class VideoController {
   }
 
   @Get('top-rated')
-  getTopRatedVideo(@Query('category') category: string) {
-    return this.videoService.getTopRatedVideo(category);
+  @ApiTags('COMPLETE')
+  @ApiSuccessResponse(200, 'TOP 10 조회 성공', VideoInfoDto)
+  getTopRatedVideo(@Query() query: TopVideoQueryDto) {
+    return this.videoService.getTopRatedVideo(query.category);
   }
 
   @Get(':id/manifest')
