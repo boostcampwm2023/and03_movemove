@@ -14,6 +14,7 @@ import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
+import { VideoInfoDto } from './dto/video-info.dto';
 
 @Injectable()
 export class VideoService {
@@ -40,7 +41,7 @@ export class VideoService {
     return videoData;
   }
 
-  async getVideoInfo(video: any) {
+  async getVideoInfo(video: any): Promise<VideoInfoDto> {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
     const rating = totalRating / raterCount.toFixed(1);
     const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.MANIFEST_URL_SUFFIX}`;
@@ -165,8 +166,8 @@ export class VideoService {
           },
         },
       },
-      { $project: { trendScore: 0 } },
       { $sort: { trendScore: -1 } },
+      { $project: { trendScore: 0 } },
       { $limit: limit },
     ]);
 
