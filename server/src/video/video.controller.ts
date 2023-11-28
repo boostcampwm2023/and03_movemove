@@ -30,7 +30,6 @@ import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { RequestUser, User } from 'src/decorators/request-user';
 import { ActionService } from 'src/action/action.service';
 import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
-import { ReasonRequiredException } from 'src/exceptions/reason-required.exception';
 import { IgnoreInterceptor } from 'src/decorators/ignore-interceptor';
 import { ManifestQueryDto } from 'src/action/dto/manifest-query.dto';
 import { VideoService } from './video.service';
@@ -42,6 +41,7 @@ import { VideoSummaryResponseDto } from './dto/video-summary-response.dto';
 import { VideoInfoDto } from './dto/video-info.dto';
 import { VideoRatingResponseDTO } from './dto/video-rating-response.dto';
 import { TopVideoQueryDto } from './dto/top-video-query.dto';
+import { VideoListResponseDto } from './dto/video-list-response.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
@@ -59,7 +59,7 @@ export class VideoController {
    */
   @ApiTags('COMPLETE')
   @Get('random')
-  @ApiSuccessResponse(200, '랜덤 비디오 반환 성공', VideoInfoDto)
+  @ApiSuccessResponse(200, '랜덤 비디오 반환 성공', VideoListResponseDto)
   getRandomVideo(@Query() query: RandomVideoQueryDto) {
     return this.videoService.getRandomVideo(query.category, query.limit);
   }
@@ -91,7 +91,7 @@ export class VideoController {
    */
   @Get('top-rated')
   @ApiTags('COMPLETE')
-  @ApiSuccessResponse(200, 'TOP 10 조회 성공', VideoInfoDto)
+  @ApiSuccessResponse(200, 'TOP 10 조회 성공', VideoListResponseDto)
   getTopRatedVideo(@Query() query: TopVideoQueryDto) {
     return this.videoService.getTopRatedVideo(query.category);
   }
@@ -124,7 +124,7 @@ export class VideoController {
    * 인기 비디오 반환
    */
   @Get('trend')
-  @ApiSuccessResponse(200, '비디오 조회 성공', VideoInfoDto)
+  @ApiSuccessResponse(200, '비디오 조회 성공', VideoListResponseDto)
   getTrendVideo(@Query('limit') limit: number) {
     return this.videoService.getTrendVideo(limit);
   }
@@ -160,7 +160,6 @@ export class VideoController {
   @ApiSuccessResponse(200, '비디오 별점 등록/수정 성공', VideoRatingResponseDTO)
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
   @ApiFailResponse('별점 등록 실패', [NeverViewVideoException])
-  @ApiFailResponse('별점 사유 필요', [ReasonRequiredException])
   updateVideoRating(
     @Param('id') videoId: string,
     @Body() videoRatingDto: VideoRatingDTO,

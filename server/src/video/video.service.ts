@@ -38,10 +38,10 @@ export class VideoService {
       select: '-_id -actions',
     });
 
-    const videoData = await Promise.all(
+    const videoInfos = await Promise.all(
       videos.map((video) => this.getVideoInfo(video)),
     );
-    return videoData;
+    return { videos: videoInfos };
   }
 
   async getManifest(videoId: string, userId: string, seed: number) {
@@ -63,7 +63,7 @@ export class VideoService {
 
   async getVideoInfo(video: any): Promise<VideoInfoDto> {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
-    const rating = totalRating / raterCount.toFixed(1);
+    const rating = (totalRating / raterCount).toFixed(1);
     const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
 
     const { profileImageExtension, uuid, ...uploaderInfo } =
@@ -199,7 +199,7 @@ export class VideoService {
       trendVideos.map((video) => this.getVideoInfo(video)),
     );
 
-    return videos;
+    return { videos };
   }
 
   async getTopRatedVideo(category: string) {
@@ -250,10 +250,10 @@ export class VideoService {
       select: '-_id -actions',
     });
 
-    const videoData = await Promise.all(
+    const videos = await Promise.all(
       top10Videos.map((video) => this.getVideoInfo(video)),
     );
-    return videoData;
+    return { videos };
   }
 
   async getVideo(videoId: string) {
