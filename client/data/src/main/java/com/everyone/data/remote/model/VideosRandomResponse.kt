@@ -8,12 +8,12 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class VideosRandomResponse(
-    val data: List<VideoRandomResponse>?
+    val videos: List<VideoRandomResponse>?
 ) : BaseResponse {
     companion object : Mapper<VideosRandomResponse, VideosRandom> {
         override fun VideosRandomResponse.toDomainModel(): VideosRandom {
             return VideosRandom(
-                data = data?.map {
+                videos = videos?.map {
                     it.toDomainModel()
                 }
             )

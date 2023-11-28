@@ -5,5 +5,5 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class VideosRandom(
-    val data: List<VideoRandom>?
+    val videos: List<VideoRandom>?
 ) : BaseModel
