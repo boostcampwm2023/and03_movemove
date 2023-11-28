@@ -46,36 +46,43 @@ export class VideoService {
     // 1. { $not : { $in : [videoIdList] }} 를 샘플한다.
     // 2. 1번에서 못가져온 만큼 actions에서 seed가 같지 않은 videoIdList를 한번더 만든다.
     // 3. videoIdList를 랜덤 정렬해서 다시 find { $in: [otherSeedIdList]}를 해준다.
-
     const unviewVideoList = await this.VideoModel.aggregate([
       { $match: condition },
       { $sample: { size: limit } },
     ]);
 
     const lackVideoCount = limit - unviewVideoList.length;
-    const otherSeedIdList = _.reject(actions, { seed }).map(
-      (userAction) => userAction.videoId,
+    const otherSeedIdList = _.sampleSize(
+      _.reject(actions, { seed }).map((userAction) => userAction.videoId),
+      lackVideoCount,
     );
-    // aggregate사용시
-    const viewVideoList = await this.VideoModel.aggregate([
-      { $match: { _id: { $in: [otherSeedIdList] } } },
-      { $sample: { size: lackVideoCount } },
-    ]);
-    // const viewVideoList = await this.VideoModel.find({
-    //   _id: { $in: [otherSeedIdList] },
-    // }); //
+
+    const viewVideoList = await this.VideoModel.find(
+      {
+        _id: { $in: otherSeedIdList },
+      },
+      {},
+      { lean: true },
+    );
     const videos = [...unviewVideoList, ...viewVideoList];
     await this.UserModel.populate(videos, {
       path: 'uploaderId',
       select: '-_id -actions',
     });
+
     const SEED_MAX = 1_000_000;
+    const viewSeed = seed ?? Math.floor(Math.random() * SEED_MAX);
     const videoInfos = await Promise.all(
-      videos.map((video) =>
-        this.getVideoInfo(video, seed ?? Math.floor(Math.random() * SEED_MAX)),
-      ),
+      videos.map((video) => this.getVideoInfo(video, viewSeed)),
     );
-    return { videos: videoInfos, seed };
+    const nextQueryString = new URLSearchParams({
+      category,
+      limit,
+      seed: viewSeed,
+    } as any).toString();
+
+    const next = `${process.env.SERVER_URL}videos/random?${nextQueryString}`;
+    return { videos: videoInfos, next };
   }
 
   async getManifest(videoId: string, userId: string, seed: number) {
