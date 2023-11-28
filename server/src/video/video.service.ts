@@ -42,8 +42,8 @@ export class VideoService {
 
   async getVideoInfo(video: any) {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
-    const rating = (totalRating / raterCount).toFixed(1);
-    const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.MANIFEST_URL_SUFFIX}`;
+    const rating = totalRating / raterCount.toFixed(1);
+    const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
 
     const { profileImageExtension, uuid, ...uploaderInfo } =
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
@@ -147,8 +147,58 @@ export class VideoService {
     return `get trend video ${limit}`;
   }
 
-  getTopRatedVideo(category: string) {
-    return `get top rated video ${category}`;
+  async getTopRatedVideo(category: string) {
+    const videoTotal = await this.VideoModel.aggregate([
+      { $match: { category } },
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+          totalRaterCount: { $sum: '$raterCount' },
+          totalRating: { $sum: '$totalRating' },
+        },
+      },
+    ]).then((result) => result.pop());
+
+    const avgRating = videoTotal.totalRating / videoTotal.totalRaterCount;
+    const percentile = 0.25;
+    const raterCountPercentile = await this.VideoModel.find(
+      { category },
+      { raterCount: 1 },
+    )
+      .sort({ raterCount: 1 })
+      .skip(Math.floor(videoTotal.count * percentile))
+      .limit(1)
+      .then((result) => result.pop());
+    const confidentNumber = raterCountPercentile.raterCount;
+    // 베이즈 평균으로 TOP 10 추출
+    const top10Videos = await this.VideoModel.aggregate([
+      { $match: { category } },
+      {
+        $project: {
+          data: '$$ROOT',
+          bayesian_avg: {
+            // 베이즈 평균 = (totalRating + confidentNumber * avgRating )/ (raterCount + confidentNumber),
+            $divide: [
+              { $add: ['$totalRating', confidentNumber * avgRating] },
+              { $add: ['$raterCount', confidentNumber] },
+            ],
+          },
+        },
+      },
+      { $sort: { bayesian_avg: -1 } },
+      { $limit: 10 },
+      { $replaceRoot: { newRoot: '$data' } },
+    ]);
+    await this.UserModel.populate(top10Videos, {
+      path: 'uploaderId',
+      select: '-_id -actions',
+    });
+
+    const videoData = await Promise.all(
+      top10Videos.map((video) => this.getVideoInfo(video)),
+    );
+    return videoData;
   }
 
   async getVideo(videoId: string) {

@@ -128,7 +128,7 @@ export class UserService {
     const videos = await Promise.all(
       videoData.map(async (video) => {
         const { thumbnailExtension, ...videoInfo } = video.toObject();
-        const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.MANIFEST_URL_SUFFIX}`;
+        const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
         const thumbnailImage = await getBucketImage(
           process.env.THUMBNAIL_BUCKET,
           thumbnailExtension,
