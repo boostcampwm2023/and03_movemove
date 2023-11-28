@@ -1,6 +1,8 @@
 package com.everyone.movemove_android.ui.screens.watching_video
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.everyone.domain.usecase.GetVideoRandomUseCase
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Category
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnClickedCategory
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnCategorySelected
@@ -14,11 +16,17 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class WatchingVideoViewModel @Inject constructor() : ViewModel(), WatchingVideoContract {
+class WatchingVideoViewModel @Inject constructor(
+    private val getVideoRandomUseCase: GetVideoRandomUseCase,
+) : ViewModel(), WatchingVideoContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
 
