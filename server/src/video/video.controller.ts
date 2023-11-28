@@ -12,7 +12,13 @@ import {
   UseGuards,
   Query,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOkResponse,
+  ApiProduces,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
@@ -102,8 +108,17 @@ export class VideoController {
     return this.videoService.getTopRatedVideo(category);
   }
 
+  /**
+   * Manifest 파일 반환
+   */
   @IgnoreInterceptor()
   @Get(':id/manifest')
+  @ApiProduces('application/vnd.apple.mpegurl')
+  @ApiOkResponse({
+    type: String,
+    description: '비디오 Manifest 파일',
+  })
+  @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
   @Header('content-type', 'application/vnd.apple.mpegurl')
   getManifest(
     @Param('id') videoId: string,
