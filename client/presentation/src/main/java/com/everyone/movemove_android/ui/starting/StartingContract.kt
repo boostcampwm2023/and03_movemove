@@ -1,8 +1,8 @@
-package com.everyone.movemove_android.ui.login
+package com.everyone.movemove_android.ui.starting
 
 import com.everyone.movemove_android.base.BaseContract
 
-interface LoginContract : BaseContract<LoginContract.State,LoginContract.Event,LoginContract.Effect> {
+interface StartingContract : BaseContract<StartingContract.State, StartingContract.Event, StartingContract.Effect> {
     data class State(
         val isLoading: Boolean = false
     )

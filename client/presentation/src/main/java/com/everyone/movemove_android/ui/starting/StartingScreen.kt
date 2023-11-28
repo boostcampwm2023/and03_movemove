@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.login
+package com.everyone.movemove_android.ui.starting
 
 import android.app.Activity
 import android.content.Context
@@ -36,10 +36,10 @@ import com.everyone.movemove_android.BuildConfig
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.R.drawable
 import com.everyone.movemove_android.base.use
-import com.everyone.movemove_android.ui.login.LoginActivity.Companion.SIGN_IN_REQUEST_CODE
-import com.everyone.movemove_android.ui.login.LoginContract.Effect.LaunchGoogleLogin
-import com.everyone.movemove_android.ui.login.LoginContract.Effect.LaunchKakaoLogin
-import com.everyone.movemove_android.ui.login.LoginContract.Event.OnClickKakaoLogin
+import com.everyone.movemove_android.ui.starting.LoginActivity.Companion.SIGN_IN_REQUEST_CODE
+import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchGoogleLogin
+import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchKakaoLogin
+import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnClickKakaoLogin
 import com.everyone.movemove_android.ui.theme.GoogleGray
 import com.everyone.movemove_android.ui.theme.KakaoYellow
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -54,7 +54,7 @@ import kotlinx.coroutines.flow.collectLatest
 
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = hiltViewModel()) {
+fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val (state, event, effect) = use(viewModel)
     val kakaoSignInClient = remember { UserApiClient.instance }
