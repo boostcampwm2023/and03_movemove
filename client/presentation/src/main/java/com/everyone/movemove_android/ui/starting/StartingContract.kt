@@ -4,7 +4,8 @@ import com.everyone.movemove_android.base.BaseContract
 
 interface StartingContract : BaseContract<StartingContract.State, StartingContract.Event, StartingContract.Effect> {
     data class State(
-        val isLoading: Boolean = false
+        val isLoading: Boolean = false,
+        val isSignUpNeeded: Boolean = false,
     )
 
     sealed interface Event {

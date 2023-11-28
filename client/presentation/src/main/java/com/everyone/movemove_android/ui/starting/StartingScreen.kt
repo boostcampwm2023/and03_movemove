@@ -154,125 +154,129 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        val context = LocalContext.current
-        val resourceId = context.resources.getIdentifier(STARTING_VIDEO_NAME, "raw", context.packageName)
+    with(state) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            val context = LocalContext.current
+            val resourceId = context.resources.getIdentifier(STARTING_VIDEO_NAME, "raw", context.packageName)
 
-        val videoDataSource by remember {
-            val dataSourceFactory = DefaultDataSource.Factory(context, DefaultDataSource.Factory(context))
-            val videoUri = Uri.parse("android.resource://" + context.packageName + "/" + resourceId);
-            mutableStateOf(ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(videoUri)))
-        }
-
-        val exoPlayer = remember {
-            ExoPlayer.Builder(context).build().apply {
-                setMediaSource(videoDataSource)
-                videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
-                repeatMode = Player.REPEAT_MODE_ONE
-                playWhenReady = true
-                prepare()
+            val videoDataSource by remember {
+                val dataSourceFactory = DefaultDataSource.Factory(context, DefaultDataSource.Factory(context))
+                val videoUri = Uri.parse("android.resource://" + context.packageName + "/" + resourceId);
+                mutableStateOf(ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(videoUri)))
             }
-        }
 
-        AndroidView(
-            modifier = Modifier.fillMaxSize(),
-            factory = {
-                PlayerView(context).apply {
-                    useController = false
-                    player = exoPlayer
-                    resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
+            val exoPlayer = remember {
+                ExoPlayer.Builder(context).build().apply {
+                    setMediaSource(videoDataSource)
+                    videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+                    repeatMode = Player.REPEAT_MODE_ONE
+                    playWhenReady = true
+                    prepare()
                 }
             }
-        )
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = StartingDim)
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = Color.Transparent)
-        ) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 80.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    modifier = Modifier.size(160.dp),
-                    painter = painterResource(id = R.drawable.ic_title_white),
-                    contentDescription = null
-                )
-
-                StyledText(
-                    text = stringResource(id = R.string.app_description),
-                    style = Typography.labelMedium,
-                    color = Color.White
-                )
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp)
-            ) {
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    onClick = { event(OnClickKakaoLogin) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = KakaoYellow,
-                        contentColor = Color.Black
-                    ),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        Icon(
-                            modifier = Modifier
-                                .align(alignment = Alignment.CenterStart)
-                                .size(24.dp),
-                            painter = painterResource(id = drawable.ic_kakao),
-                            contentDescription = null,
-                        )
-                        StyledText(
-                            modifier = Modifier.align(alignment = Alignment.Center),
-                            text = stringResource(R.string.kakao_login),
-                            style = Typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                            color = Color.Black
-                        )
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = {
+                    PlayerView(context).apply {
+                        useController = false
+                        player = exoPlayer
+                        resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
                     }
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-                Button(
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = StartingDim)
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = Color.Transparent)
+            ) {
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    onClick = { authResultLauncher.launch(SIGN_IN_REQUEST_CODE) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = GoogleGray,
-                        contentColor = Color.Black
-                    ), shape = RoundedCornerShape(10.dp)
+                        .align(Alignment.TopCenter)
+                        .padding(top = 80.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        Image(
+                    Image(
+                        modifier = Modifier.size(160.dp),
+                        painter = painterResource(id = R.drawable.ic_title_white),
+                        contentDescription = null
+                    )
+
+                    StyledText(
+                        text = stringResource(id = R.string.app_description),
+                        style = Typography.labelMedium,
+                        color = Color.White
+                    )
+                }
+
+                if (isSignUpNeeded) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .padding(16.dp)
+                    ) {
+                        Button(
                             modifier = Modifier
-                                .align(alignment = Alignment.CenterStart)
-                                .size(24.dp),
-                            painter = painterResource(id = drawable.ic_google),
-                            contentDescription = null,
-                        )
-                        StyledText(
-                            modifier = Modifier.align(alignment = Alignment.Center),
-                            text = stringResource(R.string.google_login),
-                            style = Typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                            color = Color.Black
-                        )
+                                .fillMaxWidth()
+                                .height(48.dp),
+                            onClick = { event(OnClickKakaoLogin) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = KakaoYellow,
+                                contentColor = Color.Black
+                            ),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                Icon(
+                                    modifier = Modifier
+                                        .align(alignment = Alignment.CenterStart)
+                                        .size(24.dp),
+                                    painter = painterResource(id = drawable.ic_kakao),
+                                    contentDescription = null,
+                                )
+                                StyledText(
+                                    modifier = Modifier.align(alignment = Alignment.Center),
+                                    text = stringResource(R.string.kakao_login),
+                                    style = Typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                                    color = Color.Black
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Button(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
+                            onClick = { authResultLauncher.launch(SIGN_IN_REQUEST_CODE) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = GoogleGray,
+                                contentColor = Color.Black
+                            ), shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                Image(
+                                    modifier = Modifier
+                                        .align(alignment = Alignment.CenterStart)
+                                        .size(24.dp),
+                                    painter = painterResource(id = drawable.ic_google),
+                                    contentDescription = null,
+                                )
+                                StyledText(
+                                    modifier = Modifier.align(alignment = Alignment.Center),
+                                    text = stringResource(R.string.google_login),
+                                    style = Typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                                    color = Color.Black
+                                )
+                            }
+                        }
                     }
                 }
             }
