@@ -22,6 +22,7 @@ val FooterBottomBackgroundInDark = Color(0xff000000)
 val CategoryBackgroundInDark = Color(0xff1F2128)
 val EditorTimelineDim = Color(0x88000000)
 val ProfileAddGray = Color(0xff616161)
+val StartingDim = Color(0xAA000000)
 
 @Composable
 fun textFieldSelectionColors() = TextSelectionColors(
