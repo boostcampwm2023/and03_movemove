@@ -60,8 +60,11 @@ export class VideoController {
   @ApiTags('COMPLETE')
   @Get('random')
   @ApiSuccessResponse(200, '랜덤 비디오 반환 성공', VideoListResponseDto)
-  getRandomVideo(@Query() query: RandomVideoQueryDto) {
-    return this.videoService.getRandomVideo(query.category, query.limit);
+  getRandomVideo(
+    @Query() query: RandomVideoQueryDto,
+    @RequestUser() user: User,
+  ) {
+    return this.videoService.getRandomVideo(query, user.id);
   }
 
   /**

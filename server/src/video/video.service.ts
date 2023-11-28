@@ -12,11 +12,13 @@ import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import axios from 'axios';
+import * as _ from 'lodash';
 import { ActionService } from 'src/action/action.service';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
 import { VideoInfoDto } from './dto/video-info.dto';
+import { RandomVideoQueryDto } from './dto/random-video-query.dto';
 
 @Injectable()
 export class VideoService {
@@ -26,12 +28,34 @@ export class VideoService {
     private actionService: ActionService,
   ) {}
 
-  async getRandomVideo(category: string, limit: number) {
-    const condition = category === CategoryEnum.전체 ? {} : { category };
+  async getRandomVideo(
+    { category, limit, seed }: RandomVideoQueryDto,
+    userId: string,
+  ) {
+    const userActions = await this.UserModel.aggregate([
+      { $match: { uuid: userId } },
+      { $project: { 'actions.videoId': 1, 'actions.seed': 1 } },
+    ]).then((result) => result.pop().actions);
+    console.log(userActions);
+    const viewIdList = userActions.map((userAction) => userAction.videoId);
+    const condition = {
+      _id: { $not: { $in: viewIdList } },
+      ...(category !== CategoryEnum.전체 && { category }),
+    };
+
+    // 유저 action을 싹 다 가져옴
+    // 1. { $not : { $in : [videoIdList] }} 를 샘플한다.
+    // 2. 1번에서 못가져온 만큼 actions에서 seed가 같지 않은 videoIdList를 한번더 만든다.
+    // 3. videoIdList를 랜덤 정렬해서 다시 find { $in: [otherSeedIdList]}를 해준다.
+
     const videos = await this.VideoModel.aggregate([
       { $match: condition },
       { $sample: { size: limit } },
     ]);
+
+    const lackVideoCount = limit - videos.length;
+    const otherSeedIdList = _.filter(viewIdList, { seed });
+    this.VideoModel.find({ _id: { $in: [otherSeedIdList] } }); //
 
     await this.UserModel.populate(videos, {
       path: 'uploaderId',

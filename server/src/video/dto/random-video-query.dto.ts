@@ -1,4 +1,10 @@
-import { IsEnum, IsInt, IsPositive } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+} from 'class-validator';
 import { CategoryEnum } from '../enum/category.enum';
 
 export class RandomVideoQueryDto {
@@ -15,4 +21,8 @@ export class RandomVideoQueryDto {
    */
   @IsEnum(CategoryEnum)
   category: CategoryEnum;
+
+  @IsOptional()
+  @IsNumber()
+  seed?: number;
 }
