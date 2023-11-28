@@ -32,40 +32,50 @@ export class VideoService {
     { category, limit, seed }: RandomVideoQueryDto,
     userId: string,
   ) {
-    const userActions = await this.UserModel.aggregate([
+    const actions = await this.UserModel.aggregate([
       { $match: { uuid: userId } },
       { $project: { 'actions.videoId': 1, 'actions.seed': 1 } },
     ]).then((result) => result.pop().actions);
-    console.log(userActions);
-    const viewIdList = userActions.map((userAction) => userAction.videoId);
+
+    const viewIdList = actions.map((userAction) => userAction.videoId);
     const condition = {
       _id: { $not: { $in: viewIdList } },
       ...(category !== CategoryEnum.전체 && { category }),
     };
-
     // 유저 action을 싹 다 가져옴
     // 1. { $not : { $in : [videoIdList] }} 를 샘플한다.
     // 2. 1번에서 못가져온 만큼 actions에서 seed가 같지 않은 videoIdList를 한번더 만든다.
     // 3. videoIdList를 랜덤 정렬해서 다시 find { $in: [otherSeedIdList]}를 해준다.
 
-    const videos = await this.VideoModel.aggregate([
+    const unviewVideoList = await this.VideoModel.aggregate([
       { $match: condition },
       { $sample: { size: limit } },
     ]);
 
-    const lackVideoCount = limit - videos.length;
-    const otherSeedIdList = _.filter(viewIdList, { seed });
-    this.VideoModel.find({ _id: { $in: [otherSeedIdList] } }); //
-
+    const lackVideoCount = limit - unviewVideoList.length;
+    const otherSeedIdList = _.reject(actions, { seed }).map(
+      (userAction) => userAction.videoId,
+    );
+    // aggregate사용시
+    const viewVideoList = await this.VideoModel.aggregate([
+      { $match: { _id: { $in: [otherSeedIdList] } } },
+      { $sample: { size: lackVideoCount } },
+    ]);
+    // const viewVideoList = await this.VideoModel.find({
+    //   _id: { $in: [otherSeedIdList] },
+    // }); //
+    const videos = [...unviewVideoList, ...viewVideoList];
     await this.UserModel.populate(videos, {
       path: 'uploaderId',
       select: '-_id -actions',
     });
-
+    const SEED_MAX = 1_000_000;
     const videoInfos = await Promise.all(
-      videos.map((video) => this.getVideoInfo(video)),
+      videos.map((video) =>
+        this.getVideoInfo(video, seed ?? Math.floor(Math.random() * SEED_MAX)),
+      ),
     );
-    return { videos: videoInfos };
+    return { videos: videoInfos, seed };
   }
 
   async getManifest(videoId: string, userId: string, seed: number) {
@@ -85,10 +95,12 @@ export class VideoService {
     return modifiedManifest;
   }
 
-  async getVideoInfo(video: any): Promise<VideoInfoDto> {
+  async getVideoInfo(video: any, seed?: number): Promise<VideoInfoDto> {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
     const rating = (totalRating / raterCount).toFixed(1);
-    const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
+    const manifest = `${process.env.SERVER_URL}videos/${
+      videoInfo._id
+    }/manifest${seed ? `?seed=${seed}` : ''}`;
 
     const { profileImageExtension, uuid, ...uploaderInfo } =
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
