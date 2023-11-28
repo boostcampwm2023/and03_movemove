@@ -1,7 +1,8 @@
 package com.everyone.data.remote
 
 import android.util.Log
-import com.everyone.data.base.BaseResponse
+import com.everyone.data.remote.model.ApiResponse
+import com.everyone.data.remote.model.UrlParams
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -12,6 +13,7 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.forms.FormDataContent
+import io.ktor.client.request.headers
 import io.ktor.client.request.request
 import io.ktor.http.HttpMethod
 import io.ktor.http.Parameters
@@ -55,14 +57,26 @@ class NetworkHandler {
         method: HttpMethod,
         urlParams: UrlParams,
         noinline content: (ParametersBuilder.() -> Unit)?
-    ): Flow<BaseResponse<T>> = flow {
+    ): Flow<ApiResponse<T>> = flow {
         client.use { client ->
-            val response: BaseResponse.Success<T> = client.request {
+            val response: ApiResponse.Success<T> = client.request {
+                this.headers {
+                    append(
+                        "Authorization",
+                        "Bearer $newAccessToken"
+                    )
+                }
+
                 this.method = method
 
                 url {
                     path(*urlParams.pathArray)
-                    urlParams.queryList.forEach { query -> parameters.append(query.first, query.second) }
+                    urlParams.queryList.forEach { query ->
+                        parameters.append(
+                            query.first,
+                            query.second
+                        )
+                    }
                 }
 
                 content?.let {
@@ -76,7 +90,7 @@ class NetworkHandler {
                 emit(response)
             } ?: run {
                 emit(
-                    BaseResponse.Failure(
+                    ApiResponse.Failure(
                         statusCode = response.statusCode,
                         message = response.message
                     )
@@ -90,5 +104,8 @@ class NetworkHandler {
         private const val REQUEST_TIMEOUT = 5000L
         private const val CONNECT_TIMEOUT = 5000L
         private const val LOG_TAG = "KTOR_LOG"
+
+        // TODO API 테스트 할거면 본인 임시 토큰 값 넣어주세여~
+        const val newAccessToken = ""
     }
 }

@@ -11,6 +11,8 @@ import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
+import axios from 'axios';
+import { ActionService } from 'src/action/action.service';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -21,6 +23,7 @@ export class VideoService {
   constructor(
     @InjectModel('Video') private VideoModel: Model<Video>,
     @InjectModel('User') private UserModel: Model<User>,
+    private actionService: ActionService,
   ) {}
 
   async getRandomVideo(category: string, limit: number) {
@@ -41,10 +44,27 @@ export class VideoService {
     return videoData;
   }
 
+  async getManifest(videoId: string, userId: string, seed: number) {
+    this.actionService.viewVideo(videoId, userId, seed);
+
+    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
+    const manifestURL = `${process.env.MANIFEST_URL_PREFIX}${videoId}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
+    const manifest: string = await axios
+      .get(manifestURL)
+      .then((res) => res.data);
+
+    let index = -1;
+    const modifiedManifest = manifest.replace(/.*\.m3u8$/gm, () => {
+      index += 1;
+      return `${process.env.MANIFEST_URL_PREFIX}${videoId}_${encodingSuffixes[index]}${process.env.SBR_MANIFEST_URL_SUFFIX}`;
+    });
+    return modifiedManifest;
+  }
+
   async getVideoInfo(video: any): Promise<VideoInfoDto> {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
     const rating = totalRating / raterCount.toFixed(1);
-    const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.MANIFEST_URL_SUFFIX}`;
+    const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
 
     const { profileImageExtension, uuid, ...uploaderInfo } =
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
@@ -56,7 +76,6 @@ export class VideoService {
         videoInfo._id,
       ),
     ]);
-
     const uploader = {
       ...uploaderInfo,
       ...(profileImage && { profileImage }),
@@ -183,8 +202,58 @@ export class VideoService {
     return videos;
   }
 
-  getTopRatedVideo(category: string) {
-    return `get top rated video ${category}`;
+  async getTopRatedVideo(category: string) {
+    const videoTotal = await this.VideoModel.aggregate([
+      { $match: { category } },
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+          totalRaterCount: { $sum: '$raterCount' },
+          totalRating: { $sum: '$totalRating' },
+        },
+      },
+    ]).then((result) => result.pop());
+
+    const avgRating = videoTotal.totalRating / videoTotal.totalRaterCount;
+    const percentile = 0.25;
+    const raterCountPercentile = await this.VideoModel.find(
+      { category },
+      { raterCount: 1 },
+    )
+      .sort({ raterCount: 1 })
+      .skip(Math.floor(videoTotal.count * percentile))
+      .limit(1)
+      .then((result) => result.pop());
+    const confidentNumber = raterCountPercentile.raterCount;
+    // 베이즈 평균으로 TOP 10 추출
+    const top10Videos = await this.VideoModel.aggregate([
+      { $match: { category } },
+      {
+        $project: {
+          data: '$$ROOT',
+          bayesian_avg: {
+            // 베이즈 평균 = (totalRating + confidentNumber * avgRating )/ (raterCount + confidentNumber),
+            $divide: [
+              { $add: ['$totalRating', confidentNumber * avgRating] },
+              { $add: ['$raterCount', confidentNumber] },
+            ],
+          },
+        },
+      },
+      { $sort: { bayesian_avg: -1 } },
+      { $limit: 10 },
+      { $replaceRoot: { newRoot: '$data' } },
+    ]);
+    await this.UserModel.populate(top10Videos, {
+      path: 'uploaderId',
+      select: '-_id -actions',
+    });
+
+    const videoData = await Promise.all(
+      top10Videos.map((video) => this.getVideoInfo(video)),
+    );
+    return videoData;
   }
 
   async getVideo(videoId: string) {

@@ -94,7 +94,6 @@ const createStringToSign = (
     canonicalURI,
     headers,
   );
-
   const stringToSign = `AWS4-HMAC-SHA256
 ${timeStamp}
 ${scope}

@@ -22,6 +22,8 @@ import { UserService } from './user.service';
 import { ProfileDto } from './dto/profile.dto';
 import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { UserUploadedVideoQueryDto } from './dto/uploaded-video-request.dto';
+import { UserRatedVideoQueryDto } from './dto/rated-video-request.dto';
+import { RatedVideoResponseDto } from './dto/rated-video-response.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
@@ -72,6 +74,23 @@ export class UserController {
       userId,
       query.limit,
       query.lastId,
+    );
+  }
+
+  /**
+   * 특정 유저가 별점을 준 비디오 정보 반환
+   */
+  @Get(':userId/videos/rated')
+  @ApiSuccessResponse(200, '비디오 반환 성공', RatedVideoResponseDto)
+  @ApiFailResponse('존재하지 않는 user', [UserNotFoundException])
+  getRatedVideos(
+    @Param('userId') userId: string,
+    @Query() query: UserRatedVideoQueryDto,
+  ): Promise<RatedVideoResponseDto> {
+    return this.userService.getRatedVideos(
+      userId,
+      query.limit,
+      query.lastRatedAt,
     );
   }
 }
