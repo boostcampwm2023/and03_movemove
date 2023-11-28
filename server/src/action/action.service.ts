@@ -47,9 +47,6 @@ export class ActionService {
     videoRatingDto: VideoRatingDTO,
     userId: string,
   ) {
-    if (videoRatingDto.rating <= 2 && !videoRatingDto.reason) {
-      throw new ReasonRequiredException();
-    }
     // userId의 action을 조회해서 이전에 준 별점을 확인
     const user: any = await this.UserModel.findOne(
       { uuid: userId },

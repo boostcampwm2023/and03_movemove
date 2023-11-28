@@ -1,4 +1,4 @@
-import { IsEnum } from 'class-validator';
+import { IsEnum, NotEquals } from 'class-validator';
 import { CategoryEnum } from '../enum/category.enum';
 
 export class TopVideoQueryDto {
@@ -7,5 +7,6 @@ export class TopVideoQueryDto {
    * @example '챌린지'
    */
   @IsEnum(CategoryEnum)
+  @NotEquals(CategoryEnum.전체)
   category: CategoryEnum;
 }

@@ -103,6 +103,9 @@ export class VideoController {
     return this.videoService.uploadVideo(files, videoDto, user.id);
   }
 
+  /**
+   * 카테고리별 TOP 10 조회
+   */
   @Get('top-rated')
   @ApiTags('COMPLETE')
   @ApiSuccessResponse(200, 'TOP 10 조회 성공', VideoInfoDto)

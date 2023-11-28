@@ -1,4 +1,4 @@
-import { IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, Max, Min, ValidateIf } from 'class-validator';
 
 export class VideoRatingDTO {
   /**
@@ -6,11 +6,15 @@ export class VideoRatingDTO {
    * @example 2
    */
   @IsNumber()
+  @Min(1)
+  @Max(5)
   rating: number;
 
   /**
    * 사유
    * @example '선정적이에요'
    */
+  @ValidateIf((o) => o.rating <= 2)
+  @IsNotEmpty()
   reason?: string;
 }
