@@ -27,7 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.everyone.movemove_android.R.drawable.basic_profile
+import com.everyone.movemove_android.R.drawable.img_basic_profile
 import com.everyone.movemove_android.R.drawable.ic_left_arrow
 import com.everyone.movemove_android.R.drawable.ic_profile_add
 import com.everyone.movemove_android.R.string.complete
@@ -98,7 +98,7 @@ fun SignUpScreen() {
             ) {
                 Image(
                     modifier = Modifier.fillMaxSize(),
-                    painter = painterResource(id = basic_profile),
+                    painter = painterResource(id = img_basic_profile),
                     contentDescription = null
                 )
 
