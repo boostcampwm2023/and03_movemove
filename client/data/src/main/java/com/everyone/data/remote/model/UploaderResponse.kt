@@ -7,10 +7,10 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class UploaderResponse(
-    val uuid: String,
-    val nickname: String,
-    val statusMessage: String,
-    val profileImage: String
+    val uuid: String?,
+    val nickname: String?,
+    val statusMessage: String?,
+    val profileImage: String?
 ) : BaseResponse {
     companion object : Mapper<UploaderResponse, Uploader> {
         override fun UploaderResponse.toDomainModel(): Uploader {

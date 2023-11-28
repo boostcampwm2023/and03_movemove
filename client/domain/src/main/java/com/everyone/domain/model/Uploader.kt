@@ -5,8 +5,8 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class Uploader(
-    val uuid: String,
-    val nickname: String,
-    val statusMessage: String,
-    val profileImage: String
+    val uuid: String?,
+    val nickname: String?,
+    val statusMessage: String?,
+    val profileImage: String?
 ) : BaseModel

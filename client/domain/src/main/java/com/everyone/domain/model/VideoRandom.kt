@@ -5,6 +5,6 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class VideoRandom(
-    val video: Video,
-    val uploader: Uploader
+    val video: Video?,
+    val uploader: Uploader?
 ) : BaseModel

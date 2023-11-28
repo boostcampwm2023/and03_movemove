@@ -9,14 +9,14 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class VideoRandomResponse(
-    val videoResponse: VideoResponse,
-    val uploaderResponse: UploaderResponse
+    val videoResponse: VideoResponse?,
+    val uploaderResponse: UploaderResponse?
 ) : BaseResponse {
     companion object : Mapper<VideoRandomResponse, VideoRandom> {
         override fun VideoRandomResponse.toDomainModel(): VideoRandom {
             return VideoRandom(
-                video = videoResponse.toDomainModel(),
-                uploader = uploaderResponse.toDomainModel()
+                video = videoResponse?.toDomainModel(),
+                uploader = uploaderResponse?.toDomainModel()
             )
         }
     }
