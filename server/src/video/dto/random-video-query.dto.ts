@@ -22,6 +22,10 @@ export class RandomVideoQueryDto {
   @IsEnum(CategoryEnum)
   category: CategoryEnum;
 
+  /**
+   * 해당 시드로 시청된 영상은 제외하여 응답
+   * @example 123456
+   */
   @IsOptional()
   @IsNumber()
   seed?: number;

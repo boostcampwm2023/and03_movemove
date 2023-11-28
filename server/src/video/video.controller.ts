@@ -104,6 +104,7 @@ export class VideoController {
    * Manifest 파일 반환
    */
   @IgnoreInterceptor()
+  @ApiTags('COMPLETE')
   @Get(':id/manifest')
   @ApiProduces('application/vnd.apple.mpegurl')
   @ApiOkResponse({
@@ -128,6 +129,7 @@ export class VideoController {
    * 인기 비디오 반환
    */
   @Get('trend')
+  @ApiTags('COMPLETE')
   @ApiSuccessResponse(200, '비디오 조회 성공', VideoListResponseDto)
   getTrendVideo(@Query('limit') limit: number) {
     return this.videoService.getTrendVideo(limit);
