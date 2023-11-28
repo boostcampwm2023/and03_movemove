@@ -12,7 +12,6 @@ import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import { VideoDto } from './dto/video.dto';
-import { VideoRatingDTO } from './dto/video-rating.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
 
@@ -43,7 +42,7 @@ export class VideoService {
 
   async getVideoInfo(video: any) {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
-    const rating = totalRating / raterCount.toFixed(1);
+    const rating = (totalRating / raterCount).toFixed(1);
     const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.MANIFEST_URL_SUFFIX}`;
 
     const { profileImageExtension, uuid, ...uploaderInfo } =
@@ -56,7 +55,6 @@ export class VideoService {
         videoInfo._id,
       ),
     ]);
-
     const uploader = {
       ...uploaderInfo,
       ...(profileImage && { profileImage }),
