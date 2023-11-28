@@ -32,10 +32,29 @@ class MainRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun putVideosRating(
+        id: String,
+        rating: String,
+        reason: String
+    ): Flow<Unit> {
+        return flow {
+            newtWorkHandler.request<VideosRandomResponse>(
+                method = HttpMethod.Put,
+                urlParams = urlParamsBuilder.addPaths(PUT_VIDEOS_RATING_PATH.format(id)).build(),
+            ) {
+                append(PUT_VIDEOS_RATING_RATING, rating)
+                append(PUT_VIDEOS_RATING_REASON, reason)
+            }.collect()
+        }
+    }
 
     companion object {
         const val GET_VIDEOS_RANDOM_PATH = "/videos/random"
         const val GET_VIDEOS_RANDOM_LIMIT = "limit"
         const val GET_VIDEOS_RANDOM_CATEGORY = "category"
+
+        const val PUT_VIDEOS_RATING_PATH = "/videos/%s/rating"
+        const val PUT_VIDEOS_RATING_RATING = "rating"
+        const val PUT_VIDEOS_RATING_REASON = "reason"
     }
 }
