@@ -34,8 +34,29 @@ export class VideoService {
   ) {
     const actions = await this.UserModel.aggregate([
       { $match: { uuid: userId } },
-      { $project: { 'actions.videoId': 1, 'actions.seed': 1 } },
-    ]).then((result) => result.pop().actions);
+      { $unwind: '$actions' },
+      { $addFields: { videoId: { $toObjectId: '$actions.videoId' } } },
+      {
+        $lookup: {
+          from: 'videos',
+          localField: 'videoId',
+          foreignField: '_id',
+          as: 'video',
+        },
+      },
+      {
+        $match: {
+          ...(category !== CategoryEnum.전체 && { category }),
+        },
+      },
+      {
+        $project: {
+          'actions.videoId': 1,
+          'actions.seed': 1,
+        },
+      },
+      { $replaceRoot: { newRoot: '$actions' } },
+    ]);
 
     const viewIdList = actions.map((userAction) => userAction.videoId);
     const condition = {
