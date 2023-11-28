@@ -6,16 +6,19 @@ import {
   Post,
   Delete,
   Body,
-  StreamableFile,
   Header,
   UseInterceptors,
   UploadedFiles,
   UseGuards,
   Query,
 } from '@nestjs/common';
-import { createReadStream } from 'fs';
-import { join } from 'path';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOkResponse,
+  ApiProduces,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
@@ -28,6 +31,8 @@ import { RequestUser, User } from 'src/decorators/request-user';
 import { ActionService } from 'src/action/action.service';
 import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
 import { ReasonRequiredException } from 'src/exceptions/reason-required.exception';
+import { IgnoreInterceptor } from 'src/decorators/ignore-interceptor';
+import { ManifestQueryDto } from 'src/action/dto/manifest-query.dto';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -91,11 +96,28 @@ export class VideoController {
     return this.videoService.getTopRatedVideo(query.category);
   }
 
+  /**
+   * Manifest 파일 반환
+   */
+  @IgnoreInterceptor()
   @Get(':id/manifest')
-  @Header('Content-Type', 'application/json')
-  getManifest() {
-    const file = createReadStream(join(process.cwd(), 'package.json'));
-    return new StreamableFile(file);
+  @ApiProduces('application/vnd.apple.mpegurl')
+  @ApiOkResponse({
+    type: String,
+    description: '비디오 Manifest 파일',
+  })
+  @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
+  @Header('content-type', 'application/vnd.apple.mpegurl')
+  getManifest(
+    @Param('id') videoId: string,
+    @RequestUser() user: User,
+    @Query() manifestQueryDto: ManifestQueryDto,
+  ) {
+    return this.videoService.getManifest(
+      videoId,
+      user.id,
+      manifestQueryDto.seed,
+    );
   }
 
   /**

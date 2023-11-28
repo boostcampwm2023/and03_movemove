@@ -11,6 +11,8 @@ import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
+import axios from 'axios';
+import { ActionService } from 'src/action/action.service';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -20,6 +22,7 @@ export class VideoService {
   constructor(
     @InjectModel('Video') private VideoModel: Model<Video>,
     @InjectModel('User') private UserModel: Model<User>,
+    private actionService: ActionService,
   ) {}
 
   async getRandomVideo(category: string, limit: number) {
@@ -38,6 +41,23 @@ export class VideoService {
       videos.map((video) => this.getVideoInfo(video)),
     );
     return videoData;
+  }
+
+  async getManifest(videoId: string, userId: string, seed: number) {
+    this.actionService.viewVideo(videoId, userId, seed);
+
+    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
+    const manifestURL = `${process.env.MANIFEST_URL_PREFIX}${videoId}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
+    const manifest: string = await axios
+      .get(manifestURL)
+      .then((res) => res.data);
+
+    let index = -1;
+    const modifiedManifest = manifest.replace(/.*\.m3u8$/gm, () => {
+      index += 1;
+      return `${process.env.MANIFEST_URL_PREFIX}${videoId}_${encodingSuffixes[index]}${process.env.SBR_MANIFEST_URL_SUFFIX}`;
+    });
+    return modifiedManifest;
   }
 
   async getVideoInfo(video: any) {

@@ -16,7 +16,7 @@ export class ActionService {
     @InjectModel('User') private UserModel: Model<User>,
   ) {}
 
-  async viewVideo(videoId: string, userId: string) {
+  async viewVideo(videoId: string, userId: string, seed: number) {
     // Using custom connection
     const session = await this.connection.startSession();
     await session.withTransaction(async () => {
@@ -31,13 +31,35 @@ export class ActionService {
           }
         });
 
-      await this.UserModel.updateOne(
+      // 기존에 시청한적이 있다면 seed만 업데이트
+      const modifiedCount = await this.UserModel.updateOne(
         {
           uuid: userId,
-          actions: { $not: { $elemMatch: { videoId } } },
+          'actions.videoId': videoId,
         },
-        { $push: { actions: { videoId, reason: null, rating: null } } },
-      ).session(session);
+        { $set: { 'actions.$.seed': seed ?? null } },
+      )
+        .session(session)
+        .then((result) => result.modifiedCount);
+
+      if (modifiedCount === 0) {
+        // 처음 시청한다면 action document를 push
+        await this.UserModel.updateOne(
+          {
+            uuid: userId,
+          },
+          {
+            $push: {
+              actions: {
+                videoId,
+                seed: seed ?? null,
+                reason: null,
+                rating: null,
+              },
+            },
+          },
+        ).session(session);
+      }
     });
     session.endSession();
   }
