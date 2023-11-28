@@ -33,11 +33,10 @@ import com.everyone.movemove_android.R.string.edit_profile
 import com.everyone.movemove_android.R.string.profile_name
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.theme.Typography
+import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 
 @Composable
 fun MyScreen() {
-    val interactionSource = remember { MutableInteractionSource() }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -69,11 +68,7 @@ fun MyScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = { }
-                ),
+                .clickableWithoutRipple {  },
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -98,11 +93,7 @@ fun MyScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = { }
-                ),
+                .clickableWithoutRipple {  },
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -127,11 +118,7 @@ fun MyScreen() {
                 .fillMaxWidth()
                 .height(48.dp)
                 .padding(start = 4.dp)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = { }
-                ),
+                .clickableWithoutRipple {  },
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
         ) {
