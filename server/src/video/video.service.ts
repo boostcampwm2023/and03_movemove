@@ -159,17 +159,19 @@ export class VideoService {
           totalRating: { $sum: '$totalRating' },
         },
       },
-    ]);
-    const avgRating = videoTotal[0].totalRating / videoTotal[0].totalRaterCount;
+    ]).then((result) => result.pop());
+
+    const avgRating = videoTotal.totalRating / videoTotal.totalRaterCount;
     const percentile = 0.25;
     const raterCountPercentile = await this.VideoModel.find(
       { category },
       { raterCount: 1 },
     )
       .sort({ raterCount: 1 })
-      .skip(Math.floor(videoTotal[0].count * percentile))
-      .limit(1);
-    const confidentNumber = raterCountPercentile[0].raterCount;
+      .skip(Math.floor(videoTotal.count * percentile))
+      .limit(1)
+      .then((result) => result.pop());
+    const confidentNumber = raterCountPercentile.raterCount;
     // 베이즈 평균으로 TOP 10 추출
     const top10Videos = await this.VideoModel.aggregate([
       { $match: { category } },
