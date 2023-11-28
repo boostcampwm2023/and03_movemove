@@ -1,4 +1,4 @@
-package com.everyone.data.remote
+package com.everyone.data.remote.model
 
 class UrlParamsBuilder {
     private var pathArray: Array<out String> = arrayOf()

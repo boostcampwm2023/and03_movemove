@@ -55,7 +55,6 @@ export class VideoService {
         videoInfo._id,
       ),
     ]);
-
     const uploader = {
       ...uploaderInfo,
       ...(profileImage && { profileImage }),

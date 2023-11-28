@@ -38,8 +38,14 @@
     <string name="k_pop">K-POP</string>
     <string name="top_bar_profile_title">프로필</string>
 
-      <!--    signup-->
+    <!--    signup-->
     <string name="sign_up">회원가입</string>
     <string name="nickname">닉네임</string>
     <string name="one_line_introduce">한 줄 소개</string>
+
+    <!--    my-->
+    <string name="profile_name">유재석</string>
+    <string name="edit_profile">프로필 편집</string>
+    <string name="my_video">나의 영상</string>
+    <string name="my_scored_video">내가 점수를 남긴 영상</string>
 </resources>
