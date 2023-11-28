@@ -30,18 +30,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.everyone.movemove_android.BuildConfig
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.R.drawable
 import com.everyone.movemove_android.base.use
+import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.starting.LoginActivity.Companion.SIGN_IN_REQUEST_CODE
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchGoogleLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchKakaoLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnClickKakaoLogin
 import com.everyone.movemove_android.ui.theme.GoogleGray
 import com.everyone.movemove_android.ui.theme.KakaoYellow
+import com.everyone.movemove_android.ui.theme.Typography
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -163,13 +166,17 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Icon(
-                        modifier = Modifier.align(alignment = Alignment.CenterStart),
-                        painter = painterResource(id = drawable.ic_kakao_login),
+                        modifier = Modifier
+                            .align(alignment = Alignment.CenterStart)
+                            .size(24.dp),
+                        painter = painterResource(id = drawable.ic_kakao),
                         contentDescription = "null",
                     )
-                    Text(
+                    StyledText(
                         modifier = Modifier.align(alignment = Alignment.Center),
                         text = stringResource(R.string.kakao_login),
+                        style = Typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = Color.Black
                     )
                 }
             }
@@ -188,13 +195,15 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                     Image(
                         modifier = Modifier
                             .align(alignment = Alignment.CenterStart)
-                            .size(18.dp),
-                        painter = painterResource(id = drawable.img_google_login),
+                            .size(24.dp),
+                        painter = painterResource(id = drawable.ic_google),
                         contentDescription = "null",
                     )
-                    Text(
+                    StyledText(
                         modifier = Modifier.align(alignment = Alignment.Center),
                         text = stringResource(R.string.google_login),
+                        style = Typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = Color.Black
                     )
                 }
             }
