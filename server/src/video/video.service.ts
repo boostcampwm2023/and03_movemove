@@ -43,7 +43,7 @@ export class VideoService {
     return videoData;
   }
 
-  async getManifest(videoId: string) {
+  async getManifest(videoId: string, userId: string, seed: number) {
     const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
     const manifestURL = `${process.env.MANIFEST_URL_PREFIX}${videoId}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
     const manifest: string = await axios

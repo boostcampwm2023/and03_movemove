@@ -10,6 +10,9 @@ export class Action {
 
   @Prop()
   reason: string;
+
+  @Prop()
+  seed: number;
 }
 
 export const ActionSchema = SchemaFactory.createForClass(Action);

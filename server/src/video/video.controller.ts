@@ -26,6 +26,7 @@ import { ActionService } from 'src/action/action.service';
 import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
 import { ReasonRequiredException } from 'src/exceptions/reason-required.exception';
 import { IgnoreInterceptor } from 'src/decorators/ignore-interceptor';
+import { ManifestQueryDto } from 'src/action/dto/manifest-query.dto';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -104,8 +105,16 @@ export class VideoController {
   @IgnoreInterceptor()
   @Get(':id/manifest')
   @Header('content-type', 'application/vnd.apple.mpegurl')
-  getManifest(@Param('id') videoId: string) {
-    return this.videoService.getManifest(videoId);
+  getManifest(
+    @Param('id') videoId: string,
+    @RequestUser() user: User,
+    @Query() manifestQueryDto: ManifestQueryDto,
+  ) {
+    return this.videoService.getManifest(
+      videoId,
+      user.id,
+      manifestQueryDto.seed,
+    );
   }
 
   /**
