@@ -81,6 +81,7 @@ export class UserController {
    * 특정 유저가 별점을 준 비디오 정보 반환
    */
   @Get(':userId/videos/rated')
+  @ApiTags('COMPLETE')
   @ApiSuccessResponse(200, '비디오 반환 성공', RatedVideoResponseDto)
   @ApiFailResponse('존재하지 않는 user', [UserNotFoundException])
   getRatedVideos(

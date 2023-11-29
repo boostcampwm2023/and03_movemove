@@ -8,7 +8,7 @@ import { BaseExceptionFilter } from './http-Exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
-    .setTitle('Swagger Example')
+    .setTitle('CD 성공!!')
     .setDescription('Swagger study API description')
     .setVersion('1.0.0')
     .addTag('swagger')

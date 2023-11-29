@@ -1,4 +1,10 @@
-import { IsEnum, IsInt, IsPositive } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+} from 'class-validator';
 import { CategoryEnum } from '../enum/category.enum';
 
 export class RandomVideoQueryDto {
@@ -15,4 +21,12 @@ export class RandomVideoQueryDto {
    */
   @IsEnum(CategoryEnum)
   category: CategoryEnum;
+
+  /**
+   * 해당 시드로 시청된 영상은 제외하여 응답
+   * @example 123456
+   */
+  @IsOptional()
+  @IsNumber()
+  seed?: number;
 }

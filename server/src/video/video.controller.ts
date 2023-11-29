@@ -42,6 +42,7 @@ import { VideoInfoDto } from './dto/video-info.dto';
 import { VideoRatingResponseDTO } from './dto/video-rating-response.dto';
 import { TopVideoQueryDto } from './dto/top-video-query.dto';
 import { VideoListResponseDto } from './dto/video-list-response.dto';
+import { RandomVideoResponseDto } from './dto/random-video-response.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
@@ -59,9 +60,12 @@ export class VideoController {
    */
   @ApiTags('COMPLETE')
   @Get('random')
-  @ApiSuccessResponse(200, '랜덤 비디오 반환 성공', VideoListResponseDto)
-  getRandomVideo(@Query() query: RandomVideoQueryDto) {
-    return this.videoService.getRandomVideo(query.category, query.limit);
+  @ApiSuccessResponse(200, '랜덤 비디오 반환 성공', RandomVideoResponseDto)
+  getRandomVideo(
+    @Query() query: RandomVideoQueryDto,
+    @RequestUser() user: User,
+  ) {
+    return this.videoService.getRandomVideo(query, user.id);
   }
 
   /**
@@ -100,6 +104,7 @@ export class VideoController {
    * Manifest 파일 반환
    */
   @IgnoreInterceptor()
+  @ApiTags('COMPLETE')
   @Get(':id/manifest')
   @ApiProduces('application/vnd.apple.mpegurl')
   @ApiOkResponse({
@@ -124,6 +129,7 @@ export class VideoController {
    * 인기 비디오 반환
    */
   @Get('trend')
+  @ApiTags('COMPLETE')
   @ApiSuccessResponse(200, '비디오 조회 성공', VideoListResponseDto)
   getTrendVideo(@Query('limit') limit: number) {
     return this.videoService.getTrendVideo(limit);
