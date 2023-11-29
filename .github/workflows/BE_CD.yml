@@ -4,7 +4,7 @@ name: Backend CD  # 워크플로우 이름
 on:
   pull_request: # push, pull 등 git 작업이 트리거가 됨
     branches: [ "develop" ] 
-    types: [unlabeled, labeled]
+    types: [ closed ]
     paths: 
       - "server/**" # 특정 파일 변경시만 트리거 작동, 즉 서버 코드 변경시만
 
