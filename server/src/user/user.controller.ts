@@ -47,16 +47,11 @@ export class UserController {
   /**
    * 프로필 변경
    */
-  @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('profileImage'))
   @ApiSuccessResponse(200, '프로필 변경 성공', ProfileDto)
   @Patch('profile')
-  patchProfile(
-    @UploadedFile() profileImage: Express.Multer.File,
-    @Body() profileDto: ProfileDto,
-    @RequestUser() user: User,
-  ) {
-    return this.userService.patchProfile(profileDto, profileImage, user.id);
+  patchProfile(@Body() profileDto: ProfileDto, @RequestUser() user: User) {
+    return this.userService.patchProfile(profileDto, user.id);
   }
 
   /**

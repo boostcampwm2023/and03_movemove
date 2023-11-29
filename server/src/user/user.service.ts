@@ -47,13 +47,10 @@ export class UserService {
     };
   }
 
-  async patchProfile(
-    profileDto: ProfileDto,
-    profileImage: Express.Multer.File,
-    uuid: string,
-  ): Promise<ProfileDto> {
+  async patchProfile(profileDto: ProfileDto, uuid: string) {
     const updateOption = _.omitBy(profileDto, _.isEmpty); // profileDto 중 빈 문자열인 필드 제거
     const user = await this.UserModel.findOne({ uuid });
+
     if (user.nickname === updateOption.nickname) {
       // 실제로 변경된 필드만 updateOption에 남기기
       delete updateOption.nickname;
@@ -61,36 +58,34 @@ export class UserService {
     if (user.statusMessage === updateOption.statusMessage) {
       delete updateOption.statusMessage;
     }
+    // TODO profileExtension, profileImageExtension 중 통일하는게 좋으려나
+    updateOption.profileImageExtension = updateOption.profileExtension;
+    delete updateOption.profileExtension;
 
-    let updatedProfileImage;
-    if (profileImage) {
-      const profileImageExtension = profileImage.originalname.split('.').pop();
-      putObject(
-        process.env.PROFILE_BUCKET,
-        `${uuid}.${profileImageExtension}`,
-        profileImage.buffer,
-      );
-      updateOption.profileImageExtension = profileImageExtension;
-      updatedProfileImage = profileImage.buffer;
-    } else if (
-      'profileImage' in profileDto &&
-      user.profileImageExtension !== null
-    ) {
-      // profileImage 필드를 빈 문자열로 주었고, 기존 프로필이미지가 있었다면 삭제
+    // TODO profileUrl이 null이 아니라면 프로필 이미지가 업로드됐는지 확인
+    const profileUrl = profileDto.profileExtension
+      ? (
+          await getPresignedUrl(
+            process.env.PROFILE_BUCKET,
+            `${uuid}.${profileDto.profileExtension}`,
+            'GET',
+          )
+        ).url
+      : null;
+    if (profileDto.profileExtension === '' && user.profileImageExtension) {
+      // profileExtension 필드를 빈 문자열로 주었고, 기존 프로필이미지가 있었다면 삭제
       deleteObject(
         process.env.PROFILE_BUCKET,
         `${uuid}.${user.profileImageExtension}`,
       );
       updateOption.profileImageExtension = null;
-      updatedProfileImage = null;
     }
 
-    await this.UserModel.updateOne({ uuid }, updateOption);
-    if (updatedProfileImage !== undefined) {
-      updateOption.profileImage = updatedProfileImage;
-      delete updateOption.profileImageExtension;
-    }
-    return updateOption;
+    // TODO findOneAndUpdate이 아니라 다른걸 써서 update 결과를 받고 싶음
+    const result = (
+      await this.UserModel.findOneAndUpdate({ uuid }, updateOption)
+    ).toObject();
+    return { ...result, profileUrl };
   }
 
   async getUploadedVideos(
