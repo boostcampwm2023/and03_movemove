@@ -24,6 +24,7 @@ export const getAuthorization = (
   canonicalURI: string,
   headers: object,
   timeStamp: string,
+  querys?: object,
 ): string => {
   const accessKeyID = process.env.ACCESS_KEY!;
   const region = 'kr-standard';
@@ -40,6 +41,7 @@ export const getAuthorization = (
     scope,
     headers,
     timeStamp,
+    querys,
   );
   const authorization = `AWS4-HMAC-SHA256 Credential=${accessKeyID}/${scope}, SignedHeaders=${signedHeaders}, Signature=${kSignature}`;
   return authorization;
@@ -51,6 +53,7 @@ const createSignatureKey = (
   scope: string,
   headers: object,
   timeStamp: string,
+  querys?: object,
 ): string => {
   const kSigning = createSigningKey();
   const stringToSign = createStringToSign(
@@ -59,6 +62,7 @@ const createSignatureKey = (
     scope,
     headers,
     timeStamp,
+    querys,
   );
   const kSignature = CryptoJS.HmacSHA256(stringToSign, kSigning).toString(
     CryptoJS.enc.Hex,
@@ -88,11 +92,13 @@ const createStringToSign = (
   scope: string,
   headers: object,
   timeStamp: string,
+  querys?: object,
 ) => {
   const canonicalRequest = createCanonicalRequest(
     method,
     canonicalURI,
     headers,
+    querys,
   );
   const stringToSign = `AWS4-HMAC-SHA256
 ${timeStamp}
@@ -101,16 +107,31 @@ ${CryptoJS.enc.Hex.stringify(CryptoJS.SHA256(canonicalRequest))}`;
   return stringToSign;
 };
 
+const getQueryString = (querys) => {
+  if (querys) {
+    const queryParameters = Object.keys(querys)
+      .sort()
+      .map(
+        (key) =>
+          `${encodeURIComponent(key)}=${encodeURIComponent(querys[key])}`,
+      );
+    return queryParameters.join('&');
+  }
+  return '';
+};
+
 const createCanonicalRequest = (
   method: string,
   path: string,
   headers: object,
+  querys?: object,
 ) => {
   const hashedPayLoad = 'UNSIGNED-PAYLOAD';
+  const canonicalQueryString = getQueryString(querys);
   const { canonicalHeaders, signedHeaders } = getHeaders(headers);
   const canonicalRequest = `${method}
 ${path}
-
+${canonicalQueryString}
 ${canonicalHeaders}
 
 ${signedHeaders}

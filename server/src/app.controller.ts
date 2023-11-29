@@ -7,6 +7,7 @@ import { AdsResponseDto } from './video/dto/ads-response.dto';
 import { ApiFailResponse } from './decorators/api-fail-response';
 import { InvalidTokenException } from './exceptions/invalid-token.exception';
 import { TokenExpiredException } from './exceptions/token-expired.exception';
+import { listObjects } from './ncpAPI/listObjects';
 
 @Controller()
 export class AppController {
@@ -23,5 +24,10 @@ export class AppController {
   @UseGuards(AuthGuard)
   getAds(): Promise<{ adImages: any }> {
     return this.appService.getAds();
+  }
+
+  @Get('test')
+  test() {
+    return listObjects(process.env.ADVERTISEMENT_BUCKET);
   }
 }
