@@ -3,7 +3,7 @@
 /* eslint-disable class-methods-use-this */
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { putObject } from 'src/ncpAPI/putObject';
 import { requestEncoding } from 'src/ncpAPI/requestEncoding';
 import { User } from 'src/user/schemas/user.schema';
@@ -100,17 +100,19 @@ export class VideoService {
     };
   }
 
-  async uploadVideo(files: any, videoDto: VideoDto, uuid: string) {
-    const { title, content, category } = videoDto;
-    const video = files.video.pop();
-    const thumbnail = files.thumbnail.pop();
+  async uploadVideo(videoDto: VideoDto, uuid: string, videoId: string) {
+    const { videoExtension, thumbnailExtension } = videoDto;
+    const videoName = `${videoId}.${videoExtension}`;
+    const thumbnailName = `${videoId}.${thumbnailExtension}`;
+    // TODO 비디오, 썸네일 업로드 확인
+
+    await requestEncoding(process.env.INPUT_BUCKET, [videoName]);
 
     const uploader = await this.UserModel.findOne({ uuid });
 
-    const videoExtension = video.originalname.split('.').pop();
-    const thumbnailExtension = thumbnail.originalname.split('.').pop();
-
+    const { title, content, category } = videoDto;
     const newVideo = new this.VideoModel({
+      _id: videoId,
       title,
       content,
       category,
@@ -118,18 +120,8 @@ export class VideoService {
       thumbnailExtension,
       videoExtension,
     });
-
-    const videoName = `${newVideo._id}.${videoExtension}`;
-    const thumbnailName = `${newVideo._id}.${thumbnailExtension}`;
-
-    await Promise.all([
-      newVideo.save(),
-      putObject(process.env.INPUT_BUCKET, videoName, video.buffer),
-      putObject(process.env.THUMBNAIL_BUCKET, thumbnailName, thumbnail.buffer),
-    ]);
-    await requestEncoding(process.env.INPUT_BUCKET, [videoName]);
-
-    return { _id: newVideo._id, ...videoDto };
+    await newVideo.save();
+    return { videoId, ...videoDto };
   }
 
   async deleteEncodedVideo(videoId: string) {

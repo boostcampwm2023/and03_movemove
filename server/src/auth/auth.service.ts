@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
 import { User, UserDocument } from 'src/user/schemas/user.schema';
 import { JwtService } from '@nestjs/jwt';
@@ -18,8 +18,6 @@ import { SigninResponseDto } from './dto/signin-response.dto';
 import { SigninRequestDto } from './dto/signin-request.dto';
 import { RefreshRequestDto } from './dto/refresh-request.dto';
 import { RefreshResponseDto } from './dto/refresh-response.dto';
-
-const { v4: uuidv4 } = require('uuid');
 
 @Injectable()
 export class AuthService {
@@ -129,7 +127,7 @@ export class AuthService {
   }
 
   async getVideoPresignedUrl({ videoExtension, thumbnailExtension }) {
-    const videoId = uuidv4();
+    const videoId = new Types.ObjectId();
     const [videoUrl, thumbnailUrl] = await Promise.all([
       (
         await getPresignedUrl(

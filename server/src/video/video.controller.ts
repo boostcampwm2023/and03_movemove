@@ -8,13 +8,11 @@ import {
   Body,
   Header,
   UseInterceptors,
-  UploadedFiles,
   UseGuards,
   Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiConsumes,
   ApiOkResponse,
   ApiProduces,
   ApiTags,
@@ -67,7 +65,6 @@ export class VideoController {
   /**
    * 비디오 업로드
    */
-  @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'video', maxCount: 1 },
@@ -75,15 +72,14 @@ export class VideoController {
     ]),
   )
   @ApiTags('COMPLETE')
-  @Post()
+  @Post(':videoId')
   @ApiSuccessResponse(201, '비디오 업로드 성공', VideoSummaryResponseDto)
   uploadVideo(
-    @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() videoDto: VideoDto,
     @RequestUser() user: User,
+    @Param('videoId') videoId: string,
   ) {
-    this.fileExtensionPipe.transform(files);
-    return this.videoService.uploadVideo(files, videoDto, user.id);
+    return this.videoService.uploadVideo(videoDto, user.id, videoId);
   }
 
   /**
