@@ -181,7 +181,7 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                     PlayerView(context).apply {
                         useController = false
                         player = exoPlayer
-                        resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL
+                        resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
                     }
                 }
             )
