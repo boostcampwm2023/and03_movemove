@@ -25,9 +25,4 @@ export class AppController {
   getAds(): Promise<{ adImages: any }> {
     return this.appService.getAds();
   }
-
-  @Get('test')
-  test() {
-    return listObjects(process.env.ADVERTISEMENT_BUCKET);
-  }
 }
