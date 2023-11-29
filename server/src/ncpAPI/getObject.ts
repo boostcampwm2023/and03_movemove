@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { arrayBuffer } from 'stream/consumers';
 import { getTimeStamp, getAuthorization } from './common';
 
 export const getObject = async (bucketName: string, objectName: string) => {
@@ -14,16 +15,19 @@ export const getObject = async (bucketName: string, objectName: string) => {
   };
 
   const method = 'GET';
-  const response = await axios.get(apiUrl, {
-    headers: {
-      Authorization: getAuthorization(
-        method,
-        canonicalURI,
-        defaultHeaders,
-        timeStamp,
-      ),
-      ...defaultHeaders,
-    },
-  });
-  return response.data;
+  return axios
+    .get(apiUrl, {
+      headers: {
+        Authorization: getAuthorization(
+          method,
+          canonicalURI,
+          defaultHeaders,
+          timeStamp,
+        ),
+        ...defaultHeaders,
+      },
+      responseType: 'text',
+      responseEncoding: 'base64',
+    })
+    .then((response) => response.data);
 };

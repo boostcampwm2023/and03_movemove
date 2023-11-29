@@ -101,10 +101,14 @@ export class UserService {
       uploaderId,
       ...(lastId && { _id: { $lt: lastId } }),
     };
-    const videoData = await this.VideoModel.find(condition, {
-      uploaderId: 0,
-      videoExtension: 0,
-    })
+    const videoData = await this.VideoModel.find(
+      condition,
+      {
+        uploaderId: 0,
+        videoExtension: 0,
+      },
+      { lean: true },
+    )
       .sort({ _id: -1 })
       .limit(limit);
 
@@ -124,17 +128,21 @@ export class UserService {
     return { uploader, uploaderId };
   }
 
-  async getVideoInfos(videoData: Array<Document>) {
+  async getVideoInfos(videoData: Array<any>) {
     const videos = await Promise.all(
       videoData.map(async (video) => {
-        const { thumbnailExtension, ...videoInfo } = video.toObject();
+        const { thumbnailExtension, raterCount, totalRating, ...videoInfo } =
+          video;
+        const rating = raterCount
+          ? (totalRating / raterCount).toFixed(1)
+          : null;
         const manifest = `${process.env.SERVER_URL}videos/${videoInfo._id}/manifest`;
         const thumbnailImage = await getBucketImage(
           process.env.THUMBNAIL_BUCKET,
           thumbnailExtension,
           videoInfo._id,
         );
-        return { ...videoInfo, manifest, thumbnailImage };
+        return { ...videoInfo, manifest, rating, thumbnailImage };
       }),
     );
     return videos;
@@ -180,7 +188,6 @@ export class UserService {
     if (!data.length) throw new UserNotFoundException();
 
     const { actions, ...rater } = data.pop();
-    console.log(actions);
     const videos = await Promise.all(
       actions.map(async (action) => {
         const videoData = await this.VideoModel.findOne({

@@ -118,7 +118,7 @@ export class VideoService {
 
   async getVideoInfo(video: any, seed?: number): Promise<VideoInfoDto> {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
-    const rating = (totalRating / raterCount).toFixed(1);
+    const rating = raterCount ? (totalRating / raterCount).toFixed(1) : null;
     const manifest = `${process.env.SERVER_URL}videos/${
       videoInfo._id
     }/manifest${seed ? `?seed=${seed}` : ''}`;
@@ -281,7 +281,7 @@ export class VideoService {
       .skip(Math.floor(videoTotal.count * percentile))
       .limit(1)
       .then((result) => result.pop());
-    const confidentNumber = raterCountPercentile.raterCount;
+    const confidentNumber = Math.max(raterCountPercentile.raterCount, 1); // 0나누기 방지
     // 베이즈 평균으로 TOP 10 추출
     const top10Videos = await this.VideoModel.aggregate([
       { $match: { category } },
