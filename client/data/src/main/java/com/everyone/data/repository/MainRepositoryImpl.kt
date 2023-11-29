@@ -1,10 +1,6 @@
 package com.everyone.data.repository
 
 import com.everyone.data.remote.NetworkHandler
-import com.everyone.data.remote.model.AdsResponse
-import com.everyone.data.remote.model.UrlParamsBuilder
-import com.everyone.data.remote.model.VideosRandomResponse
-import com.everyone.domain.model.Ads
 import com.everyone.data.remote.model.VideosRandomResponse
 import com.everyone.data.remote.model.VideosRandomResponse.Companion.toDomainModel
 import com.everyone.domain.model.VideosRandom
@@ -20,15 +16,6 @@ import javax.inject.Inject
 
 class MainRepositoryImpl @Inject constructor(private val networkHandler: NetworkHandler) : MainRepository {
 
-    override suspend fun getAds(): Flow<Ads> {
-        return flow {
-            newtWorkHandler.request<AdsResponse>(
-                method = HttpMethod.Get,
-                urlParams = urlParamsBuilder.addPaths(GET_ADS_PATH).build(),
-                content = null
-            ).collect()
-        }
-    }
 
     override suspend fun getVideosRandom(
         limit: String,
