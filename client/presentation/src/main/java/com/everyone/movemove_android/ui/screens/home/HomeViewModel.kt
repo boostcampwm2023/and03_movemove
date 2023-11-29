@@ -37,7 +37,7 @@ class HomeViewModel @Inject constructor(
 
     init {
         // TODO 광고 API 문제가 있어 주석 처리했슴돠
-//        getAds()
+        getAds()
         getVideosTrend()
         geVideosTopRated(category = Category.CHALLENGE)
         geVideosTopRated(category = Category.OLD_SCHOOL)

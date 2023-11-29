@@ -71,6 +71,7 @@ import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WatchingVideoScreen(
+    id : String,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     viewModel: WatchingVideoViewModel = hiltViewModel(),
 ) {

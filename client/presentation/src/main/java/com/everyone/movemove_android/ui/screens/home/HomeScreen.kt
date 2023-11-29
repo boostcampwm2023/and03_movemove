@@ -45,7 +45,6 @@ import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.container.navigation.Destination
 import com.everyone.movemove_android.ui.container.navigation.Navigator
-import com.everyone.movemove_android.ui.theme.MoveMoveAndroidTheme
 import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import kotlinx.coroutines.NonCancellable
@@ -260,11 +259,7 @@ fun MoveMoveVideos(
         ) {
             items(videos.size) {
                 MoveMoveVideo(
-                    modifier = Modifier.clickableWithoutRipple {
-                        navigator.navigateTo(
-                            Destination.WATCHING_VIDEO
-                        )
-                    },
+                    navigator = navigator,
                     videos = videos[it],
                 )
             }
@@ -286,17 +281,24 @@ fun MoveMoveVideos(
 
 @Composable
 fun MoveMoveVideo(
-    modifier: Modifier,
+    navigator: Navigator,
     videos: Videos,
 ) {
-    Card(
-        modifier = modifier
-            .width(150.dp)
-            .height(250.dp)
-            .padding(bottom = 8.dp),
-        shape = RoundedCornerShape(size = 8.dp),
-    ) {
-        videos.video?.let { video ->
+    videos.video?.let { video ->
+        Card(
+            modifier = Modifier
+                .width(150.dp)
+                .height(250.dp)
+                .padding(bottom = 8.dp)
+                .clickableWithoutRipple {
+                    navigator.navigateToArgument(
+                        key = "id",
+                        value = video.id!!
+                    )
+                    navigator.navigateTo(Destination.WATCHING_VIDEO)
+                },
+            shape = RoundedCornerShape(size = 8.dp),
+        ) {
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
                 model = video.thumbnailImage,

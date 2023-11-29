@@ -1,5 +1,6 @@
 package com.everyone.movemove_android.ui.container
 
+import android.util.Log
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.background
@@ -76,7 +77,15 @@ fun MainScreen() {
             modifier = Modifier.padding(innerPadding)
         ) {
             navScreen(Destination.HOME.route) { HomeScreen(navigator = navigator) }
-            navScreen(Destination.WATCHING_VIDEO.route) { WatchingVideoScreen() }
+            navScreen(Destination.WATCHING_VIDEO.route) {
+                remember {
+                    navController.previousBackStackEntry?.savedStateHandle?.get<String>("id")
+                }?.let { id ->
+                    WatchingVideoScreen(id = id)
+                } ?: run {
+                    // TODO 에러 처리 필요!!
+                }
+            }
             navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
             navScreen(Destination.PROFILE.route) { ProfileScreen() }
         }
