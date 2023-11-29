@@ -1,14 +1,14 @@
-package com.everyone.movemove_android.ui.login
+package com.everyone.movemove_android.ui.starting
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.everyone.movemove_android.ui.login.LoginContract.Effect
-import com.everyone.movemove_android.ui.login.LoginContract.Effect.LaunchGoogleLogin
-import com.everyone.movemove_android.ui.login.LoginContract.Effect.LaunchKakaoLogin
-import com.everyone.movemove_android.ui.login.LoginContract.Event
-import com.everyone.movemove_android.ui.login.LoginContract.Event.OnClickGoogleLogin
-import com.everyone.movemove_android.ui.login.LoginContract.Event.OnClickKakaoLogin
-import com.everyone.movemove_android.ui.login.LoginContract.State
+import com.everyone.movemove_android.ui.starting.StartingContract.Effect
+import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchGoogleLogin
+import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchKakaoLogin
+import com.everyone.movemove_android.ui.starting.StartingContract.Event
+import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnClickGoogleLogin
+import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnClickKakaoLogin
+import com.everyone.movemove_android.ui.starting.StartingContract.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor() : ViewModel(), LoginContract {
+class StartingViewModel @Inject constructor() : ViewModel(), StartingContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
 

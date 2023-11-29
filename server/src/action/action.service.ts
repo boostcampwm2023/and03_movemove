@@ -3,7 +3,6 @@ import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Model, Connection } from 'mongoose';
 import { User } from 'src/decorators/request-user';
 import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
-import { ReasonRequiredException } from 'src/exceptions/reason-required.exception';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { VideoRatingDTO } from 'src/video/dto/video-rating.dto';
 import { Video } from 'src/video/schemas/video.schema';
@@ -16,8 +15,7 @@ export class ActionService {
     @InjectModel('User') private UserModel: Model<User>,
   ) {}
 
-  async viewVideo(videoId: string, userId: string) {
-    // Using custom connection
+  async viewVideo(videoId: string, userId: string, seed: number) {
     const session = await this.connection.startSession();
     await session.withTransaction(async () => {
       await this.VideoModel.updateOne(
@@ -31,13 +29,35 @@ export class ActionService {
           }
         });
 
-      await this.UserModel.updateOne(
+      // 기존에 시청한적이 있다면 seed만 업데이트
+      const modifiedCount = await this.UserModel.updateOne(
         {
           uuid: userId,
-          actions: { $not: { $elemMatch: { videoId } } },
+          'actions.videoId': videoId,
         },
-        { $push: { actions: { videoId, reason: null, rating: null } } },
-      ).session(session);
+        { $set: { 'actions.$.seed': seed ?? null } },
+      )
+        .session(session)
+        .then((result) => result.modifiedCount);
+
+      if (modifiedCount === 0) {
+        // 처음 시청한다면 action document를 push
+        await this.UserModel.updateOne(
+          {
+            uuid: userId,
+          },
+          {
+            $push: {
+              actions: {
+                videoId,
+                seed: seed ?? null,
+                reason: null,
+                rating: null,
+              },
+            },
+          },
+        ).session(session);
+      }
     });
     session.endSession();
   }
@@ -47,9 +67,6 @@ export class ActionService {
     videoRatingDto: VideoRatingDTO,
     userId: string,
   ) {
-    if (videoRatingDto.rating <= 2 && !videoRatingDto.reason) {
-      throw new ReasonRequiredException();
-    }
     // userId의 action을 조회해서 이전에 준 별점을 확인
     const user: any = await this.UserModel.findOne(
       { uuid: userId },

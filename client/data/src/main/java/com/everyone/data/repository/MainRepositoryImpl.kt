@@ -5,18 +5,20 @@ import com.everyone.data.remote.model.AdsResponse
 import com.everyone.data.remote.model.UrlParamsBuilder
 import com.everyone.data.remote.model.VideosRandomResponse
 import com.everyone.domain.model.Ads
+import com.everyone.data.remote.model.VideosRandomResponse
+import com.everyone.data.remote.model.VideosRandomResponse.Companion.toDomainModel
 import com.everyone.domain.model.VideosRandom
+import com.everyone.domain.model.base.DataState
+import com.everyone.domain.model.base.NetworkError
 import com.everyone.domain.repository.MainRepository
 import io.ktor.http.HttpMethod
+import io.ktor.http.path
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class MainRepositoryImpl @Inject constructor(
-    private val newtWorkHandler: NetworkHandler,
-    private val urlParamsBuilder: UrlParamsBuilder = UrlParamsBuilder()
-) : MainRepository {
+class MainRepositoryImpl @Inject constructor(private val networkHandler: NetworkHandler) : MainRepository {
 
     override suspend fun getAds(): Flow<Ads> {
         return flow {
@@ -31,16 +33,20 @@ class MainRepositoryImpl @Inject constructor(
     override suspend fun getVideosRandom(
         limit: String,
         category: String,
-    ): Flow<VideosRandom> {
+    ): Flow<DataState<VideosRandom>> {
         return flow {
-            newtWorkHandler.request<VideosRandomResponse>(
+            networkHandler.request<VideosRandomResponse>(
                 method = HttpMethod.Get,
-                urlParams = urlParamsBuilder.addPaths(GET_VIDEOS_RANDOM_PATH).addQueries(
-                    GET_VIDEOS_RANDOM_LIMIT to limit,
-                    GET_VIDEOS_RANDOM_CATEGORY to category
-                ).build(),
-                content = null
-            ).collect()
+                url = {
+                    path("videos", "random")
+                }
+            ).collect { response ->
+                response.data?.let {
+                    emit(DataState.Success(it.toDomainModel()))
+                } ?: run {
+                    emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
+                }
+            }
         }
     }
 
@@ -50,13 +56,16 @@ class MainRepositoryImpl @Inject constructor(
         reason: String
     ): Flow<Unit> {
         return flow {
-            newtWorkHandler.request<VideosRandomResponse>(
+            networkHandler.request<VideosRandomResponse>(
                 method = HttpMethod.Put,
-                urlParams = urlParamsBuilder.addPaths(PUT_VIDEOS_RATING_PATH.format(id)).build(),
-            ) {
-                append(PUT_VIDEOS_RATING_RATING, rating)
-                append(PUT_VIDEOS_RATING_REASON, reason)
-            }.collect()
+                url = {
+                    path("videos", id, "rating")
+                },
+                content = {
+                    append(PUT_VIDEOS_RATING_RATING, rating)
+                    append(PUT_VIDEOS_RATING_REASON, reason)
+                }
+            ).collect()
         }
     }
 

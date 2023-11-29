@@ -13,6 +13,7 @@ export interface Response<T> {
   message: string;
   data: T;
 }
+export const IgnoreSymbol = Symbol('ignore');
 
 @Injectable()
 export class TransformInterceptor<T>
@@ -26,6 +27,12 @@ export class TransformInterceptor<T>
     const response = context.getArgByIndex(1);
     const { statusCode } = response;
     const message = HttpStatus[statusCode];
+
+    const isIgnored = context.getHandler()[IgnoreSymbol];
+
+    if (isIgnored) {
+      return next.handle();
+    }
     return next.handle().pipe(
       tap(() => console.log(`After... ${Date.now() - start}ms`)),
       map((data) => ({ statusCode, message, data })),
