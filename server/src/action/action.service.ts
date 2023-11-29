@@ -3,7 +3,6 @@ import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Model, Connection } from 'mongoose';
 import { User } from 'src/decorators/request-user';
 import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
-import { ReasonRequiredException } from 'src/exceptions/reason-required.exception';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { VideoRatingDTO } from 'src/video/dto/video-rating.dto';
 import { Video } from 'src/video/schemas/video.schema';
@@ -17,7 +16,6 @@ export class ActionService {
   ) {}
 
   async viewVideo(videoId: string, userId: string, seed: number) {
-    // Using custom connection
     const session = await this.connection.startSession();
     await session.withTransaction(async () => {
       await this.VideoModel.updateOne(

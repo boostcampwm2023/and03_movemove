@@ -150,7 +150,7 @@ export class UserService {
           $filter: {
             input: '$actions',
             as: 'action',
-            cond: { $lte: ['$$action.updatedAt', new Date(lastRatedAt)] },
+            cond: { $lt: ['$$action.updatedAt', new Date(lastRatedAt)] },
           },
         }
       : '$actions';
@@ -167,7 +167,7 @@ export class UserService {
               {
                 $sortArray: {
                   input: array,
-                  sortBy: { updatedAt: 1 },
+                  sortBy: { updatedAt: -1 },
                 },
               },
               limit,
