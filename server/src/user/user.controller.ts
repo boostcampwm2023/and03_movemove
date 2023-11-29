@@ -24,6 +24,7 @@ import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { UserUploadedVideoQueryDto } from './dto/uploaded-video-request.dto';
 import { UserRatedVideoQueryDto } from './dto/rated-video-request.dto';
 import { RatedVideoResponseDto } from './dto/rated-video-response.dto';
+import { ProfileResponseDto } from './dto/profile-response.dto';
 
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
@@ -37,7 +38,7 @@ export class UserController {
    */
   @Get(':userId/profile')
   @ApiTags('COMPLETE')
-  @ApiSuccessResponse(200, '프로필 조회 성공', ProfileDto)
+  @ApiSuccessResponse(200, '프로필 조회 성공', ProfileResponseDto)
   @ApiFailResponse('프로필 조회 실패', [UserNotFoundException])
   getProfile(@Param('userId') userId: string) {
     return this.userService.getProfile(userId);

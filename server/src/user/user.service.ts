@@ -9,10 +9,12 @@ import * as _ from 'lodash';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import { VideoService } from 'src/video/video.service';
+import { getPresignedUrl } from 'src/ncpAPI/presignedURL';
 import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { User } from './schemas/user.schema';
 import { ProfileDto } from './dto/profile.dto';
 import { RatedVideoResponseDto } from './dto/rated-video-response.dto';
+import { ProfileResponseDto } from './dto/profile-response.dto';
 
 @Injectable()
 export class UserService {
@@ -22,23 +24,27 @@ export class UserService {
     private videoService: VideoService,
   ) {}
 
-  async getProfile(userId: string) {
+  async getProfile(userId: string): Promise<ProfileResponseDto> {
     const user = await this.UserModel.findOne({ uuid: userId });
 
     if (!user) {
       throw new UserNotFoundException();
     }
     const { uuid, profileImageExtension, nickname, statusMessage } = user;
-    const profileImage = await getBucketImage(
-      process.env.PROFILE_BUCKET,
-      profileImageExtension,
-      uuid,
-    );
-    return new ProfileDto({
+    const profileImageUrl = profileImageExtension
+      ? (
+          await getPresignedUrl(
+            process.env.PROFILE_BUCKET,
+            `${uuid}.${profileImageExtension}`,
+            'GET',
+          )
+        ).url
+      : null;
+    return {
       nickname,
       statusMessage,
-      ...(profileImage && { profileImage }),
-    });
+      ...(profileImageUrl && { profileImageUrl }),
+    };
   }
 
   async patchProfile(
@@ -180,7 +186,6 @@ export class UserService {
     if (!data.length) throw new UserNotFoundException();
 
     const { actions, ...rater } = data.pop();
-    console.log(actions);
     const videos = await Promise.all(
       actions.map(async (action) => {
         const videoData = await this.VideoModel.findOne({
