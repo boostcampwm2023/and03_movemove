@@ -46,7 +46,7 @@ export class VideoService {
       },
       {
         $match: {
-          ...(category !== CategoryEnum.전체 && { category }),
+          ...(category !== CategoryEnum.전체 && { 'video.category': category }),
         },
       },
       {
@@ -122,7 +122,6 @@ export class VideoService {
     const manifest = `${process.env.SERVER_URL}videos/${
       videoInfo._id
     }/manifest${seed ? `?seed=${seed}` : ''}`;
-
     const { profileImageExtension, uuid, ...uploaderInfo } =
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
     const [profileImage, thumbnailImage] = await Promise.all([
@@ -150,7 +149,7 @@ export class VideoService {
     const video = files.video.pop();
     const thumbnail = files.thumbnail.pop();
 
-    const uploader = await this.UserModel.findOne({ uuid });
+    const uploader = await this.UserModel.findOne({ uuid }, { _id: 1 });
 
     const videoExtension = video.originalname.split('.').pop();
     const thumbnailExtension = thumbnail.originalname.split('.').pop();
@@ -314,14 +313,14 @@ export class VideoService {
   }
 
   async getVideo(videoId: string) {
-    const video = await this.VideoModel.findOne({ _id: videoId }).populate(
-      'uploaderId',
-      '-_id -actions',
-    );
-
+    const video = await this.VideoModel.findOne(
+      { _id: videoId },
+      {},
+      { lean: true },
+    ).populate('uploaderId', '-_id -actions');
     if (!video) {
       throw new VideoNotFoundException();
     }
-    return this.getVideoInfo(video.toObject());
+    return this.getVideoInfo(video);
   }
 }
