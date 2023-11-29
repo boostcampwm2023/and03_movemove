@@ -23,6 +23,7 @@ import { RefreshRequestDto } from './dto/refresh-request.dto';
 import { RefreshResponseDto } from './dto/refresh-response.dto';
 import { AdvertisementPresignedUrlRequestDto } from './dto/advertisement-presigned-url-request.dto';
 import { ProfilePresignedUrlRequestDto } from './dto/profile-presigned-url-request.dto';
+import { VIdeoPresignedUrlRequestDto } from './dto/video-presigned-url-request.dto';
 
 @ApiTags('COMPLETE')
 @Controller()
@@ -78,5 +79,10 @@ export class AuthController {
   @Get('presigned-url/profile')
   getProfilePresignedUrl(@Query() query: ProfilePresignedUrlRequestDto) {
     return this.authService.getProfilePresignedUrl(query);
+  }
+
+  @Get('presigned-url/video')
+  getVideoPresignedUrl(@Query() query: VIdeoPresignedUrlRequestDto) {
+    return this.authService.getVideoPresignedUrl(query);
   }
 }

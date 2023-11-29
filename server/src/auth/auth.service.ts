@@ -19,6 +19,8 @@ import { SigninRequestDto } from './dto/signin-request.dto';
 import { RefreshRequestDto } from './dto/refresh-request.dto';
 import { RefreshResponseDto } from './dto/refresh-response.dto';
 
+const { v4: uuidv4 } = require('uuid');
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -124,5 +126,26 @@ export class AuthService {
       await getPresignedUrl(process.env.PROFILE_BUCKET, objectName, 'PUT')
     ).url;
     return { presignedUrl };
+  }
+
+  async getVideoPresignedUrl({ videoExtension, thumbnailExtension }) {
+    const videoId = uuidv4();
+    const [videoUrl, thumbnailUrl] = await Promise.all([
+      (
+        await getPresignedUrl(
+          process.env.INPUT_BUCKET,
+          `${videoId}.${videoExtension}`,
+          'PUT',
+        )
+      ).url,
+      (
+        await getPresignedUrl(
+          process.env.THUMBNAIL_BUCKET,
+          `${videoId}.${thumbnailExtension}`,
+          'PUT',
+        )
+      ).url,
+    ]);
+    return { videoId, videoUrl, thumbnailUrl };
   }
 }
