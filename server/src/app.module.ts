@@ -7,6 +7,9 @@ import { ActionModule } from './action/action.module';
 import { UserModule } from './user/user.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { PresignedUrlController } from './presigned-url/presigned-url.controller';
+import { PresignedUrlService } from './presigned-url/presigned-url.service';
+import { PresignedUrlModule } from './presigned-url/presigned-url.module';
 
 @Module({
   imports: [
@@ -16,8 +19,9 @@ import { AppService } from './app.service';
     VideoModule,
     ActionModule,
     UserModule,
+    PresignedUrlModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, PresignedUrlController],
+  providers: [AppService, PresignedUrlService],
 })
 export class AppModule {}
