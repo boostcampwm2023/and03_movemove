@@ -8,9 +8,9 @@ import java.util.Date
 
 @Parcelize
 data class VideoResponse(
-    val id: String?,
+    val _id: String?,
     val viewCount: Int?,
-    val rating: Int?,
+    val rating: String?,
     val category: String?,
     val title: String?,
     val content: String?,
@@ -21,7 +21,7 @@ data class VideoResponse(
     companion object : Mapper<VideoResponse, Video> {
         override fun VideoResponse.toDomainModel(): Video {
             return Video(
-                id = id,
+                id = _id,
                 viewCount = viewCount,
                 rating = rating,
                 category = category,

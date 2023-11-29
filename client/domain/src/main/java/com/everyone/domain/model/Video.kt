@@ -8,7 +8,7 @@ import java.util.Date
 data class Video(
     val id: String?,
     val viewCount: Int?,
-    val rating: Int?,
+    val rating: String?,
     val category: String?,
     val title: String?,
     val content: String?,

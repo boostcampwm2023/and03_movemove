@@ -1,21 +1,30 @@
 package com.everyone.data.repository
 
 import com.everyone.data.remote.NetworkHandler
+import com.everyone.data.remote.RemoteConstants.LIMIT
+import com.everyone.data.remote.RemoteConstants.RANDOM
+import com.everyone.data.remote.RemoteConstants.RATING
+import com.everyone.data.remote.RemoteConstants.REASON
+import com.everyone.data.remote.RemoteConstants.TREND
+import com.everyone.data.remote.RemoteConstants.VIDEOS
 import com.everyone.data.remote.model.VideosRandomResponse
 import com.everyone.data.remote.model.VideosRandomResponse.Companion.toDomainModel
+import com.everyone.data.remote.model.VideosTrendResponse
+import com.everyone.data.remote.model.VideosTrendResponse.Companion.toDomainModel
 import com.everyone.domain.model.VideosRandom
+import com.everyone.domain.model.VideosTrend
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.model.base.NetworkError
-import com.everyone.domain.repository.MainRepository
+import com.everyone.domain.repository.VideosRepository
 import io.ktor.http.HttpMethod
 import io.ktor.http.path
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class MainRepositoryImpl @Inject constructor(private val networkHandler: NetworkHandler) : MainRepository {
-
+class VideosRepositoryImpl @Inject constructor(
+    private val networkHandler: NetworkHandler
+) : VideosRepository {
 
     override suspend fun getVideosRandom(
         limit: String,
@@ -25,7 +34,7 @@ class MainRepositoryImpl @Inject constructor(private val networkHandler: Network
             networkHandler.request<VideosRandomResponse>(
                 method = HttpMethod.Get,
                 url = {
-                    path("videos", "random")
+                    path(VIDEOS, RANDOM)
                 }
             ).collect { response ->
                 response.data?.let {
@@ -41,30 +50,25 @@ class MainRepositoryImpl @Inject constructor(private val networkHandler: Network
         id: String,
         rating: String,
         reason: String
-    ): Flow<Unit> {
+    ): Flow<DataState<Unit>> {
         return flow {
-            networkHandler.request<VideosRandomResponse>(
+            networkHandler.request<Unit>(
                 method = HttpMethod.Put,
                 url = {
-                    path("videos", id, "rating")
+                    path(VIDEOS, id, RATING)
                 },
                 content = {
-                    append(PUT_VIDEOS_RATING_RATING, rating)
-                    append(PUT_VIDEOS_RATING_REASON, reason)
+                    append(RATING, rating)
+                    append(REASON, reason)
                 }
-            ).collect()
+            ).collect { response ->
+                response.data?.let {
+                    emit(DataState.Success(it))
+                } ?: run {
+                    emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
+                }
+            }
         }
     }
 
-    companion object {
-        const val GET_ADS_PATH = "/ads"
-
-        const val GET_VIDEOS_RANDOM_PATH = "/videos/random"
-        const val GET_VIDEOS_RANDOM_LIMIT = "limit"
-        const val GET_VIDEOS_RANDOM_CATEGORY = "category"
-
-        const val PUT_VIDEOS_RATING_PATH = "/videos/%s/rating"
-        const val PUT_VIDEOS_RATING_RATING = "rating"
-        const val PUT_VIDEOS_RATING_REASON = "reason"
-    }
 }

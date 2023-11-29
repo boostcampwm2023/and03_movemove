@@ -3,7 +3,7 @@ package com.everyone.movemove_android.ui.screens.watching_video
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.everyone.domain.usecase.GetVideoRandomUseCase
+import com.everyone.domain.usecase.GetVideosRandomUseCase
 import com.everyone.domain.usecase.PutVideosRatingUseCase
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Category
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnClickedCategory
@@ -26,7 +26,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WatchingVideoViewModel @Inject constructor(
-    private val getVideoRandomUseCase: GetVideoRandomUseCase,
+    private val getVideosRandomUseCase: GetVideosRandomUseCase,
     private val putVideosRatingUseCase: PutVideosRatingUseCase
 ) : ViewModel(), WatchingVideoContract {
     private val _state = MutableStateFlow(State())
@@ -47,10 +47,10 @@ class WatchingVideoViewModel @Inject constructor(
         viewModelScope.launch {
             putVideosRatingUseCase(
                 id = "1",
-                rating = "6",
+                rating = "4",
                 reason = "ㅇㅇ"
             ).onEach {
-                Log.d("ttt", it.toString())
+                Log.d("ttt ㅎㅎ", it.toString())
 
             }.launchIn(viewModelScope)
         }
