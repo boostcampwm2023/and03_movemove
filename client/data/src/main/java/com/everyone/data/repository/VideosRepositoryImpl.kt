@@ -1,10 +1,12 @@
 package com.everyone.data.repository
 
 import com.everyone.data.remote.NetworkHandler
+import com.everyone.data.remote.RemoteConstants.CATEGORY
 import com.everyone.data.remote.RemoteConstants.LIMIT
 import com.everyone.data.remote.RemoteConstants.RANDOM
 import com.everyone.data.remote.RemoteConstants.RATING
 import com.everyone.data.remote.RemoteConstants.REASON
+import com.everyone.data.remote.RemoteConstants.TOP_RATED
 import com.everyone.data.remote.RemoteConstants.TREND
 import com.everyone.data.remote.RemoteConstants.VIDEOS
 import com.everyone.data.remote.model.VideosRandomResponse
@@ -64,6 +66,24 @@ class VideosRepositoryImpl @Inject constructor(
             ).collect { response ->
                 response.data?.let {
                     emit(DataState.Success(it))
+                } ?: run {
+                    emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
+                }
+            }
+        }
+    }
+
+    override suspend fun getVideosTopRated(category: String): Flow<DataState<VideosTrend>> {
+        return flow {
+            networkHandler.request<VideosTrendResponse>(
+                method = HttpMethod.Get,
+                url = {
+                    path(VIDEOS, TOP_RATED)
+                    parameters.append(CATEGORY, category)
+                }
+            ).collect { response ->
+                response.data?.let {
+                    emit(DataState.Success(it.toDomainModel()))
                 } ?: run {
                     emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
                 }

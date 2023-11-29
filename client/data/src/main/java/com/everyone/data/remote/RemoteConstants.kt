@@ -9,5 +9,7 @@ object RemoteConstants {
     const val REASON = "reason"
     const val TREND = "trend"
     const val LIMIT = "limit"
+    const val TOP_RATED = "top-rated"
+    const val CATEGORY = "category"
 
 }
