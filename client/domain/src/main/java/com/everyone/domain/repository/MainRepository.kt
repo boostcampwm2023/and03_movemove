@@ -1,6 +1,7 @@
 package com.everyone.domain.repository
 
 import com.everyone.domain.model.VideosRandom
+import com.everyone.domain.model.base.DataState
 import kotlinx.coroutines.flow.Flow
 
 interface MainRepository {
@@ -8,7 +9,7 @@ interface MainRepository {
     suspend fun getVideosRandom(
         limit: String,
         category: String,
-    ): Flow<VideosRandom>
+    ): Flow<DataState<VideosRandom>>
 
     suspend fun putVideosRating(
         id: String,

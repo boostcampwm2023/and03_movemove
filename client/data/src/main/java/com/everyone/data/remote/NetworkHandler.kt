@@ -1,8 +1,7 @@
 package com.everyone.data.remote
 
 import android.util.Log
-import com.everyone.data.remote.model.ApiResponse
-import com.everyone.data.remote.model.UrlParams
+import com.everyone.data.base.ApiResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -18,7 +17,7 @@ import io.ktor.client.request.request
 import io.ktor.http.HttpMethod
 import io.ktor.http.Parameters
 import io.ktor.http.ParametersBuilder
-import io.ktor.http.path
+import io.ktor.http.URLBuilder
 import io.ktor.serialization.gson.gson
 import io.ktor.util.InternalAPI
 import kotlinx.coroutines.flow.Flow
@@ -55,11 +54,11 @@ class NetworkHandler {
     @OptIn(InternalAPI::class)
     inline fun <reified T> request(
         method: HttpMethod,
-        urlParams: UrlParams,
-        noinline content: (ParametersBuilder.() -> Unit)?
+        crossinline url: URLBuilder.() -> Unit,
+        noinline content: (ParametersBuilder.() -> Unit)? = null
     ): Flow<ApiResponse<T>> = flow {
         client.use { client ->
-            val response: ApiResponse.Success<T> = client.request {
+            val response: ApiResponse<T>? = client.request {
                 this.headers {
                     append(
                         "Authorization",
@@ -70,13 +69,7 @@ class NetworkHandler {
                 this.method = method
 
                 url {
-                    path(*urlParams.pathArray)
-                    urlParams.queryList.forEach { query ->
-                        parameters.append(
-                            query.first,
-                            query.second
-                        )
-                    }
+                    url()
                 }
 
                 content?.let {
@@ -86,15 +79,10 @@ class NetworkHandler {
                 }
             }.body()
 
-            response.data?.let {
+            response?.let {
                 emit(response)
             } ?: run {
-                emit(
-                    ApiResponse.Failure(
-                        statusCode = response.statusCode,
-                        message = response.message
-                    )
-                )
+                // todo: 응답 없을 때 에러 처리
             }
         }
     }
