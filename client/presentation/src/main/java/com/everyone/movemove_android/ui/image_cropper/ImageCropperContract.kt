@@ -14,6 +14,8 @@ interface ImageCropperContract : BaseContract<ImageCropperContract.State, ImageC
         data object OnClickImage : Event
 
         data object OnClickSectionSelector : Event
+
+        data object OnClickCompleteButton : Event
     }
 
     sealed interface Effect {

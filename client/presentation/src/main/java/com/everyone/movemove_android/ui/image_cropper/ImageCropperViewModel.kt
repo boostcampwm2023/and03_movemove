@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Effect
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickCompleteButton
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickImage
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickSectionSelector
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.State
@@ -36,6 +37,10 @@ class ImageCropperViewModel @Inject constructor(
         is OnClickSectionSelector -> {
             onClickSectionSelector()
         }
+
+        is OnClickCompleteButton -> {
+
+        }
     }
 
     private fun onClickImage() {
@@ -48,5 +53,9 @@ class ImageCropperViewModel @Inject constructor(
         _state.update {
             it.copy(isSectionSelectorSelected = false)
         }
+    }
+
+    private fun onClickCompleteButton() {
+
     }
 }
