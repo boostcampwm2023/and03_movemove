@@ -4,7 +4,7 @@ import { parseUrl } from '@smithy/url-parser';
 import { formatUrl } from '@aws-sdk/util-format-url';
 import { Hash } from '@smithy/hash-node';
 
-export const createPresignedUrlWithoutClient = async (
+export const getPresignedUrl = async (
   bucketName: string,
   objectName: string,
   method: string,
@@ -28,5 +28,5 @@ export const createPresignedUrlWithoutClient = async (
     new HttpRequest({ ...url, method }),
     { expiresIn: 100 },
   );
-  return formatUrl(signedUrlObject);
+  return { name: objectName, url: formatUrl(signedUrlObject) };
 };
