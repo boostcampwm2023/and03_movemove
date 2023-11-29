@@ -119,14 +119,24 @@ export class UserService {
   }
 
   async getUploaderInfo(uuid: string, uploaderData) {
-    // eslint-disable-next-line prettier/prettier
-    const { _id: uploaderId, profileImageExtension, ...uploaderInfo } = uploaderData;
-    const profileImage = await getBucketImage(
-      process.env.PROFILE_BUCKET,
+    const {
+      _id: uploaderId,
       profileImageExtension,
-      uuid,
-    );
-    const uploader = { ...uploaderInfo, ...(profileImage && { profileImage }) };
+      ...uploaderInfo
+    } = uploaderData;
+    const profileImageUrl = profileImageExtension
+      ? (
+          await getPresignedUrl(
+            process.env.PROFILE_BUCKET,
+            `${uuid}.${profileImageExtension}`,
+            'GET',
+          )
+        ).url
+      : null;
+    const uploader = {
+      ...uploaderInfo,
+      ...(profileImageUrl && { profileImageUrl }),
+    };
     return { uploader, uploaderId };
   }
 

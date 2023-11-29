@@ -10,9 +10,9 @@ import { User } from 'src/user/schemas/user.schema';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
-import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import axios from 'axios';
 import { ActionService } from 'src/action/action.service';
+import { getPresignedUrl } from 'src/ncpAPI/presignedURL';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -68,22 +68,34 @@ export class VideoService {
 
     const { profileImageExtension, uuid, ...uploaderInfo } =
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
-    const [profileImage, thumbnailImage] = await Promise.all([
-      getBucketImage(process.env.PROFILE_BUCKET, profileImageExtension, uuid),
-      getBucketImage(
-        process.env.THUMBNAIL_BUCKET,
-        videoInfo.thumbnailExtension,
-        videoInfo._id,
-      ),
+    const [profileImageUrl, thumbnailImageUrl] = await Promise.all([
+      profileImageExtension
+        ? (
+            await getPresignedUrl(
+              process.env.PROFILE_BUCKET,
+              `${uuid}.${profileImageExtension}`,
+              'GET',
+            )
+          ).url
+        : null,
+      videoInfo.thumbnailExtension
+        ? (
+            await getPresignedUrl(
+              process.env.THUMBNAIL_BUCKET,
+              `${videoInfo._id}.${videoInfo.thumbnailExtension}`,
+              'GET',
+            )
+          ).url
+        : null,
     ]);
     const uploader = {
       ...uploaderInfo,
-      ...(profileImage && { profileImage }),
+      ...(profileImageUrl && { profileImageUrl }),
       uuid,
     };
 
     return {
-      video: { ...videoInfo, manifest, rating, thumbnailImage },
+      video: { ...videoInfo, manifest, rating, thumbnailImageUrl },
       uploader,
     };
   }

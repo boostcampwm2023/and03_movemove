@@ -48,8 +48,8 @@ export class VideoResponseDto {
   manifest: string;
 
   /**
-   * 썸네일 이미지
-   * @example "�PNG\r\n\u001a\n\u0000\u0000\u0000\"
+   * 썸네일 이미지를 가져오는 presigned url
+   * @example "https://ncloud.com/"
    */
-  thumbnailImage: string;
+  thumbnailImageUrl: string;
 }
