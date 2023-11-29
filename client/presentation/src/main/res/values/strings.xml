@@ -52,4 +52,5 @@
 
     <!--    image_cropper-->
     <string name="image_cropper_description">터치하여 대상 전환</string>
+    <string name="crop">자르기</string>
 </resources>

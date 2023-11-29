@@ -1,6 +1,7 @@
 package com.everyone.movemove_android.ui.image_cropper
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -17,12 +18,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -45,10 +43,18 @@ import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Effect.CropImage
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickCompleteButton
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickImage
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickSectionSelector
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetBoardSize
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetImageOffset
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetImageRotation
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetImageScale
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetSectionSelectorOffsetX
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetSectionSelectorOffsetY
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetSectionSelectorSize
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.State
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.ClipOpDim
@@ -57,13 +63,23 @@ import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.BranchedModifier
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import com.everyone.movemove_android.ui.util.pxToDp
+import kotlinx.coroutines.flow.collectLatest
 
-private const val DEFAULT_SECTION_SELECTOR_SIZE = 500f
 private const val BORDER_PX = 8f
 
 @Composable
 fun ImageCropperScreen(viewModel: ImageCropperViewModel = hiltViewModel()) {
     val (state, event, effect) = use(viewModel)
+
+    LaunchedEffect(effect) {
+        effect.collectLatest { effect ->
+            when (effect) {
+                is CropImage -> {
+
+                }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -76,7 +92,9 @@ fun ImageCropperScreen(viewModel: ImageCropperViewModel = hiltViewModel()) {
 
         DescriptionSection()
 
-        CompleteButtonSection(event)
+        CropSection(state, event)
+
+        CompleteButtonSection(state, event)
     }
 }
 
@@ -85,54 +103,52 @@ private fun ColumnScope.ImageBoard(
     state: State,
     event: (Event) -> Unit
 ) {
-    var offsetState by remember { mutableStateOf(Offset(0f, 0f)) }
-    var scaleState by remember { mutableFloatStateOf(1f) }
-    var rotationState by remember { mutableFloatStateOf(1f) }
-
-    Box(
-        modifier = BranchedModifier(
-            value = state.isSectionSelectorSelected,
-            onDefault = {
-                Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .background(color = MaterialTheme.colorScheme.surface)
-            },
-            onFalse = { modifier ->
-                modifier
-                    .border(
-                        width = BORDER_PX.pxToDp(),
-                        color = Point
-                    )
-                    .pointerInput(Unit) {
-                        detectTransformGestures { _, offset, zoom, rotation ->
-                            offsetState += offset
-                            if (scaleState * zoom > 0.5f) scaleState *= zoom
-                            rotationState += rotation
+    with(state) {
+        Box(
+            modifier = BranchedModifier(
+                value = state.isSectionSelectorSelected,
+                onDefault = {
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(0.6f)
+                        .background(color = MaterialTheme.colorScheme.surface)
+                },
+                onFalse = { modifier ->
+                    modifier
+                        .border(
+                            width = BORDER_PX.pxToDp(),
+                            color = Point
+                        )
+                        .pointerInput(Unit) {
+                            detectTransformGestures { _, offset, zoom, rotation ->
+                                event(SetImageOffset(offset))
+                                event(SetImageScale(zoom))
+                                event(SetImageRotation(rotation))
+                            }
                         }
-                    }
-                    .clickableWithoutRipple { event(OnClickImage) }
-            }
-        )
-    ) {
-        AsyncImage(
-            modifier = Modifier
-                .fillMaxSize()
-                .absoluteOffset(
-                    x = offsetState.x.pxToDp(),
-                    y = offsetState.y.pxToDp()
-                )
-                .graphicsLayer(
-                    scaleX = scaleState,
-                    scaleY = scaleState,
-                    rotationZ = rotationState
-                ),
-            model = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fcbm2On%2FbtsAMUCNzYT%2FOMfDTvo682j6X0xiKv3a20%2Fimg.jpg",
-            contentScale = ContentScale.Fit,
-            contentDescription = null
-        )
+                        .clickableWithoutRipple { event(OnClickImage) }
+                }
+            )
+        ) {
+            AsyncImage(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .absoluteOffset(
+                        x = imageState.offset.x.pxToDp(),
+                        y = imageState.offset.y.pxToDp()
+                    )
+                    .graphicsLayer(
+                        scaleX = imageState.scale,
+                        scaleY = imageState.scale,
+                        rotationZ = imageState.rotation
+                    ),
+                model = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fcbm2On%2FbtsAMUCNzYT%2FOMfDTvo682j6X0xiKv3a20%2Fimg.jpg",
+                contentScale = ContentScale.Fit,
+                contentDescription = null
+            )
 
-        SectionSelector(state, event)
+            SectionSelector(state, event)
+        }
     }
 }
 
@@ -141,78 +157,79 @@ private fun BoxScope.SectionSelector(
     state: State,
     event: (Event) -> Unit
 ) {
-    var sizeState by remember { mutableFloatStateOf(DEFAULT_SECTION_SELECTOR_SIZE) }
-    var offsetState by remember { mutableStateOf(Offset(DEFAULT_SECTION_SELECTOR_SIZE / 2f, DEFAULT_SECTION_SELECTOR_SIZE / 2f)) }
-    var displayOffsetState by remember { mutableStateOf(Offset(0f, 0f)) }
-    var boardSizeState by remember { mutableStateOf(Size(0f, 0f)) }
-
-    displayOffsetState = Offset(
-        x = offsetState.x - sizeState / 2f,
-        y = offsetState.y - sizeState / 2f
-    )
-
-    Canvas(
-        modifier = BranchedModifier(
-            value = state.isSectionSelectorSelected,
-            onDefault = {
-                Modifier
-                    .align(Center)
-                    .fillMaxSize()
-                    .onGloballyPositioned { boardSizeState = Size(it.size.width.toFloat(), it.size.height.toFloat()) }
-            },
-            onTrue = { modifier ->
-                modifier
-                    .pointerInput(Unit) {
-                        detectTransformGestures { _, offset, zoom, _ ->
-                            if (displayOffsetState.x + offset.x in 0f..boardSizeState.width - sizeState) {
-                                offsetState = offsetState.copy(x = offsetState.x + offset.x)
-                            }
-
-                            if (displayOffsetState.y + offset.y in 0f..boardSizeState.height - sizeState) {
-                                offsetState = offsetState.copy(y = offsetState.y + offset.y)
-                            }
-
-                            if (displayOffsetState.x in 0f..boardSizeState.width - sizeState * zoom &&
-                                displayOffsetState.y in 0f..boardSizeState.height - sizeState * zoom
-                            ) {
-                                sizeState *= zoom
+    with(state) {
+        Canvas(
+            modifier = BranchedModifier(
+                value = state.isSectionSelectorSelected,
+                onDefault = {
+                    Modifier
+                        .align(Center)
+                        .fillMaxSize()
+                        .onGloballyPositioned {
+                            event(
+                                SetBoardSize(
+                                    Size(
+                                        width = it.size.width.toFloat(),
+                                        height = it.size.height.toFloat()
+                                    )
+                                )
+                            )
+                        }
+                },
+                onTrue = { modifier ->
+                    modifier
+                        .pointerInput(Unit) {
+                            detectTransformGestures { _, offset, zoom, _ ->
+                                event(SetSectionSelectorOffsetX(offset.x))
+                                event(SetSectionSelectorOffsetY(offset.y))
+                                event(SetSectionSelectorSize(zoom))
                             }
                         }
-                    }
-                    .clickableWithoutRipple { event(OnClickSectionSelector) }
-            }
-        ),
-        onDraw = {
-            val circlePath = Path().apply {
-                addOval(
-                    Rect(
-                        offset = displayOffsetState,
-                        size = Size(sizeState, sizeState)
+                        .clickableWithoutRipple { event(OnClickSectionSelector) }
+                }
+            ),
+            onDraw = {
+                val circleOffset = Offset(
+                    x = sectionSelectorState.offsetX - sectionSelectorState.size / 2f,
+                    y = sectionSelectorState.offsetY - sectionSelectorState.size / 2f
+                )
+
+                val circleSize = Size(
+                    width = sectionSelectorState.size,
+                    height = sectionSelectorState.size
+                )
+
+                val circlePath = Path().apply {
+                    addOval(
+                        Rect(
+                            offset = circleOffset,
+                            size = circleSize
+                        )
                     )
-                )
-            }
+                }
 
-            if (state.isSectionSelectorSelected) {
-                drawRect(
-                    color = Point,
-                    topLeft = displayOffsetState,
-                    size = Size(sizeState, sizeState),
-                    style = Stroke(width = BORDER_PX)
-                )
+                if (state.isSectionSelectorSelected) {
+                    drawRect(
+                        color = Point,
+                        topLeft = circleOffset,
+                        size = circleSize,
+                        style = Stroke(width = BORDER_PX)
+                    )
 
-                drawOval(
-                    color = Point,
-                    topLeft = displayOffsetState,
-                    size = Size(sizeState, sizeState),
-                    style = Stroke(width = BORDER_PX),
-                )
-            }
+                    drawOval(
+                        color = Point,
+                        topLeft = circleOffset,
+                        size = circleSize,
+                        style = Stroke(width = BORDER_PX),
+                    )
+                }
 
-            clipPath(circlePath, clipOp = ClipOp.Difference) {
-                drawRect(brush = SolidColor(ClipOpDim))
+                clipPath(circlePath, clipOp = ClipOp.Difference) {
+                    drawRect(brush = SolidColor(ClipOpDim))
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 @Composable
@@ -232,7 +249,40 @@ private fun DescriptionSection() {
 }
 
 @Composable
+private fun ColumnScope.CropSection(
+    state: State,
+    event: (Event) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .align(CenterHorizontally)
+            .fillMaxWidth()
+            .weight(0.4f)
+            .background(color = MaterialTheme.colorScheme.background)
+            .clickableWithoutRipple { },
+        horizontalAlignment = CenterHorizontally
+    ) {
+        StyledText(
+            text = stringResource(id = R.string.crop),
+            style = Typography.labelLarge,
+            color = Point
+        )
+
+        if (state.croppedImage != null) {
+            Image(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .weight(1f),
+                bitmap = state.croppedImage,
+                contentDescription = null
+            )
+        }
+    }
+}
+
+@Composable
 private fun CompleteButtonSection(
+    state: State,
     event: (Event) -> Unit
 ) {
     Box(
@@ -247,6 +297,7 @@ private fun CompleteButtonSection(
                 .height(48.dp)
                 .background(color = MaterialTheme.colorScheme.background),
             buttonText = stringResource(id = R.string.complete),
+            isEnabled = state.croppedImage != null,
             onClick = {
                 event(OnClickCompleteButton)
             }
