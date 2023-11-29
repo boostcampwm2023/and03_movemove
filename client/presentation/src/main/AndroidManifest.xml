@@ -33,7 +33,7 @@
         <activity
             android:name=".ui.my.MyActivity"
             android:label="@string/app_name"
-            android:theme="@style/Theme.MoveMoveAndroid"/>
+            android:theme="@style/Theme.MoveMoveAndroid" />
         <activity
             android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
             android:exported="true">
@@ -50,6 +50,9 @@
                     tools:ignore="AppLinkUrlError" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.image_cropper.ImageCropperActivity"
+            android:theme="@style/Theme.MoveMoveAndroid" />
     </application>
 
 </manifest>
