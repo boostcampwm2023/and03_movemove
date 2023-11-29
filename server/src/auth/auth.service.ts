@@ -118,7 +118,7 @@ export class AuthService {
     return { advertisements };
   }
 
-  async getProfilePresignedUrl({ uuid, profileExtension }) {
+  async putProfilePresignedUrl({ uuid, profileExtension }) {
     const objectName = `${uuid}.${profileExtension}`;
     const presignedUrl = (
       await getPresignedUrl(process.env.PROFILE_BUCKET, objectName, 'PUT')
@@ -126,7 +126,7 @@ export class AuthService {
     return { presignedUrl };
   }
 
-  async getVideoPresignedUrl({ videoExtension, thumbnailExtension }) {
+  async putVideoPresignedUrl({ videoExtension, thumbnailExtension }) {
     const videoId = new Types.ObjectId();
     const [videoUrl, thumbnailUrl] = await Promise.all([
       (

@@ -40,7 +40,6 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "swagger-ui-express": "^5.0.0",
-    "uuid": "^9.0.1",
     "xml-js": "1.6.11"
   },
   "devDependencies": {

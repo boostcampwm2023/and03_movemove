@@ -15,7 +15,7 @@ export class AppController {
   /**
    * 광고 이미지 응답
    */
-  @ApiTags('COMPLETE')
+  @ApiTags('LEGACY')
   @Get('ads')
   @ApiSuccessResponse(200, '광고 조회 성공', AdsResponseDto)
   @ApiFailResponse('인증 실패', [InvalidTokenException, TokenExpiredException])

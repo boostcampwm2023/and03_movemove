@@ -25,7 +25,6 @@ import { AdvertisementPresignedUrlRequestDto } from './dto/advertisement-presign
 import { ProfilePresignedUrlRequestDto } from './dto/profile-presigned-url-request.dto';
 import { VIdeoPresignedUrlRequestDto } from './dto/video-presigned-url-request.dto';
 
-@ApiTags('COMPLETE')
 @Controller()
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -34,6 +33,7 @@ export class AuthController {
    * 회원가입
    */
   @Post('auth/signup')
+  @ApiTags('AUTH')
   @ApiConsumes('multipart/form-data')
   @ApiSuccessResponse(201, '회원가입 성공', SignupResponseDto)
   @ApiFailResponse('인증 실패', [OAuthFailedException])
@@ -49,6 +49,7 @@ export class AuthController {
    * 로그인
    */
   @Post('auth/login')
+  @ApiTags('AUTH')
   @ApiSuccessResponse(201, '로그인 성공', SigninResponseDto)
   @ApiFailResponse('인증 실패', [LoginFailException, OAuthFailedException])
   signin(
@@ -61,6 +62,7 @@ export class AuthController {
    * 토큰 재발급
    */
   @Post('auth/refresh')
+  @ApiTags('AUTH')
   @ApiSuccessResponse(201, '토큰 재발급 성공', RefreshResponseDto)
   @ApiFailResponse('인증 실패', [InvalidRefreshTokenException])
   refresh(
@@ -69,20 +71,32 @@ export class AuthController {
     return this.authService.refresh(refreshRequestDto);
   }
 
+  /**
+   * 광고 이미지를 GET하는 url 발급
+   */
   @Get('presigned-url/advertisements')
+  @ApiTags('PRESIGNED URL')
   getAdvertisementPresignedUrl(
     @Query() query: AdvertisementPresignedUrlRequestDto,
   ) {
     return this.authService.getAdvertisementPresignedUrl(query.name);
   }
 
+  /**
+   * 프로필 이미지를 PUT하는 url 발급
+   */
   @Get('presigned-url/profile')
-  getProfilePresignedUrl(@Query() query: ProfilePresignedUrlRequestDto) {
-    return this.authService.getProfilePresignedUrl(query);
+  @ApiTags('PRESIGNED URL')
+  putProfilePresignedUrl(@Query() query: ProfilePresignedUrlRequestDto) {
+    return this.authService.putProfilePresignedUrl(query);
   }
 
+  /**
+   * 비디오, 썸네일 이미지를 PUT하는 url 발급
+   */
   @Get('presigned-url/video')
-  getVideoPresignedUrl(@Query() query: VIdeoPresignedUrlRequestDto) {
-    return this.authService.getVideoPresignedUrl(query);
+  @ApiTags('PRESIGNED URL')
+  putVideoPresignedUrl(@Query() query: VIdeoPresignedUrlRequestDto) {
+    return this.authService.putVideoPresignedUrl(query);
   }
 }
