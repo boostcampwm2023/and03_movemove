@@ -71,4 +71,21 @@ class VideosRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getVideosTrend(limit: String): Flow<DataState<VideosTrend>> {
+        return flow {
+            networkHandler.request<VideosTrendResponse>(
+                method = HttpMethod.Get,
+                url = {
+                    path(VIDEOS, TREND)
+                    parameters.append(LIMIT, limit)
+                }
+            ).collect { response ->
+                response.data?.let {
+                    emit(DataState.Success(it.toDomainModel()))
+                } ?: run {
+                    emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
+                }
+            }
+        }
+    }
 }

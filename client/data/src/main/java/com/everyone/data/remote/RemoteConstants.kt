@@ -7,4 +7,7 @@ object RemoteConstants {
     const val RANDOM = "random"
     const val RATING = "rating"
     const val REASON = "reason"
+    const val TREND = "trend"
+    const val LIMIT = "limit"
+
 }
