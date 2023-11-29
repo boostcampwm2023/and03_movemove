@@ -96,14 +96,7 @@ export class VideoService {
     const videoInfos = await Promise.all(
       videos.map((video) => this.getVideoInfo(video, viewSeed)),
     );
-    const nextQueryString = new URLSearchParams({
-      category,
-      limit,
-      seed: viewSeed,
-    } as any).toString();
-
-    const next = `${process.env.SERVER_URL}videos/random?${nextQueryString}`;
-    return { videos: videoInfos, next };
+    return { videos: videoInfos, seed: viewSeed };
   }
 
   async getManifest(videoId: string, userId: string, seed: number) {
