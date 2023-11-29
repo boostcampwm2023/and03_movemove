@@ -40,6 +40,7 @@ jobs:
           host: ${{ secrets.HOST }} #NCP 서버 IP
           username: ${{ secrets.USER }}
           password: ${{ secrets.PASSWORD }}  
+          port: ${{ secrets.PORT }}  
           script: |
               docker login -u ${{ secrets.ACCESS_KEY }} -p ${{ secrets.SECRET_KEY }}
               docker push ${{ secrets.CONTAINER_REGISTRY }}/movemove:latest
