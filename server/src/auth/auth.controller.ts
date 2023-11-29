@@ -4,6 +4,8 @@ import {
   Body,
   UseInterceptors,
   UploadedFile,
+  Get,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -20,16 +22,17 @@ import { SigninResponseDto } from './dto/signin-response.dto';
 import { SigninRequestDto } from './dto/signin-request.dto';
 import { RefreshRequestDto } from './dto/refresh-request.dto';
 import { RefreshResponseDto } from './dto/refresh-response.dto';
+import { AdvertisementPresignedUrlRequestDto } from './dto/advertisement-presigned-url-request.dto';
 
 @ApiTags('COMPLETE')
-@Controller('auth')
+@Controller()
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   /**
    * 회원가입
    */
-  @Post('signup')
+  @Post('auth/signup')
   @ApiConsumes('multipart/form-data')
   @ApiSuccessResponse(201, '회원가입 성공', SignupResponseDto)
   @ApiFailResponse('인증 실패', [OAuthFailedException])
@@ -45,7 +48,7 @@ export class AuthController {
   /**
    * 로그인
    */
-  @Post('login')
+  @Post('auth/login')
   @ApiSuccessResponse(201, '로그인 성공', SigninResponseDto)
   @ApiFailResponse('인증 실패', [LoginFailException, OAuthFailedException])
   signin(
@@ -57,12 +60,19 @@ export class AuthController {
   /**
    * 토큰 재발급
    */
-  @Post('refresh')
+  @Post('auth/refresh')
   @ApiSuccessResponse(201, '토큰 재발급 성공', RefreshResponseDto)
   @ApiFailResponse('인증 실패', [InvalidRefreshTokenException])
   refresh(
     @Body() refreshRequestDto: RefreshRequestDto,
   ): Promise<RefreshResponseDto> {
     return this.authService.refresh(refreshRequestDto);
+  }
+
+  @Get('presigned-url/advertisements')
+  getAdvertisementPresignedUrl(
+    @Query() query: AdvertisementPresignedUrlRequestDto,
+  ) {
+    return this.authService.getAdvertisementPresignedUrl(query.name);
   }
 }

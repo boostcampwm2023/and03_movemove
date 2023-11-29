@@ -8,6 +8,10 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
 import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
 import { UserInfoDto } from 'src/user/dto/user-info.dto';
+import { createPresignedUrlWithoutClient } from 'src/ncpAPI/presignedURL';
+import * as _ from 'lodash';
+import { listObjects } from 'src/ncpAPI/listObjects';
+import { xml2js } from 'xml-js';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { JwtDto } from './dto/jwt.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
@@ -103,5 +107,33 @@ export class AuthService {
     return this.getLoginInfo(user).then(
       (loginInfo) => new SigninResponseDto(loginInfo),
     );
+  }
+
+  async getAdvertisementPresignedUrl(adName: string) {
+    if (adName)
+      return this.getPresignedUrl(process.env.ADVERTISEMENT_BUCKET, adName);
+
+    const xmlData = await listObjects(process.env.ADVERTISEMENT_BUCKET);
+    const jsonData: any = xml2js(xmlData, { compact: true });
+
+    const adList = _.map(jsonData.ListBucketResult.Contents, 'Key._text');
+    const advertisements = await Promise.all(
+      adList.map(async (advertisement: string) => {
+        return this.getPresignedUrl(
+          process.env.ADVERTISEMENT_BUCKET,
+          advertisement,
+        );
+      }),
+    );
+    return { advertisements };
+  }
+
+  async getPresignedUrl(bucketName: string, name: string) {
+    const presignedUrl = await createPresignedUrlWithoutClient(
+      bucketName,
+      name,
+      'GET',
+    );
+    return { name, presignedUrl };
   }
 }

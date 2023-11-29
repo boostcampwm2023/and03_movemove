@@ -4,11 +4,11 @@ import { parseUrl } from '@smithy/url-parser';
 import { formatUrl } from '@aws-sdk/util-format-url';
 import { Hash } from '@smithy/hash-node';
 
-export const createPresignedUrlWithoutClient = async ({
-  bucketName,
-  objectName,
-  method,
-}) => {
+export const createPresignedUrlWithoutClient = async (
+  bucketName: string,
+  objectName: string,
+  method: string,
+) => {
   const region = 'kr-standard';
   const endPoint = 'https://kr.object.ncloudstorage.com';
   const canonicalURI = `/${bucketName}/${objectName}`;
