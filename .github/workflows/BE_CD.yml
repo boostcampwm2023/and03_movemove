@@ -9,7 +9,7 @@ on:
       - "server/**" # 특정 파일 변경시만 트리거 작동, 즉 서버 코드 변경시만
 
 jobs:
-  배포:
+  deploy:
     runs-on : ubuntu-latest #runner의 os지정 
 
     steps: #step 마다 -를 써주면됨
