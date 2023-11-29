@@ -43,7 +43,7 @@ jobs:
           port: ${{ secrets.PORT }}  
           script: |
               docker login -u ${{ secrets.ACCESS_KEY }} -p ${{ secrets.SECRET_KEY }}
-              docker push ${{ secrets.CONTAINER_REGISTRY }}/movemove:latest
+              docker pull ${{ secrets.CONTAINER_REGISTRY }}/movemove:latest
               docker stop movemove-latest
               docker rm movemove-latest
               docker run -d -p 80:3000 --env-file ${{ secrets.ENV_PATH }} --name movemove-latest ${{ secrets.CONTAINER_REGISTRY }}/movemove:latest
