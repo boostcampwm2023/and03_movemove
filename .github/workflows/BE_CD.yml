@@ -33,6 +33,8 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ${{ secrets.CONTAINER_REGISTRY }}/movemove:latest
+          cache-from: type=registry,ref=${{ secrets.CONTAINER_REGISTRY }}/movemove:latest
+          cache-to: type=inline
 
       - name: 서버 배포
         uses: appleboy/ssh-action@master #ssh action
