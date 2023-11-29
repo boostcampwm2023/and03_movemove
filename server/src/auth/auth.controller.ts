@@ -3,7 +3,6 @@ import {
   Post,
   Body,
   UseInterceptors,
-  UploadedFile,
   Get,
   Query,
 } from '@nestjs/common';
@@ -40,10 +39,9 @@ export class AuthController {
   @ApiFailResponse('회원가입 실패', [UserConflictException])
   @UseInterceptors(FileInterceptor('profileImage'))
   signUp(
-    @UploadedFile() profileImage: Express.Multer.File,
     @Body() signupRequestDto: SignupRequestDto,
   ): Promise<SignupResponseDto> {
-    return this.authService.create(signupRequestDto, profileImage);
+    return this.authService.create(signupRequestDto);
   }
 
   /**
