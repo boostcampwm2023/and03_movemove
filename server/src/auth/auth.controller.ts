@@ -5,6 +5,7 @@ import {
   UseInterceptors,
   Get,
   Query,
+  Param,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -24,6 +25,7 @@ import { RefreshResponseDto } from './dto/refresh-response.dto';
 import { AdvertisementPresignedUrlRequestDto } from './dto/advertisement-presigned-url-request.dto';
 import { ProfilePresignedUrlRequestDto } from './dto/profile-presigned-url-request.dto';
 import { VIdeoPresignedUrlRequestDto } from './dto/video-presigned-url-request.dto';
+import { ReissuePresignedUrlRequestDto } from './dto/reissue-presigned-url-request.dto';
 
 @Controller()
 export class AuthController {
@@ -98,5 +100,16 @@ export class AuthController {
   @ApiTags('PRESIGNED URL')
   putVideoPresignedUrl(@Query() query: VIdeoPresignedUrlRequestDto) {
     return this.authService.putVideoPresignedUrl(query);
+  }
+
+  /**
+   * 만료된 presigned url 재발급
+   */
+  @Get('presigned-url/reissue/:id')
+  getImagePresignedUrl(
+    @Param('id') id: string,
+    @Query() query: ReissuePresignedUrlRequestDto,
+  ) {
+    return this.authService.getImagePresignedUrl(id, query);
   }
 }

@@ -4,7 +4,7 @@ import { parseUrl } from '@smithy/url-parser';
 import { formatUrl } from '@aws-sdk/util-format-url';
 import { Hash } from '@smithy/hash-node';
 
-export const getPresignedUrl = async (
+export const createPresignedUrl = async (
   bucketName: string,
   objectName: string,
   method: string,

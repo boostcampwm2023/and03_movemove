@@ -3,8 +3,7 @@
 /* eslint-disable class-methods-use-this */
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { putObject } from 'src/ncpAPI/putObject';
+import { Model } from 'mongoose';
 import { requestEncoding } from 'src/ncpAPI/requestEncoding';
 import { User } from 'src/user/schemas/user.schema';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
@@ -12,7 +11,7 @@ import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import axios from 'axios';
 import { ActionService } from 'src/action/action.service';
-import { getPresignedUrl } from 'src/ncpAPI/presignedURL';
+import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -71,7 +70,7 @@ export class VideoService {
     const [profileImageUrl, thumbnailImageUrl] = await Promise.all([
       profileImageExtension
         ? (
-            await getPresignedUrl(
+            await createPresignedUrl(
               process.env.PROFILE_BUCKET,
               `${uuid}.${profileImageExtension}`,
               'GET',
@@ -80,7 +79,7 @@ export class VideoService {
         : null,
       videoInfo.thumbnailExtension
         ? (
-            await getPresignedUrl(
+            await createPresignedUrl(
               process.env.THUMBNAIL_BUCKET,
               `${videoInfo._id}.${videoInfo.thumbnailExtension}`,
               'GET',

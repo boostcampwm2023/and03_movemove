@@ -3,13 +3,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model } from 'mongoose';
 import { Video } from 'src/video/schemas/video.schema';
-import { putObject } from 'src/ncpAPI/putObject';
 import { UserNotFoundException } from 'src/exceptions/user-not-found.exception';
 import * as _ from 'lodash';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import { VideoService } from 'src/video/video.service';
-import { getPresignedUrl } from 'src/ncpAPI/presignedURL';
+import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
 import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { User } from './schemas/user.schema';
 import { ProfileDto } from './dto/profile.dto';
@@ -33,7 +32,7 @@ export class UserService {
     const { uuid, profileImageExtension, nickname, statusMessage } = user;
     const profileImageUrl = profileImageExtension
       ? (
-          await getPresignedUrl(
+          await createPresignedUrl(
             process.env.PROFILE_BUCKET,
             `${uuid}.${profileImageExtension}`,
             'GET',
@@ -65,7 +64,7 @@ export class UserService {
     // TODO profileUrl이 null이 아니라면 프로필 이미지가 업로드됐는지 확인
     const profileUrl = profileDto.profileExtension
       ? (
-          await getPresignedUrl(
+          await createPresignedUrl(
             process.env.PROFILE_BUCKET,
             `${uuid}.${profileDto.profileExtension}`,
             'GET',
@@ -121,7 +120,7 @@ export class UserService {
     } = uploaderData;
     const profileImageUrl = profileImageExtension
       ? (
-          await getPresignedUrl(
+          await createPresignedUrl(
             process.env.PROFILE_BUCKET,
             `${uuid}.${profileImageExtension}`,
             'GET',

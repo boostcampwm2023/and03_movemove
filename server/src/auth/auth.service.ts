@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
 import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
 import { UserInfoDto } from 'src/user/dto/user-info.dto';
-import { getPresignedUrl } from 'src/ncpAPI/presignedURL';
+import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
 import * as _ from 'lodash';
 import { listObjects } from 'src/ncpAPI/listObjects';
 import { xml2js } from 'xml-js';
@@ -100,7 +100,11 @@ export class AuthService {
 
   async getAdvertisementPresignedUrl(adName: string) {
     if (adName)
-      return getPresignedUrl(process.env.ADVERTISEMENT_BUCKET, adName, 'GET');
+      return createPresignedUrl(
+        process.env.ADVERTISEMENT_BUCKET,
+        adName,
+        'GET',
+      );
 
     const xmlData = await listObjects(process.env.ADVERTISEMENT_BUCKET);
     const jsonData: any = xml2js(xmlData, { compact: true });
@@ -108,7 +112,7 @@ export class AuthService {
     const adList = _.map(jsonData.ListBucketResult.Contents, 'Key._text');
     const advertisements = await Promise.all(
       adList.map(async (advertisement: string) => {
-        return getPresignedUrl(
+        return createPresignedUrl(
           process.env.ADVERTISEMENT_BUCKET,
           advertisement,
           'GET',
@@ -121,7 +125,7 @@ export class AuthService {
   async putProfilePresignedUrl({ uuid, profileExtension }) {
     const objectName = `${uuid}.${profileExtension}`;
     const presignedUrl = (
-      await getPresignedUrl(process.env.PROFILE_BUCKET, objectName, 'PUT')
+      await createPresignedUrl(process.env.PROFILE_BUCKET, objectName, 'PUT')
     ).url;
     return { presignedUrl };
   }
@@ -130,14 +134,14 @@ export class AuthService {
     const videoId = new Types.ObjectId();
     const [videoUrl, thumbnailUrl] = await Promise.all([
       (
-        await getPresignedUrl(
+        await createPresignedUrl(
           process.env.INPUT_BUCKET,
           `${videoId}.${videoExtension}`,
           'PUT',
         )
       ).url,
       (
-        await getPresignedUrl(
+        await createPresignedUrl(
           process.env.THUMBNAIL_BUCKET,
           `${videoId}.${thumbnailExtension}`,
           'PUT',
@@ -145,5 +149,18 @@ export class AuthService {
       ).url,
     ]);
     return { videoId, videoUrl, thumbnailUrl };
+  }
+
+  async getImagePresignedUrl(id: string, { type, extension }) {
+    // TODO 업로드 된 이미지인지 확인
+    const bucketName = {
+      thumbnail: process.env.THUMBNAIL_BUCKET,
+      profile: process.env.PROFILE_BUCKET,
+    }[type];
+    const objectName = `${id}.${extension}`;
+    const presignedUrl = (
+      await createPresignedUrl(bucketName, objectName, 'GET')
+    ).url;
+    return { presignedUrl };
   }
 }

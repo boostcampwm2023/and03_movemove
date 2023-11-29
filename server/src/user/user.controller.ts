@@ -6,11 +6,10 @@ import {
   UseGuards,
   Param,
   UseInterceptors,
-  UploadedFile,
   Query,
 } from '@nestjs/common';
 import { RequestUser, User } from 'src/decorators/request-user';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
 import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
