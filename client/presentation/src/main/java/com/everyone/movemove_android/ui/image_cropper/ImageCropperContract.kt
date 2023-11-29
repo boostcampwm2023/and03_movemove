@@ -23,8 +23,10 @@ interface ImageCropperContract : BaseContract<ImageCropperContract.State, ImageC
     )
 
     data class SectionSelectorState(
-        val offsetX: Float = DEFAULT_SECTION_SELECTOR_SIZE / 2f,
-        val offsetY: Float = DEFAULT_SECTION_SELECTOR_SIZE / 2f,
+        val offset: Offset = Offset(
+            x = DEFAULT_SECTION_SELECTOR_SIZE / 2f,
+            y = DEFAULT_SECTION_SELECTOR_SIZE / 2f
+        ),
         val size: Float = DEFAULT_SECTION_SELECTOR_SIZE
     )
 
@@ -50,10 +52,12 @@ interface ImageCropperContract : BaseContract<ImageCropperContract.State, ImageC
         data class SetSectionSelectorOffsetY(val offsetY: Float) : Event
 
         data class SetSectionSelectorSize(val size: Float) : Event
+
+        data class OnCropped(val imageBitmap: ImageBitmap) : Event
     }
 
     sealed interface Effect {
-        data object CropImage : Effect
+        data class CropImage(val offset: Offset, val size: Float) : Effect
     }
 
     companion object {

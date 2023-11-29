@@ -2,6 +2,7 @@ package com.everyone.movemove_android.ui.image_cropper
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.everyone.movemove_android.di.IoDispatcher
@@ -12,6 +13,7 @@ import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickCrop
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickImage
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickSectionSelector
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnCropped
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetBoardSize
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetImageOffset
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetImageRotation
@@ -86,6 +88,10 @@ class ImageCropperViewModel @Inject constructor(
         is SetSectionSelectorSize -> {
             setSectionSelectorSize(event.size)
         }
+
+        is OnCropped -> {
+            onCropped(event.imageBitmap)
+        }
     }
 
     private fun onClickImage() {
@@ -102,7 +108,12 @@ class ImageCropperViewModel @Inject constructor(
 
     private fun onClickCrop() {
         viewModelScope.launch {
-            _effect.emit(CropImage)
+            _effect.emit(
+                CropImage(
+                    offset = state.value.sectionSelectorState.offset,
+                    size = state.value.sectionSelectorState.size
+                )
+            )
         }
     }
 
@@ -136,14 +147,18 @@ class ImageCropperViewModel @Inject constructor(
 
     private fun setSectionSelectorOffsetX(offsetX: Float) {
         _state.update {
-            val originalOffsetX = it.sectionSelectorState.offsetX
-            val newOffsetX = it.sectionSelectorState.offsetX + offsetX
+            val originalOffset = it.sectionSelectorState.offset
+            val newOffset = Offset(
+                x = it.sectionSelectorState.offset.x + offsetX,
+                y = it.sectionSelectorState.offset.y
+            )
+
             it.copy(
                 sectionSelectorState = it.sectionSelectorState.copy(
-                    offsetX = if (newOffsetX - it.sectionSelectorState.size / 2f in 0f..it.boardSize.width - it.sectionSelectorState.size) {
-                        newOffsetX
+                    offset = if (newOffset.x - it.sectionSelectorState.size / 2f in 0f..it.boardSize.width - it.sectionSelectorState.size) {
+                        newOffset
                     } else {
-                        originalOffsetX
+                        originalOffset
                     }
                 )
             )
@@ -152,14 +167,18 @@ class ImageCropperViewModel @Inject constructor(
 
     private fun setSectionSelectorOffsetY(offsetY: Float) {
         _state.update {
-            val originalOffsetY = it.sectionSelectorState.offsetY
-            val newOffsetY = it.sectionSelectorState.offsetY + offsetY
+            val originalOffset = it.sectionSelectorState.offset
+            val newOffset = Offset(
+                x = it.sectionSelectorState.offset.x,
+                y = it.sectionSelectorState.offset.y + offsetY
+            )
+
             it.copy(
                 sectionSelectorState = it.sectionSelectorState.copy(
-                    offsetY = if (newOffsetY - it.sectionSelectorState.size / 2f in 0f..it.boardSize.height - it.sectionSelectorState.size) {
-                        newOffsetY
+                    offset = if (newOffset.y - it.sectionSelectorState.size / 2f in 0f..it.boardSize.height - it.sectionSelectorState.size) {
+                        newOffset
                     } else {
-                        originalOffsetY
+                        originalOffset
                     }
                 )
             )
@@ -168,8 +187,8 @@ class ImageCropperViewModel @Inject constructor(
 
     private fun setSectionSelectorSize(size: Float) {
         _state.update {
-            val offsetX = it.sectionSelectorState.offsetX
-            val offsetY = it.sectionSelectorState.offsetY
+            val offsetX = it.sectionSelectorState.offset.x
+            val offsetY = it.sectionSelectorState.offset.y
             val originalSize = it.sectionSelectorState.size
             val newSize = it.sectionSelectorState.size * size
             it.copy(
@@ -183,6 +202,12 @@ class ImageCropperViewModel @Inject constructor(
                     }
                 )
             )
+        }
+    }
+
+    private fun onCropped(imageBitmap: ImageBitmap) {
+        _state.update {
+            it.copy(croppedImage = imageBitmap)
         }
     }
 }

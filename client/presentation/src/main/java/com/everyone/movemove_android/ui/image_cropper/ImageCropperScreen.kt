@@ -1,5 +1,13 @@
 package com.everyone.movemove_android.ui.image_cropper
 
+import android.app.Activity
+import android.graphics.Bitmap
+import android.os.Handler
+import android.os.Looper
+import android.view.PixelCopy
+import android.view.PixelCopy.OnPixelCopyFinishedListener
+import android.view.View
+import android.view.Window
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,10 +19,12 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -22,21 +32,26 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.createBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.everyone.movemove_android.R
@@ -46,8 +61,10 @@ import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Effect.CropImage
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickCompleteButton
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickCrop
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickImage
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickSectionSelector
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnCropped
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetBoardSize
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetImageOffset
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetImageRotation
@@ -64,18 +81,30 @@ import com.everyone.movemove_android.ui.util.BranchedModifier
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import com.everyone.movemove_android.ui.util.pxToDp
 import kotlinx.coroutines.flow.collectLatest
+import kotlin.math.roundToInt
 
 private const val BORDER_PX = 8f
 
 @Composable
 fun ImageCropperScreen(viewModel: ImageCropperViewModel = hiltViewModel()) {
     val (state, event, effect) = use(viewModel)
+    val view = LocalView.current
 
     LaunchedEffect(effect) {
         effect.collectLatest { effect ->
             when (effect) {
                 is CropImage -> {
-
+                    capture(
+                        view = view,
+                        offset = effect.offset,
+                        size = effect.size,
+                        onSuccess = {
+                            event(OnCropped(it))
+                        },
+                        onError = {
+                            // todo : 캡처 실패
+                        }
+                    )
                 }
             }
         }
@@ -190,8 +219,8 @@ private fun BoxScope.SectionSelector(
             ),
             onDraw = {
                 val circleOffset = Offset(
-                    x = sectionSelectorState.offsetX - sectionSelectorState.size / 2f,
-                    y = sectionSelectorState.offsetY - sectionSelectorState.size / 2f
+                    x = sectionSelectorState.offset.x - sectionSelectorState.size / 2f,
+                    y = sectionSelectorState.offset.y - sectionSelectorState.size / 2f
                 )
 
                 val circleSize = Size(
@@ -258,11 +287,11 @@ private fun ColumnScope.CropSection(
             .align(CenterHorizontally)
             .fillMaxWidth()
             .weight(0.4f)
-            .background(color = MaterialTheme.colorScheme.background)
-            .clickableWithoutRipple { },
+            .background(color = MaterialTheme.colorScheme.background),
         horizontalAlignment = CenterHorizontally
     ) {
         StyledText(
+            modifier = Modifier.clickableWithoutRipple { event(OnClickCrop) },
             text = stringResource(id = R.string.crop),
             style = Typography.labelLarge,
             color = Point
@@ -272,7 +301,9 @@ private fun ColumnScope.CropSection(
             Image(
                 modifier = Modifier
                     .padding(24.dp)
-                    .weight(1f),
+                    .clip(shape = CircleShape)
+                    .weight(1f)
+                    .aspectRatio(1f),
                 bitmap = state.croppedImage,
                 contentDescription = null
             )
@@ -298,9 +329,43 @@ private fun CompleteButtonSection(
                 .background(color = MaterialTheme.colorScheme.background),
             buttonText = stringResource(id = R.string.complete),
             isEnabled = state.croppedImage != null,
-            onClick = {
-                event(OnClickCompleteButton)
-            }
+            onClick = { event(OnClickCompleteButton) }
         )
     }
+}
+
+private fun capture(
+    view: View,
+    offset: Offset,
+    size: Float,
+    onSuccess: (ImageBitmap) -> Unit,
+    onError: () -> Unit
+) {
+    val window = (view.context as Activity).window
+    val statusBarHeight = getStatusBarHeight(window)
+    val left = (offset.x - size / 2f + BORDER_PX).roundToInt()
+    val top = (offset.y - size / 2f + statusBarHeight + BORDER_PX).roundToInt()
+    val right = (offset.x + size / 2f - BORDER_PX).roundToInt()
+    val bottom = (offset.y + size / 2f + statusBarHeight - BORDER_PX).roundToInt()
+    val rect = android.graphics.Rect(left, top, right, bottom)
+    val bitmap = createBitmap(size.roundToInt(), size.roundToInt(), Bitmap.Config.ARGB_8888)
+    val callback = OnPixelCopyFinishedListener { onSuccess(bitmap.asImageBitmap()) }
+
+    runCatching {
+        PixelCopy.request(
+            window,
+            rect,
+            bitmap,
+            callback,
+            Handler(Looper.getMainLooper())
+        )
+    }.onFailure {
+        onError()
+    }
+}
+
+private fun getStatusBarHeight(window: Window): Int {
+    val rectangle = android.graphics.Rect()
+    window.decorView.getWindowVisibleDisplayFrame(rectangle)
+    return rectangle.top
 }
