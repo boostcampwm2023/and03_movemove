@@ -1,0 +1,16 @@
+name: Backend CD  # 워크플로우 이름
+
+# 이 워크플로우가 언제 실행될지 트리거를 지정, 여기서는 develop브랜치에 pr됐을때가 트리거임
+on:
+  pull_request: # push, pull 등 git 작업이 트리거가 됨
+    branches: [ "develop" ] 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+  
+    steps:
+    - name: TEST
+      run: |
+        echo Hello World
+        echo 해치웠나?
