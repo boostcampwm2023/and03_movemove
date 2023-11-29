@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getTimeStamp, getAuthorization } from './common';
 
 // TODO CanonicalQueryString 추가해서 개수 제한
-export const listObjects = async (bucketName: string, querys = {}) => {
+export const listObjects = async (bucketName: string, params = {}) => {
   const endPoint = 'https://kr.object.ncloudstorage.com';
   const canonicalURI = `/${bucketName}`;
   const apiUrl = `${endPoint}${canonicalURI}`;
@@ -16,6 +16,7 @@ export const listObjects = async (bucketName: string, querys = {}) => {
   };
 
   const method = 'GET';
+  Object.assign(params, { 'list-type': 2 });
   return axios
     .get(apiUrl, {
       headers: {
@@ -24,10 +25,11 @@ export const listObjects = async (bucketName: string, querys = {}) => {
           canonicalURI,
           defaultHeaders,
           timeStamp,
-          Object.assign(querys, { 'list-type': 2 }),
+          params,
         ),
         ...defaultHeaders,
       },
+      params,
     })
     .then((response) => {
       return response.data;

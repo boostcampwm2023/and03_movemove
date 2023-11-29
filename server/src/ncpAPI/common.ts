@@ -24,7 +24,7 @@ export const getAuthorization = (
   canonicalURI: string,
   headers: object,
   timeStamp: string,
-  querys?: object,
+  params?: object,
 ): string => {
   const accessKeyID = process.env.ACCESS_KEY!;
   const region = 'kr-standard';
@@ -41,7 +41,7 @@ export const getAuthorization = (
     scope,
     headers,
     timeStamp,
-    querys,
+    params,
   );
   const authorization = `AWS4-HMAC-SHA256 Credential=${accessKeyID}/${scope}, SignedHeaders=${signedHeaders}, Signature=${kSignature}`;
   return authorization;
@@ -53,7 +53,7 @@ const createSignatureKey = (
   scope: string,
   headers: object,
   timeStamp: string,
-  querys?: object,
+  params?: object,
 ): string => {
   const kSigning = createSigningKey();
   const stringToSign = createStringToSign(
@@ -62,7 +62,7 @@ const createSignatureKey = (
     scope,
     headers,
     timeStamp,
-    querys,
+    params,
   );
   const kSignature = CryptoJS.HmacSHA256(stringToSign, kSigning).toString(
     CryptoJS.enc.Hex,
@@ -92,13 +92,13 @@ const createStringToSign = (
   scope: string,
   headers: object,
   timeStamp: string,
-  querys?: object,
+  params?: object,
 ) => {
   const canonicalRequest = createCanonicalRequest(
     method,
     canonicalURI,
     headers,
-    querys,
+    params,
   );
   const stringToSign = `AWS4-HMAC-SHA256
 ${timeStamp}
@@ -107,13 +107,13 @@ ${CryptoJS.enc.Hex.stringify(CryptoJS.SHA256(canonicalRequest))}`;
   return stringToSign;
 };
 
-const getQueryString = (querys) => {
-  if (querys) {
-    const queryParameters = Object.keys(querys)
+const getQueryString = (params) => {
+  if (params) {
+    const queryParameters = Object.keys(params)
       .sort()
       .map(
         (key) =>
-          `${encodeURIComponent(key)}=${encodeURIComponent(querys[key])}`,
+          `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`,
       );
     return queryParameters.join('&');
   }
@@ -124,10 +124,10 @@ const createCanonicalRequest = (
   method: string,
   path: string,
   headers: object,
-  querys?: object,
+  params?: object,
 ) => {
   const hashedPayLoad = 'UNSIGNED-PAYLOAD';
-  const canonicalQueryString = getQueryString(querys);
+  const canonicalQueryString = getQueryString(params);
   const { canonicalHeaders, signedHeaders } = getHeaders(headers);
   const canonicalRequest = `${method}
 ${path}
