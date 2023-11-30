@@ -75,6 +75,7 @@ import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
+import com.everyone.movemove_android.ui.SelectThumbnailDialog
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnBottomSheetHide
@@ -82,11 +83,14 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickPlayAndPause
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickPlayer
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickSelectCategory
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickSelectThumbnail
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickSelectVideo
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickThumbnail
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickUpload
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnSelectThumbnailDialogDismissed
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTitleTyped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnVideoReady
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoEndTime
@@ -522,16 +526,25 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                             .padding(bottom = 12.dp)
                             .padding(horizontal = 24.dp)
                             .align(Alignment.BottomCenter),
-                        buttonText = stringResource(id = R.string.complete),
-                        isEnabled = isUploadEnabled
-                    ) {
-                        event(OnClickUpload)
-                    }
+                        buttonText = stringResource(id = R.string.select_thumbnail),
+                        isEnabled = isUploadEnabled,
+                        onClick = { event(OnClickSelectThumbnail) }
+                    )
                 }
             }
 
             if (isLoading) {
                 LoadingDialog()
+            }
+
+            if (isSelectThumbnailDialogShowing) {
+                SelectThumbnailDialog(
+                    thumbnailList = thumbnailList,
+                    selectedThumbnail = selectedThumbnail,
+                    onClickThumbnail = { event(OnClickThumbnail(it)) },
+                    onClickComplete = { event(OnClickUpload) },
+                    onDismissRequest = { event(OnSelectThumbnailDialogDismissed) }
+                )
             }
         }
 
@@ -542,6 +555,8 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
         BackHandler(enabled = isBottomSheetShowing) {
             event(OnBottomSheetHide)
         }
+
+
     }
 }
 

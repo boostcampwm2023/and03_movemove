@@ -20,6 +20,8 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         val isUploadEnabled: Boolean = false,
         val isBottomSheetShowing: Boolean = false,
         val category: Category? = null,
+        val isSelectThumbnailDialogShowing: Boolean = false,
+        val selectedThumbnail: ImageBitmap? = null
     )
 
     data class VideoInfo(
@@ -29,19 +31,38 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
 
     sealed interface Event {
         data object OnClickSelectVideo : Event
+
         data class OnGetUri(val uri: Uri) : Event
+
         data object OnClickPlayAndPause : Event
+
         data object OnClickPlayer : Event
+
         data object OnPlayAndPauseTimeOut : Event
+
         data class OnVideoReady(val duration: Long) : Event
+
         data class SetVideoStartTime(val time: Long) : Event
+
         data class SetVideoEndTime(val time: Long) : Event
+
         data class OnTitleTyped(val title: String) : Event
+
         data class OnDescriptionTyped(val description: String) : Event
-        data object OnClickUpload : Event
+
+        data object OnClickSelectThumbnail : Event
+
         data object OnClickSelectCategory : Event
+
         data class OnCategorySelected(val category: Category) : Event
+
         data object OnBottomSheetHide : Event
+
+        data class OnClickThumbnail(val thumbnail: ImageBitmap) : Event
+
+        data object OnSelectThumbnailDialogDismissed : Event
+
+        data object OnClickUpload : Event
     }
 
     sealed interface Effect {

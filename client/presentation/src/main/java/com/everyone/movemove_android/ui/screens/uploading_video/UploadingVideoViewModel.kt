@@ -19,11 +19,14 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickPlayAndPause
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickPlayer
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickSelectCategory
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickSelectThumbnail
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickSelectVideo
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickThumbnail
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickUpload
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnSelectThumbnailDialogDismissed
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTitleTyped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnVideoReady
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoEndTime
@@ -61,19 +64,38 @@ class UploadingVideoViewModel @Inject constructor(
 
     override fun event(event: Event) = when (event) {
         is OnClickSelectVideo -> onClickAddVideo()
+
         is OnGetUri -> onGetUri(event.uri)
+
         is OnClickPlayAndPause -> onClickPlayAndPause()
+
         is OnClickPlayer -> onClickPlayer()
+
         is OnPlayAndPauseTimeOut -> onPlayAndPauseTimeOut()
+
         is OnVideoReady -> onVideoReady(event.duration)
+
         is SetVideoStartTime -> setVideoStartTime(event.time)
+
         is SetVideoEndTime -> setVideoEndTime(event.time)
+
         is OnTitleTyped -> onTitleTyped(event.title)
+
         is OnDescriptionTyped -> onDescriptionTyped(event.description)
-        is OnClickUpload -> onClickUpload()
+
+        is OnClickSelectThumbnail -> onClickSelectThumbnail()
+
         is OnBottomSheetHide -> onBottomSheetHide()
+
         is OnClickSelectCategory -> onClickSelectCategory()
+
         is OnCategorySelected -> onCategorySelected(event.category)
+
+        is OnClickThumbnail -> onClickThumbnail(event.thumbnail)
+
+        is OnSelectThumbnailDialogDismissed -> onSelectThumbnailDialogDismissed()
+
+        is OnClickUpload -> onClickUpload()
     }
 
     private fun onClickAddVideo() {
@@ -182,24 +204,32 @@ class UploadingVideoViewModel @Inject constructor(
         checkUploadEnable()
     }
 
-    private fun onClickUpload() {
+    private fun onClickSelectThumbnail() {
         if (::videoFilePath.isInitialized) {
             _state.update {
                 it.copy(isLoading = it.isLoading)
             }
 
-            with(state.value) {
-                viewModelScope.launch(ioDispatcher) {
-                    VideoTrimmer(
-                        originalPath = videoFilePath,
-                        newPath = context.filesDir.absolutePath,
-                        startMs = videoStartTime,
-                        endMs = videoEndTime
-                    ).trim()
+            viewModelScope.launch(ioDispatcher) {
+                trimVideo()
+            }.invokeOnCompletion {
+                _state.update {
+                    it.copy(isSelectThumbnailDialogShowing = true)
                 }
             }
         } else {
             // todo: Not Initialized
+        }
+    }
+
+    private fun trimVideo() {
+        with(state.value) {
+            VideoTrimmer(
+                originalPath = videoFilePath,
+                newPath = context.filesDir.absolutePath,
+                startMs = videoStartTime,
+                endMs = videoEndTime
+            ).trim()
         }
     }
 
@@ -237,6 +267,22 @@ class UploadingVideoViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    private fun onClickThumbnail(thumbnail: ImageBitmap) {
+        _state.update {
+            it.copy(selectedThumbnail = thumbnail)
+        }
+    }
+
+    private fun onSelectThumbnailDialogDismissed() {
+        _state.update {
+            it.copy(isSelectThumbnailDialogShowing = false)
+        }
+    }
+
+    private fun onClickUpload() {
+
     }
 
     companion object {
