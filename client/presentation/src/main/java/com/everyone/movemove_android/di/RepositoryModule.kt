@@ -30,7 +30,7 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideStartingRepository(networkHandler: NetworkHandler): UserRepository {
+    fun provideUserRepository(networkHandler: NetworkHandler): UserRepository {
         return UserRepositoryImpl(networkHandler)
     }
 }
