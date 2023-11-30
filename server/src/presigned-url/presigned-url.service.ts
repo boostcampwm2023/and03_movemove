@@ -4,16 +4,25 @@ import { listObjects } from 'src/ncpAPI/listObjects';
 import * as _ from 'lodash';
 import { xml2js } from 'xml-js';
 import { Types } from 'mongoose';
+import { AdvertisementPresignedUrlResponseDto } from './dto/advertisement-presigned-url-response.dto';
+import { PresignedUrlResponseDto } from './dto/presigned-url-response.dto';
+import { VideoPresignedUrlResponseDto } from './dto/video-presigned-url-response.dto';
 
 @Injectable()
 export class PresignedUrlService {
-  async getAdvertisementPresignedUrl(adName: string) {
+  async getAdvertisementPresignedUrl(
+    adName: string,
+  ): Promise<AdvertisementPresignedUrlResponseDto> {
     if (adName)
-      return createPresignedUrl(
-        process.env.ADVERTISEMENT_BUCKET,
-        adName,
-        'GET',
-      );
+      return {
+        advertisements: [
+          await createPresignedUrl(
+            process.env.ADVERTISEMENT_BUCKET,
+            adName,
+            'GET',
+          ),
+        ],
+      };
 
     const xmlData = await listObjects(process.env.ADVERTISEMENT_BUCKET);
     const jsonData: any = xml2js(xmlData, { compact: true });
@@ -31,7 +40,10 @@ export class PresignedUrlService {
     return { advertisements };
   }
 
-  async putProfilePresignedUrl({ uuid, profileExtension }) {
+  async putProfilePresignedUrl({
+    uuid,
+    profileExtension,
+  }): Promise<PresignedUrlResponseDto> {
     const objectName = `${uuid}.${profileExtension}`;
     const presignedUrl = (
       await createPresignedUrl(process.env.PROFILE_BUCKET, objectName, 'PUT')
@@ -39,7 +51,10 @@ export class PresignedUrlService {
     return { presignedUrl };
   }
 
-  async putVideoPresignedUrl({ videoExtension, thumbnailExtension }) {
+  async putVideoPresignedUrl({
+    videoExtension,
+    thumbnailExtension,
+  }): Promise<VideoPresignedUrlResponseDto> {
     const videoId = new Types.ObjectId();
     const [videoUrl, thumbnailUrl] = await Promise.all([
       (
@@ -60,7 +75,10 @@ export class PresignedUrlService {
     return { videoId, videoUrl, thumbnailUrl };
   }
 
-  async getImagePresignedUrl(id: string, { type, extension }) {
+  async getImagePresignedUrl(
+    id: string,
+    { type, extension },
+  ): Promise<PresignedUrlResponseDto> {
     // TODO 업로드 된 이미지인지 확인
     const bucketName = {
       thumbnail: process.env.THUMBNAIL_BUCKET,
