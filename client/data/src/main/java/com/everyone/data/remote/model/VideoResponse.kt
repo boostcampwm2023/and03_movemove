@@ -3,12 +3,13 @@ package com.everyone.data.remote.model
 import com.everyone.data.base.BaseResponse
 import com.everyone.data.mapper.Mapper
 import com.everyone.domain.model.Video
+import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 import java.util.Date
 
 @Parcelize
 data class VideoResponse(
-    val _id: String?,
+    @SerializedName("_id") val id: String?,
     val viewCount: Int?,
     val rating: String?,
     val category: String?,
@@ -21,7 +22,7 @@ data class VideoResponse(
     companion object : Mapper<VideoResponse, Video> {
         override fun VideoResponse.toDomainModel(): Video {
             return Video(
-                id = _id,
+                id = id,
                 viewCount = viewCount,
                 rating = rating,
                 category = category,
