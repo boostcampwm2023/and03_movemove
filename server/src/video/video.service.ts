@@ -93,7 +93,7 @@ export class VideoService {
     const SEED_MAX = 1_000_000;
     const viewSeed = seed ?? Math.floor(Math.random() * SEED_MAX);
     const videoInfos = await Promise.all(
-      videos.map((video) => this.getVideoInfo(video, viewSeed)),
+      videos.map((video) => this.getVideoInfo(video)),
     );
     return { videos: videoInfos, seed: viewSeed };
   }
@@ -115,12 +115,12 @@ export class VideoService {
     return modifiedManifest;
   }
 
-  async getVideoInfo(video: any, seed?: number): Promise<VideoInfoDto> {
+  async getVideoInfo(video: any): Promise<VideoInfoDto> {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
     const rating = raterCount ? (totalRating / raterCount).toFixed(1) : null;
-    const manifest = `${process.env.SERVER_URL}videos/${
-      videoInfo._id
-    }/manifest${seed ? `?seed=${seed}` : ''}`;
+
+    const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
+
     const { profileImageExtension, uuid, ...uploaderInfo } =
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
     const [profileImageUrl, thumbnailImageUrl] = await Promise.all([

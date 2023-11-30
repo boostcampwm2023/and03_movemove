@@ -140,7 +140,7 @@ export class UserService {
         const rating = raterCount
           ? (totalRating / raterCount).toFixed(1)
           : null;
-        const manifest = `${process.env.SERVER_URL}videos/${videoInfo._id}/manifest`;
+        const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
         const thumbnailImage = await getBucketImage(
           process.env.THUMBNAIL_BUCKET,
           thumbnailExtension,
