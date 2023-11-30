@@ -26,7 +26,7 @@ export const createPresignedUrl = async (
 
   const signedUrlObject = await presigner.presign(
     new HttpRequest({ ...url, method }),
-    { expiresIn: 100 },
+    { expiresIn: 10000 },
   );
   return formatUrl(signedUrlObject);
 };

@@ -1,4 +1,4 @@
-import { Controller, Param, Patch, Query, UseGuards } from '@nestjs/common';
+import { Controller, Param, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { RequestUser, User } from 'src/decorators/request-user';
@@ -6,8 +6,10 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
+import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { SeedQueryDto } from './dto/manifest-query.dto';
 import { ActionService } from './action.service';
+import { ViewResponseDto } from './dto/view-response.dto';
 
 @ApiTags('VIDEO')
 @ApiBearerAuth()
@@ -20,7 +22,8 @@ export class ActionController {
   /**
    * 조회수 증가 (비디오 시청)
    */
-  @Patch('/:videoId/views')
+  @Put('/:videoId/views')
+  @ApiSuccessResponse(200, '비디오 조회수 증가', ViewResponseDto)
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
   viewVideo(
     @Param('videoId') videoId: string,
