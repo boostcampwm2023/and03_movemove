@@ -24,7 +24,6 @@ export class AuthController {
    */
   @Post('signup')
   @ApiTags('AUTH')
-  @ApiConsumes('multipart/form-data')
   @ApiSuccessResponse(201, '회원가입 성공', SignupResponseDto)
   @ApiFailResponse('인증 실패', [OAuthFailedException])
   @ApiFailResponse('회원가입 실패', [UserConflictException])
