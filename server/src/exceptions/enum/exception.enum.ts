@@ -1,5 +1,6 @@
 enum ErrorCode {
   UserConflict = 3001,
+  VideoConflict = 3002,
   BadRequest = 2000,
   LoginFail = 1000,
   TokenExpired = 1001,
@@ -21,6 +22,7 @@ enum ErrorCode {
 
 const ErrorMessage = {
   [ErrorCode.UserConflict]: '이미 가입된 회원',
+  [ErrorCode.VideoConflict]: '중복된 Video Id',
   [ErrorCode.BadRequest]: '잘못된 요청 형식',
   [ErrorCode.LoginFail]: '가입되지 않은 회원',
   [ErrorCode.TokenExpired]: 'AccessToken 만료',

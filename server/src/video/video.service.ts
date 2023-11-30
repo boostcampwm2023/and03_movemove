@@ -13,6 +13,7 @@ import axios from 'axios';
 import * as _ from 'lodash';
 import { ActionService } from 'src/action/action.service';
 import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
+import { VideoConflictException } from 'src/exceptions/video-conflict.exception';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -150,6 +151,9 @@ export class VideoService {
   }
 
   async uploadVideo(videoDto: VideoDto, uuid: string, videoId: string) {
+    const checkDuplicate = await this.VideoModel.findOne({ _id: videoId });
+    if (checkDuplicate) throw new VideoConflictException();
+
     const { videoExtension, thumbnailExtension } = videoDto;
     const videoName = `${videoId}.${videoExtension}`;
     const thumbnailName = `${videoId}.${thumbnailExtension}`;
