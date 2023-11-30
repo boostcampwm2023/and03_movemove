@@ -2,8 +2,10 @@ package com.everyone.movemove_android.di
 
 import com.everyone.data.remote.NetworkHandler
 import com.everyone.data.repository.AdsRepositoryImpl
+import com.everyone.data.repository.StartingRepositoryImpl
 import com.everyone.data.repository.VideosRepositoryImpl
 import com.everyone.domain.repository.AdsRepository
+import com.everyone.domain.repository.StartingRepository
 import com.everyone.domain.repository.VideosRepository
 import dagger.Module
 import dagger.Provides
@@ -24,5 +26,11 @@ object RepositoryModule {
     @Singleton
     fun provideAdsRepository(networkHandler: NetworkHandler): AdsRepository {
         return AdsRepositoryImpl(networkHandler)
+    }
+
+    @Provides
+    @Singleton
+    fun provideStartingRepository(networkHandler: NetworkHandler): StartingRepository {
+        return StartingRepositoryImpl(networkHandler)
     }
 }
