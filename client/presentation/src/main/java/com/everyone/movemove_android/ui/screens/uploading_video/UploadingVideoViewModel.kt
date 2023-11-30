@@ -8,7 +8,10 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.everyone.domain.model.Category
+import com.everyone.domain.model.VideoUploadUrl
+import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.PostExtensionInfoUseCase
+import com.everyone.domain.usecase.PutFileUseCase
 import com.everyone.movemove_android.di.DefaultDispatcher
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
@@ -34,6 +37,7 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoStartTime
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.State
 import com.everyone.movemove_android.ui.util.getVideoFilePath
+import com.everyone.movemove_android.ui.util.toWebpFile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
@@ -43,9 +47,11 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
@@ -57,7 +63,8 @@ class UploadingVideoViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
     @ApplicationContext private val context: Context,
-    private val postExtensionInfoUseCase: PostExtensionInfoUseCase
+    private val postExtensionInfoUseCase: PostExtensionInfoUseCase,
+    private val putFileUseCase: PutFileUseCase,
 ) : ViewModel(), UploadingVideoContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -234,7 +241,16 @@ class UploadingVideoViewModel @Inject constructor(
                 newPath = context.filesDir.absolutePath,
                 startMs = videoStartTime,
                 endMs = videoEndTime
-            ).trim()
+            ).trim(
+                onSuccess = { videoFile ->
+                    _state.update {
+                        it.copy(stagedVideoFile = videoFile)
+                    }
+                },
+                onFailure = {
+                    // todo : 예외 처리
+                }
+            )
         }
     }
 
@@ -287,9 +303,53 @@ class UploadingVideoViewModel @Inject constructor(
     }
 
     private fun onClickUpload() {
-        postExtensionInfoUseCase().onEach {
+        postExtensionInfoUseCase().onEach { result ->
+            when (result) {
+                is DataState.Success -> {
+                    uploadVideo(result.data)
+                }
 
+                is DataState.Failure -> {
+                    // todo :
+                }
+            }
         }.launchIn(viewModelScope + ioDispatcher)
+    }
+
+    private suspend fun uploadVideo(videoUploadUrl: VideoUploadUrl) {
+        state.value.stagedVideoFile?.let { videoFile ->
+            state.value.selectedThumbnail?.let { thumbnailBitmap ->
+                val thumbnailFile = thumbnailBitmap.toWebpFile()
+                val videoId = videoUploadUrl.videoId
+                val videoUrl = videoUploadUrl.videoUrl
+                val thumbnailUrl = videoUploadUrl.thumbnailUrl
+
+                if (videoId != null && videoUrl != null && thumbnailUrl != null) {
+                    putFileUseCase(
+                        requestUrl = videoUrl,
+                        file = videoFile
+                    ).zip(
+                        putFileUseCase(
+                            requestUrl = thumbnailUrl,
+                            file = thumbnailFile
+                        ),
+                        transform = { videoResult, thumbnailResult ->
+                            videoResult == 200 && thumbnailResult == 200
+                        }
+                    ).onEach { isSuccess ->
+                        when (isSuccess) {
+                            true -> {
+
+                            }
+
+                            false -> {
+                                // todo : 업로드 예외 처리
+                            }
+                        }
+                    }.collect()
+                }
+            }
+        }
     }
 
     companion object {

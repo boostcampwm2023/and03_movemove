@@ -10,7 +10,7 @@ class PostExtensionInfoUseCase @Inject constructor(private val repository: Video
     operator fun invoke(
         videoExtension: String = VIDEO_EXTENSION,
         thumbnailExtension: String = THUMBNAIL_EXTENSION
-    ): Flow<DataState<VideoUploadUrl>> = repository.postVideoInfo(
+    ): Flow<DataState<VideoUploadUrl>> = repository.postExtensionInfo(
         videoExtension = videoExtension,
         thumbnailExtension = thumbnailExtension
     )

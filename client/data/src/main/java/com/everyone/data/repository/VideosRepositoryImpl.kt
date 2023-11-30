@@ -29,11 +29,44 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.path
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.io.File
 import javax.inject.Inject
 
 class VideosRepositoryImpl @Inject constructor(
     private val networkHandler: NetworkHandler
 ) : VideosRepository {
+
+    override fun postExtensionInfo(
+        videoExtension: String,
+        thumbnailExtension: String
+    ): Flow<DataState<VideoUploadUrl>> = flow {
+        networkHandler.request<VideoUploadUrlResponse>(
+            method = HttpMethod.Get,
+            url = {
+                path(PRESIGNED_URL, VIDEO)
+                parameters.append(VIDEO_EXTENSION, videoExtension)
+                parameters.append(THUMBNAIL_EXTENSION, thumbnailExtension)
+            }
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
+            }
+        }
+    }
+
+    override fun putFile(
+        requestUrl: String,
+        file: File
+    ): Flow<Int> = flow {
+        networkHandler.requestSendFileToNCP(
+            url = requestUrl,
+            file = file
+        ).collect { statusCode ->
+            emit(statusCode)
+        }
+    }
 
     override suspend fun getVideosRandom(
         limit: String,
@@ -42,9 +75,7 @@ class VideosRepositoryImpl @Inject constructor(
         return flow {
             networkHandler.request<VideosRandomResponse>(
                 method = HttpMethod.Get,
-                url = {
-                    path(VIDEOS, RANDOM)
-                }
+                url = { path(VIDEOS, RANDOM) }
             ).collect { response ->
                 response.data?.let {
                     emit(DataState.Success(it.toDomainModel()))
@@ -63,9 +94,7 @@ class VideosRepositoryImpl @Inject constructor(
         return flow {
             networkHandler.request<Unit>(
                 method = HttpMethod.Put,
-                url = {
-                    path(VIDEOS, id, RATING)
-                },
+                url = { path(VIDEOS, id, RATING) },
                 content = {
                     append(RATING, rating)
                     append(REASON, reason)
@@ -112,28 +141,6 @@ class VideosRepositoryImpl @Inject constructor(
                 } ?: run {
                     emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
                 }
-            }
-        }
-    }
-
-    override fun postVideoInfo(
-        videoExtension: String,
-        thumbnailExtension: String
-    ): Flow<DataState<VideoUploadUrl>> = flow {
-        networkHandler.request<VideoUploadUrlResponse>(
-            method = HttpMethod.Get,
-            url = {
-                path(PRESIGNED_URL, VIDEO)
-            },
-            content = {
-                append(VIDEO_EXTENSION, videoExtension)
-                append(THUMBNAIL_EXTENSION, thumbnailExtension)
-            }
-        ).collect { response ->
-            response.data?.let {
-                emit(DataState.Success(it.toDomainModel()))
-            } ?: run {
-                emit(response.toFailure())
             }
         }
     }

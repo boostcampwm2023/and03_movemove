@@ -6,11 +6,12 @@ import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
 import android.media.MediaMuxer
+import java.io.File
 import java.nio.ByteBuffer
 
 class VideoTrimmer(
     private val originalPath: String,
-    newPath: String,
+    private val newPath: String,
     private val startMs: Long,
     private val endMs: Long
 ) {
@@ -27,7 +28,10 @@ class VideoTrimmer(
     }
 
     @SuppressLint("WrongConstant")
-    fun trim() {
+    fun trim(
+        onSuccess: (File) -> Unit,
+        onFailure: () -> Unit
+    ) {
         val outputBuffer = ByteBuffer.allocate(bufferSize)
         val bufferInfo = MediaCodec.BufferInfo()
 
@@ -39,7 +43,7 @@ class VideoTrimmer(
             mediaExtractor.seekTo((startMs * 1000), MediaExtractor.SEEK_TO_CLOSEST_SYNC)
         }
 
-        try {
+        runCatching {
             mediaMuxer.start()
 
             while (true) {
@@ -66,11 +70,14 @@ class VideoTrimmer(
                     }
                 }
             }
-
-            mediaMuxer.stop()
-        } catch (e: IllegalStateException) {
-            releaseComponents()
+        }.onSuccess {
+            onSuccess(File("$newPath.mp4"))
+        }.onFailure {
+            onFailure()
         }
+
+        mediaMuxer.stop()
+        releaseComponents()
     }
 
     private fun initMediaExtractor() {

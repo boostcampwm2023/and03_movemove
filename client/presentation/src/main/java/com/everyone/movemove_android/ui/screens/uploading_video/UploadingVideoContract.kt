@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.ui.graphics.ImageBitmap
 import com.everyone.domain.model.Category
 import com.everyone.movemove_android.base.BaseContract
+import java.io.File
 
 interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, UploadingVideoContract.Event, UploadingVideoContract.Effect> {
     data class State(
@@ -21,7 +22,8 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         val isBottomSheetShowing: Boolean = false,
         val category: Category? = null,
         val isSelectThumbnailDialogShowing: Boolean = false,
-        val selectedThumbnail: ImageBitmap? = null
+        val selectedThumbnail: ImageBitmap? = null,
+        val stagedVideoFile: File? = null
     )
 
     data class VideoInfo(

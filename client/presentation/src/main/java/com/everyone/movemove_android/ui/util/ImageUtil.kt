@@ -13,71 +13,52 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
-fun convertUriToBitmap(
-    contentResolver: ContentResolver,
-    uri: Uri,
-): Bitmap {
+fun Uri.toBitmap(contentResolver: ContentResolver): Bitmap {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         ImageDecoder.decodeBitmap(
             ImageDecoder.createSource(
                 contentResolver,
-                uri
+                this
             )
         )
     } else {
-        MediaStore.Images.Media.getBitmap(contentResolver, uri)
+        MediaStore.Images.Media.getBitmap(contentResolver, this)
     }
 }
 
-inline fun convertImageBitmapToByteArray(
-    imageBitmap: ImageBitmap,
-    crossinline onSuccess: (ByteArray) -> Unit,
-    crossinline onFailure: () -> Unit
-) {
+fun ImageBitmap.toWebpFile(): File {
     val stream = ByteArrayOutputStream()
 
-    runCatching {
-        stream.use {
-            imageBitmap.asAndroidBitmap().compress(
-                if (Build.VERSION.SDK_INT >= 30) {
-                    Bitmap.CompressFormat.WEBP_LOSSY
-                } else {
-                    Bitmap.CompressFormat.WEBP
-                },
-                50,
-                stream
-            )
-        }
-    }.onSuccess {
-        onSuccess(stream.toByteArray())
-    }.onFailure {
-        onFailure()
+    stream.use {
+        this.asAndroidBitmap().compress(
+            if (Build.VERSION.SDK_INT >= 30) {
+                Bitmap.CompressFormat.WEBP_LOSSY
+            } else {
+                Bitmap.CompressFormat.WEBP
+            },
+            50,
+            stream
+        )
     }
+
+    return stream.toByteArray().toWebpFile()
 }
 
-inline fun convertByteArrayToWebpFile(
-    byteArray: ByteArray,
-    crossinline onSuccess: (File) -> Unit,
-    crossinline onFailure: () -> Unit
-) {
+private fun ByteArray.toWebpFile(): File {
     val webpFile = File.createTempFile("IMG_", ".webp")
 
-    runCatching {
-        FileOutputStream(webpFile).use { stream ->
-            val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-            bitmap.compress(
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    Bitmap.CompressFormat.WEBP_LOSSY
-                } else {
-                    Bitmap.CompressFormat.WEBP
-                },
-                50,
-                stream
-            )
-        }
-    }.onSuccess {
-        onSuccess(webpFile)
-    }.onFailure {
-        onFailure()
+    FileOutputStream(webpFile).use { stream ->
+        val bitmap = BitmapFactory.decodeByteArray(this, 0, this.size)
+        bitmap.compress(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Bitmap.CompressFormat.WEBP_LOSSY
+            } else {
+                Bitmap.CompressFormat.WEBP
+            },
+            50,
+            stream
+        )
     }
+
+    return webpFile
 }
