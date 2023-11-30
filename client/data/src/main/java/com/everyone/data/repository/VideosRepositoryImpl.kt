@@ -31,12 +31,16 @@ class VideosRepositoryImpl @Inject constructor(
     override suspend fun getVideosRandom(
         limit: String,
         category: String,
+        seed: String
     ): Flow<DataState<VideosRandom>> {
         return flow {
             networkHandler.request<VideosRandomResponse>(
                 method = HttpMethod.Get,
                 url = {
                     path(VIDEOS, RANDOM)
+                    parameters.append("limit", limit)
+                    parameters.append("category", category)
+                    parameters.append("seed", seed)
                 }
             ).collect { response ->
                 response.data?.let {

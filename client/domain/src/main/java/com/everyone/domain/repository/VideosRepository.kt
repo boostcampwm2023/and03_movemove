@@ -10,6 +10,7 @@ interface VideosRepository {
     suspend fun getVideosRandom(
         limit: String,
         category: String,
+        seed: String
     ): Flow<DataState<VideosRandom>>
 
     suspend fun putVideosRating(
