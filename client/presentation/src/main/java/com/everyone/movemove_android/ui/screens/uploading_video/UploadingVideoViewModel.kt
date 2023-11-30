@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.everyone.domain.model.Category
+import com.everyone.domain.usecase.PostExtensionInfoUseCase
 import com.everyone.movemove_android.di.DefaultDispatcher
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
@@ -42,8 +43,11 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -53,6 +57,7 @@ class UploadingVideoViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
     @ApplicationContext private val context: Context,
+    private val postExtensionInfoUseCase: PostExtensionInfoUseCase
 ) : ViewModel(), UploadingVideoContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -282,7 +287,9 @@ class UploadingVideoViewModel @Inject constructor(
     }
 
     private fun onClickUpload() {
+        postExtensionInfoUseCase().onEach {
 
+        }.launchIn(viewModelScope + ioDispatcher)
     }
 
     companion object {

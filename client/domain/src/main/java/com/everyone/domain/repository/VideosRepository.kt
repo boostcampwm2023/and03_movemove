@@ -1,5 +1,6 @@
 package com.everyone.domain.repository
 
+import com.everyone.domain.model.VideoUploadUrl
 import com.everyone.domain.model.VideosRandom
 import com.everyone.domain.model.VideosTrend
 import com.everyone.domain.model.base.DataState
@@ -22,4 +23,8 @@ interface VideosRepository {
 
     suspend fun getVideosTrend(limit: String): Flow<DataState<VideosTrend>>
 
+    fun postVideoInfo(
+        videoExtension: String,
+        thumbnailExtension: String
+    ): Flow<DataState<VideoUploadUrl>>
 }

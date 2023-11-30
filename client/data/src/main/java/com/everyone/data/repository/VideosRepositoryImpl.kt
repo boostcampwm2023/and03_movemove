@@ -3,16 +3,23 @@ package com.everyone.data.repository
 import com.everyone.data.remote.NetworkHandler
 import com.everyone.data.remote.RemoteConstants.CATEGORY
 import com.everyone.data.remote.RemoteConstants.LIMIT
+import com.everyone.data.remote.RemoteConstants.PRESIGNED_URL
 import com.everyone.data.remote.RemoteConstants.RANDOM
 import com.everyone.data.remote.RemoteConstants.RATING
 import com.everyone.data.remote.RemoteConstants.REASON
+import com.everyone.data.remote.RemoteConstants.THUMBNAIL_EXTENSION
 import com.everyone.data.remote.RemoteConstants.TOP_RATED
 import com.everyone.data.remote.RemoteConstants.TREND
+import com.everyone.data.remote.RemoteConstants.VIDEO
 import com.everyone.data.remote.RemoteConstants.VIDEOS
+import com.everyone.data.remote.RemoteConstants.VIDEO_EXTENSION
+import com.everyone.data.remote.model.VideoUploadUrlResponse
+import com.everyone.data.remote.model.VideoUploadUrlResponse.Companion.toDomainModel
 import com.everyone.data.remote.model.VideosRandomResponse
 import com.everyone.data.remote.model.VideosRandomResponse.Companion.toDomainModel
 import com.everyone.data.remote.model.VideosTrendResponse
 import com.everyone.data.remote.model.VideosTrendResponse.Companion.toDomainModel
+import com.everyone.domain.model.VideoUploadUrl
 import com.everyone.domain.model.VideosRandom
 import com.everyone.domain.model.VideosTrend
 import com.everyone.domain.model.base.DataState
@@ -105,6 +112,28 @@ class VideosRepositoryImpl @Inject constructor(
                 } ?: run {
                     emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
                 }
+            }
+        }
+    }
+
+    override fun postVideoInfo(
+        videoExtension: String,
+        thumbnailExtension: String
+    ): Flow<DataState<VideoUploadUrl>> = flow {
+        networkHandler.request<VideoUploadUrlResponse>(
+            method = HttpMethod.Get,
+            url = {
+                path(PRESIGNED_URL, VIDEO)
+            },
+            content = {
+                append(VIDEO_EXTENSION, videoExtension)
+                append(THUMBNAIL_EXTENSION, thumbnailExtension)
+            }
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
             }
         }
     }
