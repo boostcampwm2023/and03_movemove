@@ -17,5 +17,5 @@ class PresignedUrlDto {
 
 export class AdvertisementPresignedUrlResponseDto {
   @ApiProperty({ type: [PresignedUrlDto] })
-  advertisements: [PresignedUrlDto];
+  advertisements: PresignedUrlDto[];
 }

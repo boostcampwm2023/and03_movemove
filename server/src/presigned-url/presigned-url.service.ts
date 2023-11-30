@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
 import { listObjects } from 'src/ncpAPI/listObjects';
-import * as _ from 'lodash';
-import { xml2js } from 'xml-js';
 import { Types } from 'mongoose';
 import { AdvertisementPresignedUrlResponseDto } from './dto/advertisement-presigned-url-response.dto';
 import { PresignedUrlResponseDto } from './dto/presigned-url-response.dto';
@@ -27,10 +25,7 @@ export class PresignedUrlService {
         ],
       };
 
-    const xmlData = await listObjects(process.env.ADVERTISEMENT_BUCKET);
-    const jsonData: any = xml2js(xmlData, { compact: true });
-
-    const adList = _.map(jsonData.ListBucketResult.Contents, 'Key._text');
+    const adList = await listObjects(process.env.ADVERTISEMENT_BUCKET);
     const advertisements = await Promise.all(
       adList.map(async (advertisement: string) => {
         return {
