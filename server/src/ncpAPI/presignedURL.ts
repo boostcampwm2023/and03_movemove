@@ -3,6 +3,7 @@ import { S3RequestPresigner } from '@aws-sdk/s3-request-presigner';
 import { parseUrl } from '@smithy/url-parser';
 import { formatUrl } from '@aws-sdk/util-format-url';
 import { Hash } from '@smithy/hash-node';
+import { ObjectNotFoundException } from 'src/exceptions/object-not-found.exception';
 import { listObjects } from './listObjects';
 
 export const createPresignedUrl = async (

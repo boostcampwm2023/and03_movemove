@@ -9,6 +9,8 @@ import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import { VideoService } from 'src/video/video.service';
 import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
+import { ObjectNotFoundException } from 'src/exceptions/object-not-found.exception';
+import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
 import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { User } from './schemas/user.schema';
 import { ProfileDto } from './dto/profile.dto';
@@ -45,29 +47,27 @@ export class UserService {
   }
 
   async patchProfile(profileDto: ProfileDto, uuid: string) {
-    const updateOption = _.omitBy(profileDto, _.isEmpty); // profileDto 중 빈 문자열인 필드 제거
-    const user = await this.UserModel.findOne({ uuid });
+    const updateOption: ProfileDto = _.omitBy(profileDto, _.isEmpty); // profileDto 중 빈 문자열인 필드 제거
+    const user = await this.UserModel.findOne({ uuid }, {}, { lean: true });
 
-    if (user.nickname === updateOption.nickname) {
-      // 실제로 변경된 필드만 updateOption에 남기기
-      delete updateOption.nickname;
+    // profileUrl이 null이 아니라면 프로필 이미지가 업로드됐는지 확인
+    let profileUrl;
+    try {
+      profileUrl = profileDto.profileImageExtension
+        ? await createPresignedUrl(
+            process.env.PROFILE_BUCKET,
+            `${uuid}.${profileDto.profileImageExtension}`,
+            'GET',
+          )
+        : null;
+    } catch (error) {
+      if (error instanceof ObjectNotFoundException) {
+        throw new ProfileUploadRequiredException();
+      }
+      throw error;
     }
-    if (user.statusMessage === updateOption.statusMessage) {
-      delete updateOption.statusMessage;
-    }
-    // TODO profileExtension, profileImageExtension 중 통일하는게 좋으려나
-    updateOption.profileImageExtension = updateOption.profileExtension;
-    delete updateOption.profileExtension;
 
-    // TODO profileUrl이 null이 아니라면 프로필 이미지가 업로드됐는지 확인
-    const profileUrl = profileDto.profileExtension
-      ? await createPresignedUrl(
-          process.env.PROFILE_BUCKET,
-          `${uuid}.${profileDto.profileExtension}`,
-          'GET',
-        )
-      : null;
-    if (profileDto.profileExtension === '' && user.profileImageExtension) {
+    if (profileDto.profileImageExtension === '' && user.profileImageExtension) {
       // profileExtension 필드를 빈 문자열로 주었고, 기존 프로필이미지가 있었다면 삭제
       deleteObject(
         process.env.PROFILE_BUCKET,
@@ -77,9 +77,15 @@ export class UserService {
     }
 
     // TODO findOneAndUpdate이 아니라 다른걸 써서 update 결과를 받고 싶음
-    const result = (
-      await this.UserModel.findOneAndUpdate({ uuid }, updateOption)
-    ).toObject();
+    const result = await this.UserModel.findOneAndUpdate(
+      { uuid },
+      updateOption,
+      {
+        lean: true,
+        new: true,
+      },
+    );
+
     return { ...result, profileUrl };
   }
 
