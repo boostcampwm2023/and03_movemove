@@ -1,6 +1,6 @@
 import { IsNumber, IsOptional } from 'class-validator';
 
-export class ManifestQueryDto {
+export class SeedQueryDto {
   /**
    * Seed 값
    */

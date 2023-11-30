@@ -17,16 +17,17 @@ export class ActionService {
 
   async viewVideo(videoId: string, userId: string, seed: number) {
     const session = await this.connection.startSession();
+    const video = { videoId, viewCount: null };
     await session.withTransaction(async () => {
-      await this.VideoModel.updateOne(
+      await this.VideoModel.findOneAndUpdate(
         { _id: videoId },
         { $inc: { viewCount: 1 } },
+        { new: true },
       )
         .session(session)
         .then((result) => {
-          if (result.modifiedCount === 0) {
-            throw new VideoNotFoundException();
-          }
+          if (!result) throw new VideoNotFoundException();
+          video.viewCount = result.viewCount;
         });
 
       // 기존에 시청한적이 있다면 seed만 업데이트
@@ -60,6 +61,7 @@ export class ActionService {
       }
     });
     session.endSession();
+    return { video };
   }
 
   async ratingVideo(

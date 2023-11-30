@@ -29,7 +29,7 @@ import { RequestUser, User } from 'src/decorators/request-user';
 import { ActionService } from 'src/action/action.service';
 import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
 import { IgnoreInterceptor } from 'src/decorators/ignore-interceptor';
-import { ManifestQueryDto } from 'src/action/dto/manifest-query.dto';
+import { SeedQueryDto } from 'src/action/dto/manifest-query.dto';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -98,7 +98,7 @@ export class VideoController {
    * Manifest 파일 반환
    */
   @IgnoreInterceptor()
-  @ApiTags('COMPLETE')
+  @ApiTags('LEGACY')
   @Get(':id/manifest')
   @ApiProduces('application/vnd.apple.mpegurl')
   @ApiOkResponse({
@@ -110,7 +110,7 @@ export class VideoController {
   getManifest(
     @Param('id') videoId: string,
     @RequestUser() user: User,
-    @Query() manifestQueryDto: ManifestQueryDto,
+    @Query() manifestQueryDto: SeedQueryDto,
   ) {
     return this.videoService.getManifest(
       videoId,
@@ -123,7 +123,6 @@ export class VideoController {
    * 인기 비디오 반환
    */
   @Get('trend')
-  @ApiTags('COMPLETE')
   @ApiSuccessResponse(200, '비디오 조회 성공', VideoListResponseDto)
   getTrendVideo(@Query('limit') limit: number) {
     return this.videoService.getTrendVideo(limit);
