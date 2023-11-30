@@ -38,7 +38,7 @@ export class PresignedUrlController {
   }
 
   /**
-   * 프로필 이미지를 PUT하는 url 발급
+   * 프로필 이미지 변경 시 이미지를 PUT하는 url 발급
    */
   @Get('profile')
   @ApiSuccessResponse(

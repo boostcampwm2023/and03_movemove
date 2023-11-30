@@ -35,3 +35,7 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+src/test.py
+src/video/common.response.dto.ts
+src/video/video.decorator.ts
