@@ -61,6 +61,7 @@ export class UserService {
           )
         : null;
     } catch (error) {
+      console.log('catch:', error);
       if (error instanceof ObjectNotFoundException) {
         throw new ProfileUploadRequiredException();
       }
