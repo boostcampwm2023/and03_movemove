@@ -57,6 +57,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import com.everyone.domain.model.Videos
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.StyledText
@@ -71,7 +72,7 @@ import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WatchingVideoScreen(
-    id : String,
+    videos: Videos?,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     viewModel: WatchingVideoViewModel = hiltViewModel(),
 ) {

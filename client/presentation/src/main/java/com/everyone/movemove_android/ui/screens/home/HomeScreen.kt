@@ -292,8 +292,8 @@ fun MoveMoveVideo(
                 .padding(bottom = 8.dp)
                 .clickableWithoutRipple {
                     navigator.navigateToArgument(
-                        key = "id",
-                        value = video.id!!
+                        key = "videos",
+                        value = videos
                     )
                     navigator.navigateTo(Destination.WATCHING_VIDEO)
                 },

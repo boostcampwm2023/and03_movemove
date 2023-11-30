@@ -1,6 +1,5 @@
 package com.everyone.movemove_android.ui.container
 
-import android.util.Log
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.background
@@ -35,6 +34,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.everyone.domain.model.Videos
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.home.HomeScreen
 import com.everyone.movemove_android.ui.screens.profile.ProfileScreen
@@ -78,13 +78,10 @@ fun MainScreen() {
         ) {
             navScreen(Destination.HOME.route) { HomeScreen(navigator = navigator) }
             navScreen(Destination.WATCHING_VIDEO.route) {
-                remember {
-                    navController.previousBackStackEntry?.savedStateHandle?.get<String>("id")
-                }?.let { id ->
-                    WatchingVideoScreen(id = id)
-                } ?: run {
-                    // TODO 에러 처리 필요!!
+                val videos = remember {
+                    navController.previousBackStackEntry?.savedStateHandle?.get<Videos>("videos")
                 }
+                WatchingVideoScreen(videos = videos)
             }
             navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
             navScreen(Destination.PROFILE.route) { ProfileScreen() }
