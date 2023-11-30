@@ -8,15 +8,10 @@ import javax.inject.Inject
 
 class PostExtensionInfoUseCase @Inject constructor(private val repository: VideosRepository) {
     operator fun invoke(
-        videoExtension: String = VIDEO_EXTENSION,
-        thumbnailExtension: String = THUMBNAIL_EXTENSION
+        videoExtension: String,
+        thumbnailExtension: String
     ): Flow<DataState<VideoUploadUrl>> = repository.postExtensionInfo(
         videoExtension = videoExtension,
         thumbnailExtension = thumbnailExtension
     )
-
-    companion object {
-        private const val VIDEO_EXTENSION = "mp4"
-        private const val THUMBNAIL_EXTENSION = "webp"
-    }
 }

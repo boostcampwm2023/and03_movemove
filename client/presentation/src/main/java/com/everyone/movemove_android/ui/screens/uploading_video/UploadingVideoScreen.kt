@@ -65,18 +65,20 @@ import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.ui.PlayerView
-import com.everyone.domain.model.Category
-import com.everyone.domain.model.Category.CHALLENGE
-import com.everyone.domain.model.Category.K_POP
-import com.everyone.domain.model.Category.NEW_SCHOOL
-import com.everyone.domain.model.Category.OLD_SCHOOL
+import com.everyone.domain.model.UploadCategory
+import com.everyone.domain.model.UploadCategory.CHALLENGE
+import com.everyone.domain.model.UploadCategory.K_POP
+import com.everyone.domain.model.UploadCategory.NEW_SCHOOL
+import com.everyone.domain.model.UploadCategory.OLD_SCHOOL
 import com.everyone.movemove_android.R
+import com.everyone.movemove_android.base.BaseActivity
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.SelectThumbnailDialog
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.Finish
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnBottomSheetHide
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnCategorySelected
@@ -129,6 +131,10 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                 is LaunchVideoPicker -> {
                     videoLauncher.launch(PickVisualMediaRequest(VideoOnly))
                 }
+
+                is Finish -> {
+
+                }
             }
         }
     }
@@ -177,7 +183,7 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Category.values().forEach { category ->
+                        UploadCategory.values().forEach { category ->
                             StyledText(
                                 modifier = Modifier.clickableWithoutRipple { event(OnCategorySelected(category)) },
                                 text = category.getString(),
@@ -555,13 +561,11 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
         BackHandler(enabled = isBottomSheetShowing) {
             event(OnBottomSheetHide)
         }
-
-
     }
 }
 
 @Composable
-private fun Category.getString(): String {
+private fun UploadCategory.getString(): String {
     return stringResource(
         id = when (this) {
             CHALLENGE -> R.string.challenge

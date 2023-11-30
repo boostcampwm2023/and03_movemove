@@ -2,7 +2,7 @@ package com.everyone.movemove_android.ui.screens.uploading_video
 
 import android.net.Uri
 import androidx.compose.ui.graphics.ImageBitmap
-import com.everyone.domain.model.Category
+import com.everyone.domain.model.UploadCategory
 import com.everyone.movemove_android.base.BaseContract
 import java.io.File
 
@@ -20,7 +20,7 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         val description: String = "",
         val isUploadEnabled: Boolean = false,
         val isBottomSheetShowing: Boolean = false,
-        val category: Category? = null,
+        val category: UploadCategory? = null,
         val isSelectThumbnailDialogShowing: Boolean = false,
         val selectedThumbnail: ImageBitmap? = null,
         val stagedVideoFile: File? = null
@@ -56,7 +56,7 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
 
         data object OnClickSelectCategory : Event
 
-        data class OnCategorySelected(val category: Category) : Event
+        data class OnCategorySelected(val category: UploadCategory) : Event
 
         data object OnBottomSheetHide : Event
 
@@ -69,5 +69,7 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
 
     sealed interface Effect {
         data object LaunchVideoPicker : Effect
+
+        data object Finish : Effect
     }
 }

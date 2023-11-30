@@ -2,6 +2,7 @@ package com.everyone.movemove_android.di
 
 import com.everyone.domain.repository.VideosRepository
 import com.everyone.domain.usecase.PostExtensionInfoUseCase
+import com.everyone.domain.usecase.PostVideoInfoUseCase
 import com.everyone.domain.usecase.PutFileUseCase
 import dagger.Module
 import dagger.Provides
@@ -22,5 +23,9 @@ object UseCaseModule {
 
     @Provides
     @ViewModelScoped
-    fun provideFileUseCase(repository: VideosRepository): PutFileUseCase = PutFileUseCase(repository)
+    fun providePutFileUseCase(repository: VideosRepository): PutFileUseCase = PutFileUseCase(repository)
+
+    @Provides
+    @ViewModelScoped
+    fun providePostVideoInfoUseCase(repository: VideosRepository): PostVideoInfoUseCase = PostVideoInfoUseCase(repository)
 }

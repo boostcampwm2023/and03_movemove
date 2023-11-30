@@ -4,8 +4,9 @@ import com.everyone.domain.model.base.BaseModel
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class VideoUploadUrl(
-    val videoId: String? = "",
-    val videoUrl: String? = "",
-    val thumbnailUrl: String? = ""
+data class CreatedVideo(
+    val id: String?,
+    val title: String?,
+    val content: String?,
+    val category: String?
 ) : BaseModel

@@ -9,7 +9,6 @@ object RemoteConstants {
     const val TREND = "trend"
     const val LIMIT = "limit"
     const val TOP_RATED = "top-rated"
-    const val CATEGORY = "category"
 
     // URL
     const val VIDEO = "video"
@@ -18,4 +17,7 @@ object RemoteConstants {
     // BODY
     const val VIDEO_EXTENSION = "videoExtension"
     const val THUMBNAIL_EXTENSION = "thumbnailExtension"
+    const val TITLE = "title"
+    const val CONTENT = "content"
+    const val CATEGORY = "category"
 }

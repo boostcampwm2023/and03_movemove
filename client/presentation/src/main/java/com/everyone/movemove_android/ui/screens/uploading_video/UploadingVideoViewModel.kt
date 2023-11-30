@@ -7,15 +7,17 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.everyone.domain.model.Category
+import com.everyone.domain.model.UploadCategory
 import com.everyone.domain.model.VideoUploadUrl
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.PostExtensionInfoUseCase
+import com.everyone.domain.usecase.PostVideoInfoUseCase
 import com.everyone.domain.usecase.PutFileUseCase
 import com.everyone.movemove_android.di.DefaultDispatcher
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.Finish
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnBottomSheetHide
@@ -65,6 +67,7 @@ class UploadingVideoViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val postExtensionInfoUseCase: PostExtensionInfoUseCase,
     private val putFileUseCase: PutFileUseCase,
+    private val postVideoInfoUseCase: PostVideoInfoUseCase,
 ) : ViewModel(), UploadingVideoContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -266,7 +269,7 @@ class UploadingVideoViewModel @Inject constructor(
         }
     }
 
-    private fun onCategorySelected(category: Category) {
+    private fun onCategorySelected(category: UploadCategory) {
         _state.update {
             it.copy(
                 isBottomSheetShowing = false,
@@ -303,7 +306,10 @@ class UploadingVideoViewModel @Inject constructor(
     }
 
     private fun onClickUpload() {
-        postExtensionInfoUseCase().onEach { result ->
+        postExtensionInfoUseCase(
+            videoExtension = MP4,
+            thumbnailExtension = WEBP
+        ).onEach { result ->
             when (result) {
                 is DataState.Success -> {
                     uploadVideo(result.data)
@@ -339,7 +345,7 @@ class UploadingVideoViewModel @Inject constructor(
                     ).onEach { isSuccess ->
                         when (isSuccess) {
                             true -> {
-
+                                sendVideoInfo(videoId)
                             }
 
                             false -> {
@@ -352,7 +358,32 @@ class UploadingVideoViewModel @Inject constructor(
         }
     }
 
+    private suspend fun sendVideoInfo(videoId: String) {
+        postVideoInfoUseCase(
+            videoId = videoId,
+            title = state.value.title,
+            content = state.value.description,
+            category = state.value.category!!.uploadString,
+            videoExtension = MP4,
+            thumbnailExtension = WEBP
+        ).onEach { result ->
+            when (result) {
+                is DataState.Success -> {
+                    withContext(mainImmediateDispatcher) {
+                        _effect.emit(Finish)
+                    }
+                }
+
+                is DataState.Failure -> {
+                    // todo : 인코딩 예외 처리
+                }
+            }
+        }.collect()
+    }
+
     companion object {
         const val THUMBNAIL_COUNT = 15
+        private const val MP4 = "mp4"
+        private const val WEBP = "webp"
     }
 }

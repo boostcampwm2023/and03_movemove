@@ -103,11 +103,11 @@ class NetworkHandler {
 
     companion object {
         const val BASE_URL = "223.130.136.106"
-        private const val REQUEST_TIMEOUT = 5000L
-        private const val CONNECT_TIMEOUT = 5000L
+        private const val REQUEST_TIMEOUT = 10000L
+        private const val CONNECT_TIMEOUT = 10000L
         private const val LOG_TAG = "KTOR_LOG"
 
         // TODO API 테스트 할거면 본인 임시 토큰 값 넣어주세여~
-        const val newAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU1MGU4NDAwLWUyOWItNDRkNC1hODE2LTQ0NjY1NTQ0MDAwMCIsImlhdCI6MTcwMDcxNDkzOCwiZXhwIjoyMjE5MTE0OTM4fQ.yaO-5bwc-IVmogfPdPYKbBzeCG65WenNnEyYLTkDcUk"
+        const val newAccessToken = ""
     }
 }
