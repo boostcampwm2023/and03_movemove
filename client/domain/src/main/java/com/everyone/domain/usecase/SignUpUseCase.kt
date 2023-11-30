@@ -6,7 +6,7 @@ import com.everyone.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class PostSignUpUseCase @Inject constructor(private val userRepository: UserRepository) {
+class SignUpUseCase @Inject constructor(private val userRepository: UserRepository) {
     suspend operator fun invoke(
         profileImage: String,
         accessToken: String,
