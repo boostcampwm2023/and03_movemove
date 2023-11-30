@@ -1,7 +1,9 @@
 import { PickType } from '@nestjs/swagger';
 import { UserDto } from './user.dto';
 
-export class ProfileDto extends PickType(UserDto, ['profileImage'] as const) {
+export class ProfileDto extends PickType(UserDto, [
+  'profileExtension',
+] as const) {
   constructor(init: ProfileDto) {
     super();
     Object.assign(this, init);

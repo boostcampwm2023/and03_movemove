@@ -3,16 +3,17 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model } from 'mongoose';
 import { Video } from 'src/video/schemas/video.schema';
-import { putObject } from 'src/ncpAPI/putObject';
 import { UserNotFoundException } from 'src/exceptions/user-not-found.exception';
 import * as _ from 'lodash';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import { VideoService } from 'src/video/video.service';
+import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
 import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { User } from './schemas/user.schema';
 import { ProfileDto } from './dto/profile.dto';
 import { RatedVideoResponseDto } from './dto/rated-video-response.dto';
+import { ProfileResponseDto } from './dto/profile-response.dto';
 
 @Injectable()
 export class UserService {
@@ -22,32 +23,31 @@ export class UserService {
     private videoService: VideoService,
   ) {}
 
-  async getProfile(userId: string) {
+  async getProfile(userId: string): Promise<ProfileResponseDto> {
     const user = await this.UserModel.findOne({ uuid: userId });
 
     if (!user) {
       throw new UserNotFoundException();
     }
     const { uuid, profileImageExtension, nickname, statusMessage } = user;
-    const profileImage = await getBucketImage(
-      process.env.PROFILE_BUCKET,
-      profileImageExtension,
-      uuid,
-    );
-    return new ProfileDto({
+    const profileImageUrl = profileImageExtension
+      ? await createPresignedUrl(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${profileImageExtension}`,
+          'GET',
+        )
+      : null;
+    return {
       nickname,
       statusMessage,
-      ...(profileImage && { profileImage }),
-    });
+      ...(profileImageUrl && { profileImageUrl }),
+    };
   }
 
-  async patchProfile(
-    profileDto: ProfileDto,
-    profileImage: Express.Multer.File,
-    uuid: string,
-  ): Promise<ProfileDto> {
+  async patchProfile(profileDto: ProfileDto, uuid: string) {
     const updateOption = _.omitBy(profileDto, _.isEmpty); // profileDto 중 빈 문자열인 필드 제거
     const user = await this.UserModel.findOne({ uuid });
+
     if (user.nickname === updateOption.nickname) {
       // 실제로 변경된 필드만 updateOption에 남기기
       delete updateOption.nickname;
@@ -55,36 +55,32 @@ export class UserService {
     if (user.statusMessage === updateOption.statusMessage) {
       delete updateOption.statusMessage;
     }
+    // TODO profileExtension, profileImageExtension 중 통일하는게 좋으려나
+    updateOption.profileImageExtension = updateOption.profileExtension;
+    delete updateOption.profileExtension;
 
-    let updatedProfileImage;
-    if (profileImage) {
-      const profileImageExtension = profileImage.originalname.split('.').pop();
-      putObject(
-        process.env.PROFILE_BUCKET,
-        `${uuid}.${profileImageExtension}`,
-        profileImage.buffer,
-      );
-      updateOption.profileImageExtension = profileImageExtension;
-      updatedProfileImage = profileImage.buffer;
-    } else if (
-      'profileImage' in profileDto &&
-      user.profileImageExtension !== null
-    ) {
-      // profileImage 필드를 빈 문자열로 주었고, 기존 프로필이미지가 있었다면 삭제
+    // TODO profileUrl이 null이 아니라면 프로필 이미지가 업로드됐는지 확인
+    const profileUrl = profileDto.profileExtension
+      ? await createPresignedUrl(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${profileDto.profileExtension}`,
+          'GET',
+        )
+      : null;
+    if (profileDto.profileExtension === '' && user.profileImageExtension) {
+      // profileExtension 필드를 빈 문자열로 주었고, 기존 프로필이미지가 있었다면 삭제
       deleteObject(
         process.env.PROFILE_BUCKET,
         `${uuid}.${user.profileImageExtension}`,
       );
       updateOption.profileImageExtension = null;
-      updatedProfileImage = null;
     }
 
-    await this.UserModel.updateOne({ uuid }, updateOption);
-    if (updatedProfileImage !== undefined) {
-      updateOption.profileImage = updatedProfileImage;
-      delete updateOption.profileImageExtension;
-    }
-    return updateOption;
+    // TODO findOneAndUpdate이 아니라 다른걸 써서 update 결과를 받고 싶음
+    const result = (
+      await this.UserModel.findOneAndUpdate({ uuid }, updateOption)
+    ).toObject();
+    return { ...result, profileUrl };
   }
 
   async getUploadedVideos(
@@ -117,14 +113,22 @@ export class UserService {
   }
 
   async getUploaderInfo(uuid: string, uploaderData) {
-    // eslint-disable-next-line prettier/prettier
-    const { _id: uploaderId, profileImageExtension, ...uploaderInfo } = uploaderData;
-    const profileImage = await getBucketImage(
-      process.env.PROFILE_BUCKET,
+    const {
+      _id: uploaderId,
       profileImageExtension,
-      uuid,
-    );
-    const uploader = { ...uploaderInfo, ...(profileImage && { profileImage }) };
+      ...uploaderInfo
+    } = uploaderData;
+    const profileImageUrl = profileImageExtension
+      ? await createPresignedUrl(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${profileImageExtension}`,
+          'GET',
+        )
+      : null;
+    const uploader = {
+      ...uploaderInfo,
+      ...(profileImageUrl && { profileImageUrl }),
+    };
     return { uploader, uploaderId };
   }
 

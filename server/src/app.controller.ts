@@ -15,7 +15,7 @@ export class AppController {
   /**
    * 광고 이미지 응답
    */
-  @ApiTags('COMPLETE')
+  @ApiTags('LEGACY')
   @Get('ads')
   @ApiBearerAuth()
   @ApiSuccessResponse(200, '광고 조회 성공', AdsResponseDto)

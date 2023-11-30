@@ -8,13 +8,11 @@ import {
   Body,
   Header,
   UseInterceptors,
-  UploadedFiles,
   UseGuards,
   Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiConsumes,
   ApiOkResponse,
   ApiProduces,
   ApiTags,
@@ -44,6 +42,7 @@ import { TopVideoQueryDto } from './dto/top-video-query.dto';
 import { VideoListResponseDto } from './dto/video-list-response.dto';
 import { RandomVideoResponseDto } from './dto/random-video-response.dto';
 
+@ApiTags('VIDEO')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
 @ApiFailResponse('인증 실패', [InvalidTokenException, TokenExpiredException])
@@ -58,7 +57,6 @@ export class VideoController {
   /**
    * 랜덤으로 비디오 응답
    */
-  @ApiTags('COMPLETE')
   @Get('random')
   @ApiSuccessResponse(200, '랜덤 비디오 반환 성공', RandomVideoResponseDto)
   getRandomVideo(
@@ -71,30 +69,26 @@ export class VideoController {
   /**
    * 비디오 업로드
    */
-  @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'video', maxCount: 1 },
       { name: 'thumbnail', maxCount: 1 },
     ]),
   )
-  @ApiTags('COMPLETE')
-  @Post()
+  @Post(':videoId')
   @ApiSuccessResponse(201, '비디오 업로드 성공', VideoSummaryResponseDto)
   uploadVideo(
-    @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() videoDto: VideoDto,
     @RequestUser() user: User,
+    @Param('videoId') videoId: string,
   ) {
-    this.fileExtensionPipe.transform(files);
-    return this.videoService.uploadVideo(files, videoDto, user.id);
+    return this.videoService.uploadVideo(videoDto, user.id, videoId);
   }
 
   /**
    * 카테고리별 TOP 10 조회
    */
   @Get('top-rated')
-  @ApiTags('COMPLETE')
   @ApiSuccessResponse(200, 'TOP 10 조회 성공', VideoListResponseDto)
   getTopRatedVideo(@Query() query: TopVideoQueryDto) {
     return this.videoService.getTopRatedVideo(query.category);
@@ -139,7 +133,6 @@ export class VideoController {
    * 썸네일 클릭 시 비디오 정보 반환
    */
   @Get(':id')
-  @ApiTags('COMPLETE')
   @ApiSuccessResponse(200, '비디오 조회 성공', VideoInfoDto)
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
   getVideo(@Param('id') videoId: string) {
@@ -150,7 +143,6 @@ export class VideoController {
    * 비디오 삭제
    */
   @Delete(':id')
-  @ApiTags('COMPLETE')
   @ApiSuccessResponse(200, '비디오 삭제 성공', VideoSummaryResponseDto)
   @ApiFailResponse('업로더만이 삭제할 수 있음', [NotYourVideoException])
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
@@ -161,7 +153,6 @@ export class VideoController {
   /**
    * 비디오 별점 등록/수정
    */
-  @ApiTags('COMPLETE')
   @Put(':id/rating')
   @ApiSuccessResponse(200, '비디오 별점 등록/수정 성공', VideoRatingResponseDTO)
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])

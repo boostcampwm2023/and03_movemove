@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UseInterceptors,
-  UploadedFile,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
@@ -21,7 +15,6 @@ import { SigninRequestDto } from './dto/signin-request.dto';
 import { RefreshRequestDto } from './dto/refresh-request.dto';
 import { RefreshResponseDto } from './dto/refresh-response.dto';
 
-@ApiTags('COMPLETE')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -30,22 +23,23 @@ export class AuthController {
    * 회원가입
    */
   @Post('signup')
+  @ApiTags('AUTH')
   @ApiConsumes('multipart/form-data')
   @ApiSuccessResponse(201, '회원가입 성공', SignupResponseDto)
   @ApiFailResponse('인증 실패', [OAuthFailedException])
   @ApiFailResponse('회원가입 실패', [UserConflictException])
   @UseInterceptors(FileInterceptor('profileImage'))
   signUp(
-    @UploadedFile() profileImage: Express.Multer.File,
     @Body() signupRequestDto: SignupRequestDto,
   ): Promise<SignupResponseDto> {
-    return this.authService.create(signupRequestDto, profileImage);
+    return this.authService.create(signupRequestDto);
   }
 
   /**
    * 로그인
    */
   @Post('login')
+  @ApiTags('AUTH')
   @ApiSuccessResponse(201, '로그인 성공', SigninResponseDto)
   @ApiFailResponse('인증 실패', [LoginFailException, OAuthFailedException])
   signin(
@@ -58,6 +52,7 @@ export class AuthController {
    * 토큰 재발급
    */
   @Post('refresh')
+  @ApiTags('AUTH')
   @ApiSuccessResponse(201, '토큰 재발급 성공', RefreshResponseDto)
   @ApiFailResponse('인증 실패', [InvalidRefreshTokenException])
   refresh(

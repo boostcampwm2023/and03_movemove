@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
-import { putObject } from 'src/ncpAPI/putObject';
 import { User, UserDocument } from 'src/user/schemas/user.schema';
 import { JwtService } from '@nestjs/jwt';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
@@ -23,24 +22,14 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async create(
-    signupRequestDto: SignupRequestDto,
-    profileImage: Express.Multer.File,
-  ): Promise<SignupResponseDto> {
+  async create(signupRequestDto: SignupRequestDto): Promise<SignupResponseDto> {
     const { uuid } = signupRequestDto;
     if (await this.UserModel.findOne({ uuid })) {
       throw new UserConflictException();
     }
-    // TODO 프로필 이미지 예외처리
-    const profileImageExtension = profileImage
-      ? profileImage.originalname.split('.').pop()
-      : null;
-    if (profileImage) {
-      putObject(
-        process.env.PROFILE_BUCKET,
-        `${uuid}.${profileImageExtension}`,
-        profileImage.buffer,
-      );
+    const profileImageExtension = signupRequestDto.profileExtension;
+    if (profileImageExtension) {
+      // TODO 프로필 이미지 업로드 됐는지 확인
     }
 
     const newUser = new this.UserModel({
