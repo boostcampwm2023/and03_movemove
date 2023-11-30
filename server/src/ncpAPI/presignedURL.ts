@@ -4,17 +4,14 @@ import { parseUrl } from '@smithy/url-parser';
 import { formatUrl } from '@aws-sdk/util-format-url';
 import { Hash } from '@smithy/hash-node';
 import { ObjectNotFoundException } from 'src/exceptions/object-not-found.exception';
-import { listObjects } from './listObjects';
+import { checkUpload } from './listObjects';
 
 export const createPresignedUrl = async (
   bucketName: string,
   objectName: string,
   method: string,
 ) => {
-  if (
-    method === 'GET' &&
-    (await listObjects(bucketName, { prefix: objectName })).length === 0
-  ) {
+  if (method === 'GET' && (await checkUpload(bucketName, objectName))) {
     throw new ObjectNotFoundException();
   }
   const region = 'kr-standard';

@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { Video } from 'src/video/schemas/video.schema';
 import { UserNotFoundException } from 'src/exceptions/user-not-found.exception';
 import * as _ from 'lodash';
@@ -61,7 +61,6 @@ export class UserService {
           )
         : null;
     } catch (error) {
-      console.log('catch:', error);
       if (error instanceof ObjectNotFoundException) {
         throw new ProfileUploadRequiredException();
       }

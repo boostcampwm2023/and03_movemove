@@ -46,3 +46,8 @@ export const listObjects = async (bucketName: string, params = {}) => {
       return [];
     });
 };
+export const checkUpload = async (bucketName: string, objectName: string) => {
+  const objectList = await listObjects(bucketName, { prefix: objectName });
+
+  return objectList.includes(objectName);
+};

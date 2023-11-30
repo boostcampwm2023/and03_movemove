@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
 import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
 import { UserInfoDto } from 'src/user/dto/user-info.dto';
-import { listObjects } from 'src/ncpAPI/listObjects';
+import { checkUpload } from 'src/ncpAPI/listObjects';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { JwtDto } from './dto/jwt.dto';
@@ -31,11 +31,10 @@ export class AuthService {
     }
     if (
       profileImageExtension &&
-      (
-        await listObjects(process.env.PROFILE_BUCKET, {
-          prefix: `${uuid}.${profileImageExtension}`,
-        })
-      ).length === 0
+      (await checkUpload(
+        process.env.PROFILE_BUCKET,
+        `${uuid}.${profileImageExtension}`,
+      ))
     ) {
       throw new ProfileUploadRequiredException();
     }
