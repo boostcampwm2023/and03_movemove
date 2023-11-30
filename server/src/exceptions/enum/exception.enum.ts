@@ -9,6 +9,7 @@ enum ErrorCode {
   InvalidRefreshToken = 1005,
   VideoNotFound = 4000,
   UserNotFound = 4001,
+  ObjectNotFound = 4002,
   NotYourVideo = 5000,
   NeverViewVideo = 5001,
   BadVideoFormat = 8000,
@@ -29,6 +30,7 @@ const ErrorMessage = {
   [ErrorCode.NeverViewVideo]: '시청한 영상만 별점을 등록할 수 있음',
   [ErrorCode.VideoNotFound]: '비디오를 찾을 수 없음',
   [ErrorCode.UserNotFound]: '유저를 찾을 수 없음',
+  [ErrorCode.ObjectNotFound]: '오브젝트를 찾을 수 없음',
 };
 
 export { ErrorCode, ErrorMessage };
