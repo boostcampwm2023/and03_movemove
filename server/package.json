@@ -21,6 +21,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@aws-sdk/s3-request-presigner": "^3.462.0",
+    "@aws-sdk/util-format-url": "^3.460.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.0.0",
@@ -28,6 +30,9 @@
     "@nestjs/mongoose": "^10.0.2",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.1.15",
+    "@smithy/hash-node": "^2.0.16",
+    "@smithy/protocol-http": "^3.0.10",
+    "@smithy/url-parser": "^2.0.14",
     "@types/crypto-js": "^4.2.1",
     "axios": "^1.6.2",
     "class-transformer": "^0.5.1",
