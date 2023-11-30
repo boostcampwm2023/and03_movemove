@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { Video } from 'src/video/schemas/video.schema';
 import { UserNotFoundException } from 'src/exceptions/user-not-found.exception';
 import * as _ from 'lodash';
@@ -9,6 +9,8 @@ import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import { VideoService } from 'src/video/video.service';
 import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
+import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
+import { checkUpload } from 'src/ncpAPI/listObjects';
 import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { User } from './schemas/user.schema';
 import { ProfileDto } from './dto/profile.dto';
@@ -45,29 +47,21 @@ export class UserService {
   }
 
   async patchProfile(profileDto: ProfileDto, uuid: string) {
-    const updateOption = _.omitBy(profileDto, _.isEmpty); // profileDto 중 빈 문자열인 필드 제거
-    const user = await this.UserModel.findOne({ uuid });
+    const updateOption: ProfileDto = _.omitBy(profileDto, _.isEmpty); // profileDto 중 빈 문자열인 필드 제거
+    const user = await this.UserModel.findOne({ uuid }, {}, { lean: true });
 
-    if (user.nickname === updateOption.nickname) {
-      // 실제로 변경된 필드만 updateOption에 남기기
-      delete updateOption.nickname;
+    // profileExtension이 null이 아니라면 프로필 이미지가 업로드됐는지 확인
+    if (
+      profileDto.profileImageExtension &&
+      !(await checkUpload(
+        process.env.PROFILE_BUCKET,
+        `${uuid}.${profileDto.profileImageExtension}`,
+      ))
+    ) {
+      throw new ProfileUploadRequiredException();
     }
-    if (user.statusMessage === updateOption.statusMessage) {
-      delete updateOption.statusMessage;
-    }
-    // TODO profileExtension, profileImageExtension 중 통일하는게 좋으려나
-    updateOption.profileImageExtension = updateOption.profileExtension;
-    delete updateOption.profileExtension;
 
-    // TODO profileUrl이 null이 아니라면 프로필 이미지가 업로드됐는지 확인
-    const profileUrl = profileDto.profileExtension
-      ? await createPresignedUrl(
-          process.env.PROFILE_BUCKET,
-          `${uuid}.${profileDto.profileExtension}`,
-          'GET',
-        )
-      : null;
-    if (profileDto.profileExtension === '' && user.profileImageExtension) {
+    if (profileDto.profileImageExtension === '' && user.profileImageExtension) {
       // profileExtension 필드를 빈 문자열로 주었고, 기존 프로필이미지가 있었다면 삭제
       deleteObject(
         process.env.PROFILE_BUCKET,
@@ -76,11 +70,27 @@ export class UserService {
       updateOption.profileImageExtension = null;
     }
 
-    // TODO findOneAndUpdate이 아니라 다른걸 써서 update 결과를 받고 싶음
-    const result = (
-      await this.UserModel.findOneAndUpdate({ uuid }, updateOption)
-    ).toObject();
-    return { ...result, profileUrl };
+    const result = await this.UserModel.findOneAndUpdate(
+      { uuid },
+      updateOption,
+      {
+        lean: true,
+        new: true,
+      },
+    );
+
+    const profileImageUrl = result.profileImageExtension
+      ? await createPresignedUrl(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${result.profileImageExtension}`,
+          'GET',
+        )
+      : null;
+    return {
+      nickname: result.nickname,
+      statusMessage: result.statusMessage,
+      profileImageUrl,
+    };
   }
 
   async getUploadedVideos(

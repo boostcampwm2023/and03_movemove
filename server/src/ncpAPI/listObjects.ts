@@ -34,5 +34,20 @@ export const listObjects = async (bucketName: string, params = {}) => {
       params,
     })
     .then((response): any => xml2js(response.data, { compact: true }))
-    .then((element) => _.map(element.ListBucketResult.Contents, 'Key._text'));
+    .then((element) => {
+      const contents = element.ListBucketResult.Contents;
+      if (Array.isArray(contents)) {
+        return _.map(contents, 'Key._text');
+      }
+      if (contents) {
+        // eslint-disable-next-line no-underscore-dangle
+        return [contents.Key._text];
+      }
+      return [];
+    });
+};
+export const checkUpload = async (bucketName: string, objectName: string) => {
+  const objectList = await listObjects(bucketName, { prefix: objectName });
+
+  return objectList.includes(objectName);
 };

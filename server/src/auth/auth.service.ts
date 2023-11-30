@@ -7,6 +7,8 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
 import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
 import { UserInfoDto } from 'src/user/dto/user-info.dto';
+import { checkUpload } from 'src/ncpAPI/listObjects';
+import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { JwtDto } from './dto/jwt.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
@@ -23,18 +25,22 @@ export class AuthService {
   ) {}
 
   async create(signupRequestDto: SignupRequestDto): Promise<SignupResponseDto> {
-    const { uuid } = signupRequestDto;
+    const { uuid, profileImageExtension } = signupRequestDto;
     if (await this.UserModel.findOne({ uuid })) {
       throw new UserConflictException();
     }
-    const profileImageExtension = signupRequestDto.profileExtension;
-    if (profileImageExtension) {
-      // TODO 프로필 이미지 업로드 됐는지 확인
+    if (
+      profileImageExtension &&
+      !(await checkUpload(
+        process.env.PROFILE_BUCKET,
+        `${uuid}.${profileImageExtension}`,
+      ))
+    ) {
+      throw new ProfileUploadRequiredException();
     }
 
     const newUser = new this.UserModel({
       ...signupRequestDto,
-      profileImageExtension,
     });
     newUser.save();
     return this.getLoginInfo(newUser).then(

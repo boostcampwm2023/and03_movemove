@@ -12,7 +12,7 @@ export class UserDto {
    * 프로필 이미지 확장자
    * @example 'webp'
    */
-  profileExtension: string;
+  profileImageExtension?: string;
 
   /**
    * 유저 닉네임

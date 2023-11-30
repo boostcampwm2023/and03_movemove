@@ -1,12 +1,13 @@
 import { Controller, Post, Body, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
 import { OAuthFailedException } from 'src/exceptions/oauth-failed.exception';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
 import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
+import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
 import { AuthService } from './auth.service';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
@@ -24,11 +25,10 @@ export class AuthController {
    */
   @Post('signup')
   @ApiTags('AUTH')
-  @ApiConsumes('multipart/form-data')
   @ApiSuccessResponse(201, '회원가입 성공', SignupResponseDto)
   @ApiFailResponse('인증 실패', [OAuthFailedException])
+  @ApiFailResponse('업로드 필요', [ProfileUploadRequiredException])
   @ApiFailResponse('회원가입 실패', [UserConflictException])
-  @UseInterceptors(FileInterceptor('profileImage'))
   signUp(
     @Body() signupRequestDto: SignupRequestDto,
   ): Promise<SignupResponseDto> {
