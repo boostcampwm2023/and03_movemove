@@ -2,8 +2,6 @@ package com.everyone.movemove_android.ui.my
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,7 +16,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,7 +65,7 @@ fun MyScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
-                .clickableWithoutRipple {  },
+                .clickableWithoutRipple { },
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -93,7 +90,7 @@ fun MyScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
-                .clickableWithoutRipple {  },
+                .clickableWithoutRipple { },
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -118,7 +115,7 @@ fun MyScreen() {
                 .fillMaxWidth()
                 .height(48.dp)
                 .padding(start = 4.dp)
-                .clickableWithoutRipple {  },
+                .clickableWithoutRipple { },
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically,
         ) {

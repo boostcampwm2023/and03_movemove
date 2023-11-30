@@ -20,11 +20,10 @@ class MyViewModel @Inject constructor() : ViewModel(), MyContract {
     override val effect: SharedFlow<Effect> = _effect.asSharedFlow()
 
 
-    override fun event(event: Event) = when(event){
+    override fun event(event: Event) = when (event) {
 
         else -> {}
     }
-
 
 
 }
