@@ -34,6 +34,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.everyone.domain.model.Videos
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.home.HomeScreen
 import com.everyone.movemove_android.ui.screens.profile.ProfileScreen
@@ -76,7 +77,12 @@ fun MainScreen() {
             modifier = Modifier.padding(innerPadding)
         ) {
             navScreen(Destination.HOME.route) { HomeScreen(navigator = navigator) }
-            navScreen(Destination.WATCHING_VIDEO.route) { WatchingVideoScreen() }
+            navScreen(Destination.WATCHING_VIDEO.route) {
+                val videos = remember {
+                    navController.previousBackStackEntry?.savedStateHandle?.get<Videos>("videos")
+                }
+                WatchingVideoScreen(videos = videos)
+            }
             navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
             navScreen(Destination.PROFILE.route) { ProfileScreen() }
         }

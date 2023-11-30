@@ -3,14 +3,15 @@ package com.everyone.data.remote.model
 import com.everyone.data.base.BaseResponse
 import com.everyone.data.mapper.Mapper
 import com.everyone.domain.model.Video
+import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 import java.util.Date
 
 @Parcelize
 data class VideoResponse(
-    val id: String?,
+    @SerializedName("_id") val id: String?,
     val viewCount: Int?,
-    val rating: Int?,
+    val rating: String?,
     val category: String?,
     val title: String?,
     val content: String?,

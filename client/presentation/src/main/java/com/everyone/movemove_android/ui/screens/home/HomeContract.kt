@@ -1,11 +1,17 @@
 package com.everyone.movemove_android.ui.screens.home
 
+import com.everyone.domain.model.Ads
+import com.everyone.domain.model.VideosTrend
 import com.everyone.movemove_android.base.BaseContract
 
 interface HomeContract :
     BaseContract<HomeContract.State, HomeContract.Event, HomeContract.Effect> {
     data class State(
         val isLoading: Boolean = false,
+        val ads: Ads = Ads(null),
+        val videosTrend: VideosTrend = VideosTrend(null),
+        val videosTopRatedOldSchool: VideosTrend = VideosTrend(null),
+        val videosTopRatedChallenge: VideosTrend = VideosTrend(null)
     )
 
     sealed interface Event {}
