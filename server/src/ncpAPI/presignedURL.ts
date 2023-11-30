@@ -11,7 +11,7 @@ export const createPresignedUrl = async (
   objectName: string,
   method: string,
 ) => {
-  if (method === 'GET' && (await checkUpload(bucketName, objectName))) {
+  if (method === 'GET' && !(await checkUpload(bucketName, objectName))) {
     throw new ObjectNotFoundException();
   }
   const region = 'kr-standard';

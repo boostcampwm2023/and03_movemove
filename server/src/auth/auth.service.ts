@@ -31,7 +31,7 @@ export class AuthService {
     }
     if (
       profileImageExtension &&
-      (await checkUpload(
+      !(await checkUpload(
         process.env.PROFILE_BUCKET,
         `${uuid}.${profileImageExtension}`,
       ))
