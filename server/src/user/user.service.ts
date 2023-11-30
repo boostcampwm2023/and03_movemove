@@ -9,8 +9,8 @@ import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import { VideoService } from 'src/video/video.service';
 import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
-import { ObjectNotFoundException } from 'src/exceptions/object-not-found.exception';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
+import { checkUpload } from 'src/ncpAPI/listObjects';
 import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { User } from './schemas/user.schema';
 import { ProfileDto } from './dto/profile.dto';
@@ -50,21 +50,15 @@ export class UserService {
     const updateOption: ProfileDto = _.omitBy(profileDto, _.isEmpty); // profileDto 중 빈 문자열인 필드 제거
     const user = await this.UserModel.findOne({ uuid }, {}, { lean: true });
 
-    // profileUrl이 null이 아니라면 프로필 이미지가 업로드됐는지 확인
-    let profileUrl;
-    try {
-      profileUrl = profileDto.profileImageExtension
-        ? await createPresignedUrl(
-            process.env.PROFILE_BUCKET,
-            `${uuid}.${profileDto.profileImageExtension}`,
-            'GET',
-          )
-        : null;
-    } catch (error) {
-      if (error instanceof ObjectNotFoundException) {
-        throw new ProfileUploadRequiredException();
-      }
-      throw error;
+    // profileExtension이 null이 아니라면 프로필 이미지가 업로드됐는지 확인
+    if (
+      profileDto.profileImageExtension &&
+      !(await checkUpload(
+        process.env.PROFILE_BUCKET,
+        `${uuid}.${profileDto.profileImageExtension}`,
+      ))
+    ) {
+      throw new ProfileUploadRequiredException();
     }
 
     if (profileDto.profileImageExtension === '' && user.profileImageExtension) {
@@ -76,7 +70,6 @@ export class UserService {
       updateOption.profileImageExtension = null;
     }
 
-    // TODO findOneAndUpdate이 아니라 다른걸 써서 update 결과를 받고 싶음
     const result = await this.UserModel.findOneAndUpdate(
       { uuid },
       updateOption,
@@ -86,7 +79,18 @@ export class UserService {
       },
     );
 
-    return { ...result, profileUrl };
+    const profileImageUrl = result.profileImageExtension
+      ? await createPresignedUrl(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${result.profileImageExtension}`,
+          'GET',
+        )
+      : null;
+    return {
+      nickname: result.nickname,
+      statusMessage: result.statusMessage,
+      profileImageUrl,
+    };
   }
 
   async getUploadedVideos(

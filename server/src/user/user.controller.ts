@@ -45,7 +45,7 @@ export class UserController {
   /**
    * 프로필 변경
    */
-  @ApiSuccessResponse(200, '프로필 변경 성공', ProfileDto)
+  @ApiSuccessResponse(200, '프로필 변경 성공', ProfileResponseDto)
   @ApiFailResponse('업로드 필요', [ProfileUploadRequiredException])
   @Patch('profile')
   patchProfile(@Body() profileDto: ProfileDto, @RequestUser() user: User) {
