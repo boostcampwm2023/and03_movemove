@@ -31,13 +31,11 @@ export class UserService {
     }
     const { uuid, profileImageExtension, nickname, statusMessage } = user;
     const profileImageUrl = profileImageExtension
-      ? (
-          await createPresignedUrl(
-            process.env.PROFILE_BUCKET,
-            `${uuid}.${profileImageExtension}`,
-            'GET',
-          )
-        ).url
+      ? await createPresignedUrl(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${profileImageExtension}`,
+          'GET',
+        )
       : null;
     return {
       nickname,
@@ -63,13 +61,11 @@ export class UserService {
 
     // TODO profileUrl이 null이 아니라면 프로필 이미지가 업로드됐는지 확인
     const profileUrl = profileDto.profileExtension
-      ? (
-          await createPresignedUrl(
-            process.env.PROFILE_BUCKET,
-            `${uuid}.${profileDto.profileExtension}`,
-            'GET',
-          )
-        ).url
+      ? await createPresignedUrl(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${profileDto.profileExtension}`,
+          'GET',
+        )
       : null;
     if (profileDto.profileExtension === '' && user.profileImageExtension) {
       // profileExtension 필드를 빈 문자열로 주었고, 기존 프로필이미지가 있었다면 삭제
@@ -119,13 +115,11 @@ export class UserService {
       ...uploaderInfo
     } = uploaderData;
     const profileImageUrl = profileImageExtension
-      ? (
-          await createPresignedUrl(
-            process.env.PROFILE_BUCKET,
-            `${uuid}.${profileImageExtension}`,
-            'GET',
-          )
-        ).url
+      ? await createPresignedUrl(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${profileImageExtension}`,
+          'GET',
+        )
       : null;
     const uploader = {
       ...uploaderInfo,

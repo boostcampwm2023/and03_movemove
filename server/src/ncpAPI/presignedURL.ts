@@ -28,5 +28,5 @@ export const createPresignedUrl = async (
     new HttpRequest({ ...url, method }),
     { expiresIn: 100 },
   );
-  return { name: objectName, url: formatUrl(signedUrlObject) };
+  return formatUrl(signedUrlObject);
 };

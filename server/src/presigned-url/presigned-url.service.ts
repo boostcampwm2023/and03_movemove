@@ -16,11 +16,14 @@ export class PresignedUrlService {
     if (adName)
       return {
         advertisements: [
-          await createPresignedUrl(
-            process.env.ADVERTISEMENT_BUCKET,
-            adName,
-            'GET',
-          ),
+          {
+            name: adName,
+            url: await createPresignedUrl(
+              process.env.ADVERTISEMENT_BUCKET,
+              adName,
+              'GET',
+            ),
+          },
         ],
       };
 
@@ -30,11 +33,14 @@ export class PresignedUrlService {
     const adList = _.map(jsonData.ListBucketResult.Contents, 'Key._text');
     const advertisements = await Promise.all(
       adList.map(async (advertisement: string) => {
-        return createPresignedUrl(
-          process.env.ADVERTISEMENT_BUCKET,
-          advertisement,
-          'GET',
-        );
+        return {
+          name: advertisement,
+          url: await createPresignedUrl(
+            process.env.ADVERTISEMENT_BUCKET,
+            advertisement,
+            'GET',
+          ),
+        };
       }),
     );
     return { advertisements };
@@ -45,9 +51,11 @@ export class PresignedUrlService {
     profileExtension,
   }): Promise<PresignedUrlResponseDto> {
     const objectName = `${uuid}.${profileExtension}`;
-    const presignedUrl = (
-      await createPresignedUrl(process.env.PROFILE_BUCKET, objectName, 'PUT')
-    ).url;
+    const presignedUrl = await createPresignedUrl(
+      process.env.PROFILE_BUCKET,
+      objectName,
+      'PUT',
+    );
     return { presignedUrl };
   }
 
@@ -57,20 +65,16 @@ export class PresignedUrlService {
   }): Promise<VideoPresignedUrlResponseDto> {
     const videoId = new Types.ObjectId();
     const [videoUrl, thumbnailUrl] = await Promise.all([
-      (
-        await createPresignedUrl(
-          process.env.INPUT_BUCKET,
-          `${videoId}.${videoExtension}`,
-          'PUT',
-        )
-      ).url,
-      (
-        await createPresignedUrl(
-          process.env.THUMBNAIL_BUCKET,
-          `${videoId}.${thumbnailExtension}`,
-          'PUT',
-        )
-      ).url,
+      await createPresignedUrl(
+        process.env.INPUT_BUCKET,
+        `${videoId}.${videoExtension}`,
+        'PUT',
+      ),
+      await createPresignedUrl(
+        process.env.THUMBNAIL_BUCKET,
+        `${videoId}.${thumbnailExtension}`,
+        'PUT',
+      ),
     ]);
     return { videoId, videoUrl, thumbnailUrl };
   }
@@ -85,9 +89,11 @@ export class PresignedUrlService {
       profile: process.env.PROFILE_BUCKET,
     }[type];
     const objectName = `${id}.${extension}`;
-    const presignedUrl = (
-      await createPresignedUrl(bucketName, objectName, 'GET')
-    ).url;
+    const presignedUrl = await createPresignedUrl(
+      bucketName,
+      objectName,
+      'GET',
+    );
     return { presignedUrl };
   }
 }

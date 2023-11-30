@@ -69,23 +69,17 @@ export class VideoService {
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
     const [profileImageUrl, thumbnailImageUrl] = await Promise.all([
       profileImageExtension
-        ? (
-            await createPresignedUrl(
-              process.env.PROFILE_BUCKET,
-              `${uuid}.${profileImageExtension}`,
-              'GET',
-            )
-          ).url
+        ? await createPresignedUrl(
+            process.env.PROFILE_BUCKET,
+            `${uuid}.${profileImageExtension}`,
+            'GET',
+          )
         : null,
-      videoInfo.thumbnailExtension
-        ? (
-            await createPresignedUrl(
-              process.env.THUMBNAIL_BUCKET,
-              `${videoInfo._id}.${videoInfo.thumbnailExtension}`,
-              'GET',
-            )
-          ).url
-        : null,
+      await createPresignedUrl(
+        process.env.THUMBNAIL_BUCKET,
+        `${videoInfo._id}.${videoInfo.thumbnailExtension}`,
+        'GET',
+      ),
     ]);
     const uploader = {
       ...uploaderInfo,
