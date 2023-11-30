@@ -4,7 +4,6 @@ import com.everyone.domain.model.base.BaseModel
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
-data class VideoRandom(
-    val video: Video?,
-    val uploader: Uploader?
+data class Ads(
+    val adImages: List<String>?
 ) : BaseModel

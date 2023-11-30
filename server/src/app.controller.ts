@@ -1,5 +1,5 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AppService } from './app.service';
 import { AuthGuard } from './auth/auth.guard';
 import { ApiSuccessResponse } from './decorators/api-succes-response';
@@ -17,6 +17,7 @@ export class AppController {
    */
   @ApiTags('COMPLETE')
   @Get('ads')
+  @ApiBearerAuth()
   @ApiSuccessResponse(200, '광고 조회 성공', AdsResponseDto)
   @ApiFailResponse('인증 실패', [InvalidTokenException, TokenExpiredException])
   @UseGuards(AuthGuard)

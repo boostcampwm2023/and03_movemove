@@ -2,11 +2,11 @@ package com.everyone.domain.usecase
 
 import com.everyone.domain.model.VideosRandom
 import com.everyone.domain.model.base.DataState
-import com.everyone.domain.repository.MainRepository
+import com.everyone.domain.repository.VideosRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class GetVideoRandomUseCase @Inject constructor(private val mainRepository: MainRepository) {
+class GetVideosRandomUseCase @Inject constructor(private val mainRepository: VideosRepository) {
     suspend operator fun invoke(
         limit: String,
         category: String

@@ -12,4 +12,8 @@ class Navigator(private val navController: NavController) {
             restoreState = true
         }
     }
+
+    fun <T> navigateToArgument(key: String, value: T) {
+        navController.currentBackStackEntry?.savedStateHandle?.set(key = key, value = value)
+    }
 }

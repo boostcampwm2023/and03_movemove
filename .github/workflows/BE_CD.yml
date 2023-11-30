@@ -1,0 +1,54 @@
+name: Backend CD  # 워크플로우 이름
+
+# 이 워크플로우가 언제 실행될지 트리거를 지정, 여기서는 develop브랜치에 pr됐을때가 트리거임
+on:
+  pull_request: # push, pull 등 git 작업이 트리거가 됨
+    branches: [ "develop" ] 
+    types: [ closed ]
+    paths: 
+      - "server/**" # 특정 파일 변경시만 트리거 작동, 즉 서버 코드 변경시만
+
+jobs:
+  deploy:
+    runs-on : ubuntu-latest #runner의 os지정 
+
+    steps: #step 마다 -를 써주면됨
+      #다른사람이 만든 action을 실행
+      #  이 action은 runner의 working directory에 
+      - name : 체크아웃
+        uses : actions/checkout@v3
+
+      - name: 도커 빌드 셋업
+        uses: docker/setup-buildx-action@v2
+
+      - name: 도커 로그인
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.CONTAINER_REGISTRY }}
+          username: ${{ secrets.ACCESS_KEY }}
+          password: ${{ secrets.SECRET_KEY }}
+      
+      - name: 도커 빌드 및 푸시
+        uses: docker/build-push-action@v3
+        with:
+          context: ./server
+          file: ./server/Dockerfile
+          push: true
+          tags: ${{ secrets.CONTAINER_REGISTRY }}/movemove:latest
+          cache-from: type=registry,ref=${{ secrets.CONTAINER_REGISTRY }}/movemove:latest
+          cache-to: type=inline
+
+      - name: 서버 배포
+        uses: appleboy/ssh-action@master #ssh action
+        with:
+          host: ${{ secrets.HOST }} #NCP 서버 IP
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.PASSWORD }}  
+          port: ${{ secrets.PORT }}  
+          script: |
+              docker login -u ${{ secrets.ACCESS_KEY }} -p ${{ secrets.SECRET_KEY }}
+              docker pull ${{ secrets.CONTAINER_REGISTRY }}/movemove:latest
+              docker stop movemove-latest
+              docker rm movemove-latest
+              docker run -d -p 80:3000 --env-file ${{ secrets.ENV_PATH }} --name movemove-latest ${{ secrets.CONTAINER_REGISTRY }}/movemove:latest
+              docker image prune -f

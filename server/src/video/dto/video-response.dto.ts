@@ -14,7 +14,10 @@ export class VideoResponseDto {
    */
   viewCount: number;
 
-  rating: number;
+  /**
+   * @example "4.3"
+   */
+  rating: string;
 
   /**
    * 카테고리
