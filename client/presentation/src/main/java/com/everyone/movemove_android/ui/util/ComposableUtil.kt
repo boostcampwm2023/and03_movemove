@@ -23,6 +23,28 @@ fun Modifier.addFocusCleaner(): Modifier {
 }
 
 @Composable
+fun BranchedModifier(
+    value: Boolean,
+    onDefault: @Composable () -> Modifier,
+    onTrue: (@Composable (Modifier) -> Modifier)? = null,
+    onFalse: (@Composable (Modifier) -> Modifier)? = null,
+): Modifier {
+    val defaultModifier: Modifier = onDefault()
+    var modifier: Modifier = onDefault()
+    modifier = if (value) {
+        onTrue?.let {
+            onTrue(modifier)
+        } ?: defaultModifier
+    } else {
+        onFalse?.let {
+            onFalse(modifier)
+        } ?: defaultModifier
+    }
+
+    return modifier
+}
+
+@Composable
 fun Modifier.clickableWithoutRipple(onClick: () -> Unit): Modifier {
     return this.clickable(
         interactionSource = MutableInteractionSource(),

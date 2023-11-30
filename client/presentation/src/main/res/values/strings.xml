@@ -50,6 +50,10 @@
     <string name="my_video">나의 영상</string>
     <string name="my_scored_video">내가 점수를 남긴 영상</string>
 
+    <!--    image_cropper-->
+    <string name="image_cropper_description">터치하여 대상 전환</string>
+    <string name="crop">자르기</string>
+
     <!--    home-->
     <string name="empty_ads_title">광고가 없습니다</string>
     <string name="empty_video_title">영상이 없습니다</string>
