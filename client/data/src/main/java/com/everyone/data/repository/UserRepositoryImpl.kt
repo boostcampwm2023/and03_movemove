@@ -6,14 +6,14 @@ import com.everyone.data.remote.model.UserInfoResponse.Companion.toDomainModel
 import com.everyone.domain.model.UserInfo
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.model.base.NetworkError
-import com.everyone.domain.repository.StartingRepository
+import com.everyone.domain.repository.UserRepository
 import io.ktor.http.HttpMethod
 import io.ktor.http.path
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class StartingRepositoryImpl @Inject constructor(private val networkHandler: NetworkHandler) : StartingRepository {
+class UserRepositoryImpl @Inject constructor(private val networkHandler: NetworkHandler) : UserRepository {
     override suspend fun postSignUp(
         profileImage: String,
         accessToken: String,

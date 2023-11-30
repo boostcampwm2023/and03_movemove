@@ -4,7 +4,7 @@ import com.everyone.domain.model.UserInfo
 import com.everyone.domain.model.base.DataState
 import kotlinx.coroutines.flow.Flow
 
-interface StartingRepository {
+interface UserRepository {
     suspend fun postSignUp(
         profileImage: String,
         accessToken: String,

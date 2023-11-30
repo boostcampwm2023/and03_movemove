@@ -2,11 +2,11 @@ package com.everyone.domain.usecase
 
 import com.everyone.domain.model.UserInfo
 import com.everyone.domain.model.base.DataState
-import com.everyone.domain.repository.StartingRepository
+import com.everyone.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class PostSignUpUseCase @Inject constructor(private val startingRepository: StartingRepository) {
+class PostSignUpUseCase @Inject constructor(private val userRepository: UserRepository) {
     suspend operator fun invoke(
         profileImage: String,
         accessToken: String,
@@ -14,7 +14,7 @@ class PostSignUpUseCase @Inject constructor(private val startingRepository: Star
         nickname: String,
         statusMessage: String
     ): Flow<DataState<UserInfo>> {
-        return startingRepository.postSignUp(
+        return userRepository.postSignUp(
             profileImage = profileImage,
             accessToken = accessToken,
             uuid = uuid,
