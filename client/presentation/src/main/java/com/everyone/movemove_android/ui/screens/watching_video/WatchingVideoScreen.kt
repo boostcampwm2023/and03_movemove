@@ -54,11 +54,9 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.hls.HlsMediaSource
-import androidx.media3.extractor.TrueHdSampleRechunker
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
-import com.everyone.domain.model.Uploader
 import com.everyone.domain.model.Video
 import com.everyone.domain.model.Videos
 import com.everyone.movemove_android.R
@@ -130,10 +128,6 @@ fun WatchingVideoScreen(
                     state = pagerState
                 ) { page ->
 
-                    LaunchedEffect(pagerState.currentPage == pagerState.pageCount) {
-                        event(GetRandomVideos)
-                    }
-
                     val exoPlayer = when (page % 3) {
                         0 -> exoPlayerPair.first
                         1 -> exoPlayerPair.second
@@ -147,7 +141,6 @@ fun WatchingVideoScreen(
                         )
                         Column(modifier = Modifier.align(Alignment.BottomStart)) {
                             videosItem[page].video?.let { video ->
-                                event(PutVideosViews(video.id!!))
                                 MoveMoveScoreboard(
                                     video = video,
                                     event = event
@@ -180,6 +173,10 @@ fun WatchingVideoScreen(
                             exoPlayerPair.third.play()
                         }
                     }
+                }
+
+                videosItem[pagerState.settledPage].video?.let { video ->
+                    event(PutVideosViews(video.id!!))
                 }
 
                 if (state.isClickedCategory) {
