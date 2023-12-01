@@ -17,6 +17,7 @@ import { VideoConflictException } from 'src/exceptions/video-conflict.exception'
 import { checkUpload } from 'src/ncpAPI/listObjects';
 import { VideoUploadRequiredException } from 'src/exceptions/video-upload-required-exception copy';
 import { ThumbnailUploadRequiredException } from 'src/exceptions/thumbnail-upload-required-exception copy 2';
+import { BadRequestFormatException } from 'src/exceptions/bad-request-format.exception';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -154,7 +155,7 @@ export class VideoService {
   }
 
   async uploadVideo(videoDto: VideoDto, uuid: string, videoId: string) {
-    if (!Types.ObjectId.isValid(videoId)) throw new VideoNotFoundException();
+    if (!Types.ObjectId.isValid(videoId)) throw new BadRequestFormatException();
     const checkDuplicate = await this.VideoModel.findOne({ _id: videoId });
     if (checkDuplicate) throw new VideoConflictException();
 

@@ -33,6 +33,7 @@ import { SeedQueryDto } from 'src/action/dto/manifest-query.dto';
 import { VideoConflictException } from 'src/exceptions/video-conflict.exception';
 import { ThumbnailUploadRequiredException } from 'src/exceptions/thumbnail-upload-required-exception copy 2';
 import { VideoUploadRequiredException } from 'src/exceptions/video-upload-required-exception copy';
+import { BadRequestFormatException } from 'src/exceptions/bad-request-format.exception';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -81,7 +82,7 @@ export class VideoController {
   @Post(':videoId')
   @ApiSuccessResponse(201, '비디오 업로드 성공', VideoSummaryResponseDto)
   @ApiFailResponse('중복된 비디오 ID', [VideoConflictException])
-  @ApiFailResponse('잘못된 비디오 ID', [VideoNotFoundException])
+  @ApiFailResponse('잘못된 비디오 ID', [BadRequestFormatException])
   @ApiFailResponse('비디오가 업로드 되지 않음', [VideoUploadRequiredException])
   @ApiFailResponse('썸네일이 업로드 되지 않음', [
     ThumbnailUploadRequiredException,
