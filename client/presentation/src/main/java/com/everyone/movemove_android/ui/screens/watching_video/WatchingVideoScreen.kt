@@ -2,7 +2,6 @@ package com.everyone.movemove_android.ui.screens.watching_video
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import android.util.Log
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.compose.foundation.ExperimentalFoundationApi
