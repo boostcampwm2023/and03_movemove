@@ -7,11 +7,17 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.everyone.domain.model.Category
+import com.everyone.domain.model.UploadCategory
+import com.everyone.domain.model.VideoUploadUrl
+import com.everyone.domain.model.base.DataState
+import com.everyone.domain.usecase.PostExtensionInfoUseCase
+import com.everyone.domain.usecase.PostVideoInfoUseCase
+import com.everyone.domain.usecase.PutFileUseCase
 import com.everyone.movemove_android.di.DefaultDispatcher
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.Finish
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnBottomSheetHide
@@ -19,17 +25,21 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickPlayAndPause
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickPlayer
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickSelectCategory
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickSelectThumbnail
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickSelectVideo
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickThumbnail
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickUpload
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnSelectThumbnailDialogDismissed
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTitleTyped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnVideoReady
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoEndTime
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoStartTime
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.State
 import com.everyone.movemove_android.ui.util.getVideoFilePath
+import com.everyone.movemove_android.ui.util.toWebpFile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
@@ -39,8 +49,13 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -50,6 +65,9 @@ class UploadingVideoViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
     @ApplicationContext private val context: Context,
+    private val postExtensionInfoUseCase: PostExtensionInfoUseCase,
+    private val putFileUseCase: PutFileUseCase,
+    private val postVideoInfoUseCase: PostVideoInfoUseCase,
 ) : ViewModel(), UploadingVideoContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -61,19 +79,38 @@ class UploadingVideoViewModel @Inject constructor(
 
     override fun event(event: Event) = when (event) {
         is OnClickSelectVideo -> onClickAddVideo()
+
         is OnGetUri -> onGetUri(event.uri)
+
         is OnClickPlayAndPause -> onClickPlayAndPause()
+
         is OnClickPlayer -> onClickPlayer()
+
         is OnPlayAndPauseTimeOut -> onPlayAndPauseTimeOut()
+
         is OnVideoReady -> onVideoReady(event.duration)
+
         is SetVideoStartTime -> setVideoStartTime(event.time)
+
         is SetVideoEndTime -> setVideoEndTime(event.time)
+
         is OnTitleTyped -> onTitleTyped(event.title)
+
         is OnDescriptionTyped -> onDescriptionTyped(event.description)
-        is OnClickUpload -> onClickUpload()
+
+        is OnClickSelectThumbnail -> onClickSelectThumbnail()
+
         is OnBottomSheetHide -> onBottomSheetHide()
+
         is OnClickSelectCategory -> onClickSelectCategory()
+
         is OnCategorySelected -> onCategorySelected(event.category)
+
+        is OnClickThumbnail -> onClickThumbnail(event.thumbnail)
+
+        is OnSelectThumbnailDialogDismissed -> onSelectThumbnailDialogDismissed()
+
+        is OnClickUpload -> onClickUpload()
     }
 
     private fun onClickAddVideo() {
@@ -182,24 +219,41 @@ class UploadingVideoViewModel @Inject constructor(
         checkUploadEnable()
     }
 
-    private fun onClickUpload() {
+    private fun onClickSelectThumbnail() {
         if (::videoFilePath.isInitialized) {
             _state.update {
                 it.copy(isLoading = it.isLoading)
             }
 
-            with(state.value) {
-                viewModelScope.launch(ioDispatcher) {
-                    VideoTrimmer(
-                        originalPath = videoFilePath,
-                        newPath = context.filesDir.absolutePath,
-                        startMs = videoStartTime,
-                        endMs = videoEndTime
-                    ).trim()
+            viewModelScope.launch(ioDispatcher) {
+                trimVideo()
+            }.invokeOnCompletion {
+                _state.update {
+                    it.copy(isSelectThumbnailDialogShowing = true)
                 }
             }
         } else {
             // todo: Not Initialized
+        }
+    }
+
+    private fun trimVideo() {
+        with(state.value) {
+            VideoTrimmer(
+                originalPath = videoFilePath,
+                newPath = context.filesDir.absolutePath,
+                startMs = videoStartTime,
+                endMs = videoEndTime
+            ).trim(
+                onSuccess = { videoFile ->
+                    _state.update {
+                        it.copy(stagedVideoFile = videoFile)
+                    }
+                },
+                onFailure = {
+                    // todo : 예외 처리
+                }
+            )
         }
     }
 
@@ -215,7 +269,7 @@ class UploadingVideoViewModel @Inject constructor(
         }
     }
 
-    private fun onCategorySelected(category: Category) {
+    private fun onCategorySelected(category: UploadCategory) {
         _state.update {
             it.copy(
                 isBottomSheetShowing = false,
@@ -239,7 +293,97 @@ class UploadingVideoViewModel @Inject constructor(
         }
     }
 
+    private fun onClickThumbnail(thumbnail: ImageBitmap) {
+        _state.update {
+            it.copy(selectedThumbnail = thumbnail)
+        }
+    }
+
+    private fun onSelectThumbnailDialogDismissed() {
+        _state.update {
+            it.copy(isSelectThumbnailDialogShowing = false)
+        }
+    }
+
+    private fun onClickUpload() {
+        postExtensionInfoUseCase(
+            videoExtension = MP4,
+            thumbnailExtension = WEBP
+        ).onEach { result ->
+            when (result) {
+                is DataState.Success -> {
+                    uploadVideo(result.data)
+                }
+
+                is DataState.Failure -> {
+                    // todo :
+                }
+            }
+        }.launchIn(viewModelScope + ioDispatcher)
+    }
+
+    private suspend fun uploadVideo(videoUploadUrl: VideoUploadUrl) {
+        state.value.stagedVideoFile?.let { videoFile ->
+            state.value.selectedThumbnail?.let { thumbnailBitmap ->
+                val thumbnailFile = thumbnailBitmap.toWebpFile()
+                val videoId = videoUploadUrl.videoId
+                val videoUrl = videoUploadUrl.videoUrl
+                val thumbnailUrl = videoUploadUrl.thumbnailUrl
+
+                if (videoId != null && videoUrl != null && thumbnailUrl != null) {
+                    putFileUseCase(
+                        requestUrl = videoUrl,
+                        file = videoFile
+                    ).zip(
+                        putFileUseCase(
+                            requestUrl = thumbnailUrl,
+                            file = thumbnailFile
+                        ),
+                        transform = { videoResult, thumbnailResult ->
+                            videoResult == 200 && thumbnailResult == 200
+                        }
+                    ).onEach { isSuccess ->
+                        when (isSuccess) {
+                            true -> {
+                                sendVideoInfo(videoId)
+                            }
+
+                            false -> {
+                                // todo : 업로드 예외 처리
+                            }
+                        }
+                    }.collect()
+                }
+            }
+        }
+    }
+
+    private suspend fun sendVideoInfo(videoId: String) {
+        postVideoInfoUseCase(
+            videoId = videoId,
+            title = state.value.title,
+            content = state.value.description,
+            category = state.value.category!!.uploadString,
+            videoExtension = MP4,
+            thumbnailExtension = WEBP
+        ).onEach { result ->
+            when (result) {
+                is DataState.Success -> {
+                    withContext(mainImmediateDispatcher) {
+                        _effect.emit(Finish)
+                    }
+                }
+
+                is DataState.Failure -> {
+                    // todo : 인코딩 예외 처리
+                }
+            }
+        }.collect()
+    }
+
     companion object {
         const val THUMBNAIL_COUNT = 15
+        private const val MP4 = "mp4"
+        private const val WEBP = "webp"
     }
 }
