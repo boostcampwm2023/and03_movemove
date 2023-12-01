@@ -2,12 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
-import { putObject } from 'src/ncpAPI/putObject';
 import { User, UserDocument } from 'src/user/schemas/user.schema';
 import { JwtService } from '@nestjs/jwt';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
 import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
 import { UserInfoDto } from 'src/user/dto/user-info.dto';
+import { checkUpload } from 'src/ncpAPI/listObjects';
+import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { JwtDto } from './dto/jwt.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
@@ -23,29 +24,23 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async create(
-    signupRequestDto: SignupRequestDto,
-    profileImage: Express.Multer.File,
-  ): Promise<SignupResponseDto> {
-    const { uuid } = signupRequestDto;
+  async create(signupRequestDto: SignupRequestDto): Promise<SignupResponseDto> {
+    const { uuid, profileImageExtension } = signupRequestDto;
     if (await this.UserModel.findOne({ uuid })) {
       throw new UserConflictException();
     }
-    // TODO 프로필 이미지 예외처리
-    const profileImageExtension = profileImage
-      ? profileImage.originalname.split('.').pop()
-      : null;
-    if (profileImage) {
-      putObject(
+    if (
+      profileImageExtension &&
+      !(await checkUpload(
         process.env.PROFILE_BUCKET,
         `${uuid}.${profileImageExtension}`,
-        profileImage.buffer,
-      );
+      ))
+    ) {
+      throw new ProfileUploadRequiredException();
     }
 
     const newUser = new this.UserModel({
       ...signupRequestDto,
-      profileImageExtension,
     });
     newUser.save();
     return this.getLoginInfo(newUser).then(

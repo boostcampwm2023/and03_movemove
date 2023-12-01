@@ -9,8 +9,12 @@ enum ErrorCode {
   InvalidRefreshToken = 1005,
   VideoNotFound = 4000,
   UserNotFound = 4001,
+  ObjectNotFound = 4002,
   NotYourVideo = 5000,
   NeverViewVideo = 5001,
+  ProfileUploadRequired = 5002,
+  ThumbnailUploadRequired = 5003,
+  VideoUploadRequired = 5004,
   BadVideoFormat = 8000,
   BadThumbnailFormat = 8100,
 }
@@ -29,6 +33,10 @@ const ErrorMessage = {
   [ErrorCode.NeverViewVideo]: '시청한 영상만 별점을 등록할 수 있음',
   [ErrorCode.VideoNotFound]: '비디오를 찾을 수 없음',
   [ErrorCode.UserNotFound]: '유저를 찾을 수 없음',
+  [ErrorCode.ObjectNotFound]: '오브젝트를 찾을 수 없음',
+  [ErrorCode.ProfileUploadRequired]: '프로필 이미지를 먼저 업로드 해야합니다.',
+  [ErrorCode.ThumbnailUploadRequired]: '썸네일을 먼저 업로드 해야합니다.',
+  [ErrorCode.VideoUploadRequired]: '비디오를 먼저 업로드 해야합니다.',
 };
 
 export { ErrorCode, ErrorMessage };

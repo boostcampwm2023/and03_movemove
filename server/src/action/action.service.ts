@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { Model, Connection } from 'mongoose';
+import { Model, Connection, Types } from 'mongoose';
 import { User } from 'src/decorators/request-user';
 import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { VideoRatingDTO } from 'src/video/dto/video-rating.dto';
 import { Video } from 'src/video/schemas/video.schema';
+import { ViewResponseDto } from './dto/view-response.dto';
 
 @Injectable()
 export class ActionService {
@@ -15,18 +16,25 @@ export class ActionService {
     @InjectModel('User') private UserModel: Model<User>,
   ) {}
 
-  async viewVideo(videoId: string, userId: string, seed: number) {
+  async viewVideo(
+    videoId: string,
+    userId: string,
+    seed: number,
+  ): Promise<ViewResponseDto> {
+    if (!Types.ObjectId.isValid(videoId)) throw new VideoNotFoundException();
+
     const session = await this.connection.startSession();
+    const video = { videoId, viewCount: null };
     await session.withTransaction(async () => {
-      await this.VideoModel.updateOne(
+      await this.VideoModel.findOneAndUpdate(
         { _id: videoId },
         { $inc: { viewCount: 1 } },
+        { new: true },
       )
         .session(session)
         .then((result) => {
-          if (result.modifiedCount === 0) {
-            throw new VideoNotFoundException();
-          }
+          if (!result) throw new VideoNotFoundException();
+          video.viewCount = result.viewCount;
         });
 
       // 기존에 시청한적이 있다면 seed만 업데이트
@@ -60,6 +68,7 @@ export class ActionService {
       }
     });
     session.endSession();
+    return video;
   }
 
   async ratingVideo(

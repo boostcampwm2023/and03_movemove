@@ -4,16 +4,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { putObject } from 'src/ncpAPI/putObject';
 import { requestEncoding } from 'src/ncpAPI/requestEncoding';
 import { User } from 'src/user/schemas/user.schema';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
 import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
-import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import axios from 'axios';
 import * as _ from 'lodash';
 import { ActionService } from 'src/action/action.service';
+import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -94,7 +93,7 @@ export class VideoService {
     const SEED_MAX = 1_000_000;
     const viewSeed = seed ?? Math.floor(Math.random() * SEED_MAX);
     const videoInfos = await Promise.all(
-      videos.map((video) => this.getVideoInfo(video, viewSeed)),
+      videos.map((video) => this.getVideoInfo(video)),
     );
     return { videos: videoInfos, seed: viewSeed };
   }
@@ -116,45 +115,53 @@ export class VideoService {
     return modifiedManifest;
   }
 
-  async getVideoInfo(video: any, seed?: number): Promise<VideoInfoDto> {
+  async getVideoInfo(video: any): Promise<VideoInfoDto> {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
     const rating = raterCount ? (totalRating / raterCount).toFixed(1) : null;
-    const manifest = `${process.env.SERVER_URL}videos/${
-      videoInfo._id
-    }/manifest${seed ? `?seed=${seed}` : ''}`;
+
+    const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
+
     const { profileImageExtension, uuid, ...uploaderInfo } =
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
-    const [profileImage, thumbnailImage] = await Promise.all([
-      getBucketImage(process.env.PROFILE_BUCKET, profileImageExtension, uuid),
-      getBucketImage(
+    const [profileImageUrl, thumbnailImageUrl] = await Promise.all([
+      profileImageExtension
+        ? await createPresignedUrl(
+            process.env.PROFILE_BUCKET,
+            `${uuid}.${profileImageExtension}`,
+            'GET',
+          )
+        : null,
+      await createPresignedUrl(
         process.env.THUMBNAIL_BUCKET,
-        videoInfo.thumbnailExtension,
-        videoInfo._id,
+        `${videoInfo._id}.${videoInfo.thumbnailExtension}`,
+        'GET',
       ),
     ]);
     const uploader = {
       ...uploaderInfo,
-      ...(profileImage && { profileImage }),
+      ...(profileImageUrl && { profileImageUrl }),
       uuid,
     };
 
     return {
-      video: { ...videoInfo, manifest, rating, thumbnailImage },
+      video: { ...videoInfo, manifest, rating, thumbnailImageUrl },
       uploader,
     };
   }
 
-  async uploadVideo(files: any, videoDto: VideoDto, uuid: string) {
-    const { title, content, category } = videoDto;
-    const video = files.video.pop();
-    const thumbnail = files.thumbnail.pop();
+  async uploadVideo(videoDto: VideoDto, uuid: string, videoId: string) {
+    const { videoExtension, thumbnailExtension } = videoDto;
+    const videoName = `${videoId}.${videoExtension}`;
+    const thumbnailName = `${videoId}.${thumbnailExtension}`;
+    // TODO 비디오, 썸네일 업로드 확인
+
+    await requestEncoding(process.env.INPUT_BUCKET, [videoName]);
 
     const uploader = await this.UserModel.findOne({ uuid }, { _id: 1 });
 
-    const videoExtension = video.originalname.split('.').pop();
-    const thumbnailExtension = thumbnail.originalname.split('.').pop();
-
+    const { title, content, category } = videoDto;
     const newVideo = new this.VideoModel({
+      _id: videoId,
       title,
       content,
       category,
@@ -162,18 +169,8 @@ export class VideoService {
       thumbnailExtension,
       videoExtension,
     });
-
-    const videoName = `${newVideo._id}.${videoExtension}`;
-    const thumbnailName = `${newVideo._id}.${thumbnailExtension}`;
-
-    await Promise.all([
-      newVideo.save(),
-      putObject(process.env.INPUT_BUCKET, videoName, video.buffer),
-      putObject(process.env.THUMBNAIL_BUCKET, thumbnailName, thumbnail.buffer),
-    ]);
-    await requestEncoding(process.env.INPUT_BUCKET, [videoName]);
-
-    return { _id: newVideo._id, ...videoDto };
+    await newVideo.save();
+    return { videoId, ...videoDto };
   }
 
   async deleteEncodedVideo(videoId: string) {

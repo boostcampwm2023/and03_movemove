@@ -24,6 +24,7 @@ export const getAuthorization = (
   canonicalURI: string,
   headers: object,
   timeStamp: string,
+  params = {},
 ): string => {
   const accessKeyID = process.env.ACCESS_KEY!;
   const region = 'kr-standard';
@@ -40,6 +41,7 @@ export const getAuthorization = (
     scope,
     headers,
     timeStamp,
+    params,
   );
   const authorization = `AWS4-HMAC-SHA256 Credential=${accessKeyID}/${scope}, SignedHeaders=${signedHeaders}, Signature=${kSignature}`;
   return authorization;
@@ -51,6 +53,7 @@ const createSignatureKey = (
   scope: string,
   headers: object,
   timeStamp: string,
+  params: object,
 ): string => {
   const kSigning = createSigningKey();
   const stringToSign = createStringToSign(
@@ -59,6 +62,7 @@ const createSignatureKey = (
     scope,
     headers,
     timeStamp,
+    params,
   );
   const kSignature = CryptoJS.HmacSHA256(stringToSign, kSigning).toString(
     CryptoJS.enc.Hex,
@@ -88,11 +92,13 @@ const createStringToSign = (
   scope: string,
   headers: object,
   timeStamp: string,
+  params: object,
 ) => {
   const canonicalRequest = createCanonicalRequest(
     method,
     canonicalURI,
     headers,
+    params,
   );
   const stringToSign = `AWS4-HMAC-SHA256
 ${timeStamp}
@@ -101,16 +107,27 @@ ${CryptoJS.enc.Hex.stringify(CryptoJS.SHA256(canonicalRequest))}`;
   return stringToSign;
 };
 
+const getQueryString = (params: object) => {
+  const queryParameters = Object.keys(params)
+    .sort()
+    .map(
+      (key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`,
+    );
+  return queryParameters.join('&');
+};
+
 const createCanonicalRequest = (
   method: string,
   path: string,
   headers: object,
+  params: object,
 ) => {
   const hashedPayLoad = 'UNSIGNED-PAYLOAD';
+  const canonicalQueryString = getQueryString(params);
   const { canonicalHeaders, signedHeaders } = getHeaders(headers);
   const canonicalRequest = `${method}
 ${path}
-
+${canonicalQueryString}
 ${canonicalHeaders}
 
 ${signedHeaders}

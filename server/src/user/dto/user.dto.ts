@@ -1,4 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsUUID } from 'class-validator';
 
 export class UserDto {
@@ -9,14 +8,11 @@ export class UserDto {
   @IsUUID()
   uuid: string;
 
-  @ApiProperty({
-    description: '유저 프로필 사진',
-    type: 'string',
-    format: 'binary',
-    example: '인코딩된 이미지 파일',
-  })
-  // TODO file 유효성검사
-  profileImage?: Express.Multer.File;
+  /**
+   * 프로필 이미지 확장자
+   * @example 'webp'
+   */
+  profileImageExtension?: string;
 
   /**
    * 유저 닉네임

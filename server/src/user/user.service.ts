@@ -1,18 +1,21 @@
 /* eslint-disable no-underscore-dangle */
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { Video } from 'src/video/schemas/video.schema';
-import { putObject } from 'src/ncpAPI/putObject';
 import { UserNotFoundException } from 'src/exceptions/user-not-found.exception';
 import * as _ from 'lodash';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import { VideoService } from 'src/video/video.service';
+import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
+import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
+import { checkUpload } from 'src/ncpAPI/listObjects';
 import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { User } from './schemas/user.schema';
 import { ProfileDto } from './dto/profile.dto';
 import { RatedVideoResponseDto } from './dto/rated-video-response.dto';
+import { ProfileResponseDto } from './dto/profile-response.dto';
 
 @Injectable()
 export class UserService {
@@ -22,69 +25,72 @@ export class UserService {
     private videoService: VideoService,
   ) {}
 
-  async getProfile(userId: string) {
+  async getProfile(userId: string): Promise<ProfileResponseDto> {
     const user = await this.UserModel.findOne({ uuid: userId });
 
     if (!user) {
       throw new UserNotFoundException();
     }
     const { uuid, profileImageExtension, nickname, statusMessage } = user;
-    const profileImage = await getBucketImage(
-      process.env.PROFILE_BUCKET,
-      profileImageExtension,
-      uuid,
-    );
-    return new ProfileDto({
+    const profileImageUrl = profileImageExtension
+      ? await createPresignedUrl(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${profileImageExtension}`,
+          'GET',
+        )
+      : null;
+    return {
       nickname,
       statusMessage,
-      ...(profileImage && { profileImage }),
-    });
+      ...(profileImageUrl && { profileImageUrl }),
+    };
   }
 
-  async patchProfile(
-    profileDto: ProfileDto,
-    profileImage: Express.Multer.File,
-    uuid: string,
-  ): Promise<ProfileDto> {
-    const updateOption = _.omitBy(profileDto, _.isEmpty); // profileDto 중 빈 문자열인 필드 제거
-    const user = await this.UserModel.findOne({ uuid });
-    if (user.nickname === updateOption.nickname) {
-      // 실제로 변경된 필드만 updateOption에 남기기
-      delete updateOption.nickname;
-    }
-    if (user.statusMessage === updateOption.statusMessage) {
-      delete updateOption.statusMessage;
+  async patchProfile(profileDto: ProfileDto, uuid: string) {
+    const updateOption: ProfileDto = _.omitBy(profileDto, _.isEmpty); // profileDto 중 빈 문자열인 필드 제거
+    const user = await this.UserModel.findOne({ uuid }, {}, { lean: true });
+
+    // profileExtension이 null이 아니라면 프로필 이미지가 업로드됐는지 확인
+    if (
+      profileDto.profileImageExtension &&
+      !(await checkUpload(
+        process.env.PROFILE_BUCKET,
+        `${uuid}.${profileDto.profileImageExtension}`,
+      ))
+    ) {
+      throw new ProfileUploadRequiredException();
     }
 
-    let updatedProfileImage;
-    if (profileImage) {
-      const profileImageExtension = profileImage.originalname.split('.').pop();
-      putObject(
-        process.env.PROFILE_BUCKET,
-        `${uuid}.${profileImageExtension}`,
-        profileImage.buffer,
-      );
-      updateOption.profileImageExtension = profileImageExtension;
-      updatedProfileImage = profileImage.buffer;
-    } else if (
-      'profileImage' in profileDto &&
-      user.profileImageExtension !== null
-    ) {
-      // profileImage 필드를 빈 문자열로 주었고, 기존 프로필이미지가 있었다면 삭제
+    if (profileDto.profileImageExtension === '' && user.profileImageExtension) {
+      // profileExtension 필드를 빈 문자열로 주었고, 기존 프로필이미지가 있었다면 삭제
       deleteObject(
         process.env.PROFILE_BUCKET,
         `${uuid}.${user.profileImageExtension}`,
       );
       updateOption.profileImageExtension = null;
-      updatedProfileImage = null;
     }
 
-    await this.UserModel.updateOne({ uuid }, updateOption);
-    if (updatedProfileImage !== undefined) {
-      updateOption.profileImage = updatedProfileImage;
-      delete updateOption.profileImageExtension;
-    }
-    return updateOption;
+    const result = await this.UserModel.findOneAndUpdate(
+      { uuid },
+      updateOption,
+      {
+        lean: true,
+        new: true,
+      },
+    );
+
+    const profileImageUrl = result.profileImageExtension
+      ? await createPresignedUrl(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${result.profileImageExtension}`,
+          'GET',
+        )
+      : null;
+    return {
+      nickname: result.nickname,
+      statusMessage: result.statusMessage,
+      profileImageUrl,
+    };
   }
 
   async getUploadedVideos(
@@ -117,14 +123,22 @@ export class UserService {
   }
 
   async getUploaderInfo(uuid: string, uploaderData) {
-    // eslint-disable-next-line prettier/prettier
-    const { _id: uploaderId, profileImageExtension, ...uploaderInfo } = uploaderData;
-    const profileImage = await getBucketImage(
-      process.env.PROFILE_BUCKET,
+    const {
+      _id: uploaderId,
       profileImageExtension,
-      uuid,
-    );
-    const uploader = { ...uploaderInfo, ...(profileImage && { profileImage }) };
+      ...uploaderInfo
+    } = uploaderData;
+    const profileImageUrl = profileImageExtension
+      ? await createPresignedUrl(
+          process.env.PROFILE_BUCKET,
+          `${uuid}.${profileImageExtension}`,
+          'GET',
+        )
+      : null;
+    const uploader = {
+      ...uploaderInfo,
+      ...(profileImageUrl && { profileImageUrl }),
+    };
     return { uploader, uploaderId };
   }
 
@@ -136,7 +150,7 @@ export class UserService {
         const rating = raterCount
           ? (totalRating / raterCount).toFixed(1)
           : null;
-        const manifest = `${process.env.SERVER_URL}videos/${videoInfo._id}/manifest`;
+        const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
         const thumbnailImage = await getBucketImage(
           process.env.THUMBNAIL_BUCKET,
           thumbnailExtension,

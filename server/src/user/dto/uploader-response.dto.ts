@@ -21,8 +21,8 @@ export class UploaderResponseDto {
   statusMessage: string;
 
   /**
-   * 업로더 이미지
-   * @example "�PNG\r\n\u001a\n\u0000\u0000\u0000\"
+   * 업로더 프로필 이미지를 가져오는 presigned url
+   * @example 'https://ncloud.com/
    */
-  profileImage: string;
+  profileImageUrl: string;
 }

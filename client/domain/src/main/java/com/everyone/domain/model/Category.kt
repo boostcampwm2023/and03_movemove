@@ -1,8 +1,8 @@
 package com.everyone.domain.model
 
-enum class Category {
-    CHALLENGE,
-    OLD_SCHOOL,
-    NEW_SCHOOL,
-    K_POP,
+enum class UploadCategory(val uploadString: String) {
+    CHALLENGE("챌린지"),
+    OLD_SCHOOL("올드스쿨"),
+    NEW_SCHOOL("뉴스쿨"),
+    K_POP("Kpop"),
 }
