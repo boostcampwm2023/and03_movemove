@@ -3,7 +3,7 @@
 /* eslint-disable class-methods-use-this */
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { requestEncoding } from 'src/ncpAPI/requestEncoding';
 import { User } from 'src/user/schemas/user.schema';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
@@ -13,6 +13,11 @@ import axios from 'axios';
 import * as _ from 'lodash';
 import { ActionService } from 'src/action/action.service';
 import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
+import { VideoConflictException } from 'src/exceptions/video-conflict.exception';
+import { checkUpload } from 'src/ncpAPI/listObjects';
+import { VideoUploadRequiredException } from 'src/exceptions/video-upload-required-exception copy';
+import { ThumbnailUploadRequiredException } from 'src/exceptions/thumbnail-upload-required-exception copy 2';
+import { BadRequestFormatException } from 'src/exceptions/bad-request-format.exception';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -150,10 +155,20 @@ export class VideoService {
   }
 
   async uploadVideo(videoDto: VideoDto, uuid: string, videoId: string) {
+    if (!Types.ObjectId.isValid(videoId)) throw new BadRequestFormatException();
+    const checkDuplicate = await this.VideoModel.findOne({ _id: videoId });
+    if (checkDuplicate) throw new VideoConflictException();
+
     const { videoExtension, thumbnailExtension } = videoDto;
     const videoName = `${videoId}.${videoExtension}`;
     const thumbnailName = `${videoId}.${thumbnailExtension}`;
-    // TODO 비디오, 썸네일 업로드 확인
+
+    if (!(await checkUpload(process.env.INPUT_BUCKET, videoName))) {
+      throw new VideoUploadRequiredException();
+    }
+    if (!(await checkUpload(process.env.THUMBNAIL_BUCKET, thumbnailName))) {
+      throw new ThumbnailUploadRequiredException();
+    }
 
     await requestEncoding(process.env.INPUT_BUCKET, [videoName]);
 

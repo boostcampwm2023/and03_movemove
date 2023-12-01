@@ -6,7 +6,7 @@ export class VideoRatingDTO {
    * @example 2
    */
   @IsNumber()
-  @Min(1)
+  @Min(0)
   @Max(5)
   rating: number;
 

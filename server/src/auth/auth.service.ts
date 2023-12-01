@@ -24,11 +24,15 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async create(signupRequestDto: SignupRequestDto): Promise<SignupResponseDto> {
-    const { uuid, profileImageExtension } = signupRequestDto;
+  async checkUserConflict(uuid: string): Promise<void> {
     if (await this.UserModel.findOne({ uuid })) {
       throw new UserConflictException();
     }
+  }
+
+  async create(signupRequestDto: SignupRequestDto): Promise<SignupResponseDto> {
+    const { uuid, profileImageExtension } = signupRequestDto;
+    await this.checkUserConflict(uuid);
     if (
       profileImageExtension &&
       !(await checkUpload(

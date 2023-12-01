@@ -1,5 +1,4 @@
-import { Controller, Post, Body, UseInterceptors } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Post, Body, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
@@ -8,6 +7,9 @@ import { OAuthFailedException } from 'src/exceptions/oauth-failed.exception';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
 import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
+import { PresignedUrlResponseDto } from 'src/presigned-url/dto/presigned-url-response.dto';
+import { PresignedUrlService } from 'src/presigned-url/presigned-url.service';
+import { SignupProfilePresignedUrlRequestDto } from 'src/presigned-url/dto/signup-profile-presigned-url-request.dto';
 import { AuthService } from './auth.service';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
@@ -18,7 +20,10 @@ import { RefreshResponseDto } from './dto/refresh-response.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private presignedUrlService: PresignedUrlService,
+  ) {}
 
   /**
    * 회원가입
@@ -59,5 +64,24 @@ export class AuthController {
     @Body() refreshRequestDto: RefreshRequestDto,
   ): Promise<RefreshResponseDto> {
     return this.authService.refresh(refreshRequestDto);
+  }
+
+  /**
+   * 회원가입 시 프로필 이미지를 PUT하는 url 발급
+   */
+  @Get('signup/presigned-url/profile')
+  @ApiSuccessResponse(
+    200,
+    '프로필 이미지를 업로드하는 url 발급 성공',
+    PresignedUrlResponseDto,
+  )
+  async putProfilePresignedUrl(
+    @Query() query: SignupProfilePresignedUrlRequestDto,
+  ) {
+    await this.authService.checkUserConflict(query.uuid);
+    return this.presignedUrlService.putProfilePresignedUrl(
+      query.uuid,
+      query.profileExtension,
+    );
   }
 }

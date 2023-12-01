@@ -12,6 +12,7 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiOkResponse,
   ApiProduces,
@@ -30,10 +31,13 @@ import { ActionService } from 'src/action/action.service';
 import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
 import { IgnoreInterceptor } from 'src/decorators/ignore-interceptor';
 import { SeedQueryDto } from 'src/action/dto/manifest-query.dto';
+import { VideoConflictException } from 'src/exceptions/video-conflict.exception';
+import { ThumbnailUploadRequiredException } from 'src/exceptions/thumbnail-upload-required-exception copy 2';
+import { VideoUploadRequiredException } from 'src/exceptions/video-upload-required-exception copy';
+import { BadRequestFormatException } from 'src/exceptions/bad-request-format.exception';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
-import { FileExtensionPipe } from './video.pipe';
 import { RandomVideoQueryDto } from './dto/random-video-query.dto';
 import { VideoSummaryResponseDto } from './dto/video-summary-response.dto';
 import { VideoInfoDto } from './dto/video-info.dto';
@@ -51,7 +55,6 @@ export class VideoController {
   constructor(
     private videoService: VideoService,
     private actionService: ActionService,
-    private fileExtensionPipe: FileExtensionPipe,
   ) {}
 
   /**
@@ -77,6 +80,12 @@ export class VideoController {
   )
   @Post(':videoId')
   @ApiSuccessResponse(201, '비디오 업로드 성공', VideoSummaryResponseDto)
+  @ApiFailResponse('중복된 비디오 ID', [VideoConflictException])
+  @ApiFailResponse('잘못된 비디오 ID', [BadRequestFormatException])
+  @ApiFailResponse('업로드가 필요함', [
+    VideoUploadRequiredException,
+    ThumbnailUploadRequiredException,
+  ])
   uploadVideo(
     @Body() videoDto: VideoDto,
     @RequestUser() user: User,

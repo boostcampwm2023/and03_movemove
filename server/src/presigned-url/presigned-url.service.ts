@@ -41,10 +41,10 @@ export class PresignedUrlService {
     return { advertisements };
   }
 
-  async putProfilePresignedUrl({
-    uuid,
-    profileExtension,
-  }): Promise<PresignedUrlResponseDto> {
+  async putProfilePresignedUrl(
+    uuid: string,
+    profileExtension: string,
+  ): Promise<PresignedUrlResponseDto> {
     const objectName = `${uuid}.${profileExtension}`;
     const presignedUrl = await createPresignedUrl(
       process.env.PROFILE_BUCKET,
