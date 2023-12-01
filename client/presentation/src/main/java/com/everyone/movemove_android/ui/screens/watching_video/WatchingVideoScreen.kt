@@ -261,7 +261,7 @@ fun VideoPlayer(
 ) {
     val context = LocalContext.current
 
-    LaunchedEffect(uri) {
+    DisposableEffect(uri) {
         val dataSourceFactory: DataSource.Factory = DefaultHttpDataSource.Factory()
         val source = HlsMediaSource.Factory(dataSourceFactory)
             .createMediaSource(MediaItem.fromUri(uri))
@@ -272,6 +272,11 @@ fun VideoPlayer(
             playWhenReady = true
             videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
             repeatMode = Player.REPEAT_MODE_ONE
+        }
+
+        onDispose {
+            exoPlayer.stop()
+            exoPlayer.clearMediaItems()
         }
     }
 
