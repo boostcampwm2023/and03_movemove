@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
 
@@ -41,25 +40,23 @@ class MyViewModel @Inject constructor(
     }
 
     private fun getProfile() {
-        viewModelScope.launch {
-            loading(isLoading = true)
-            getProfileUseCase("550e8400-e29b-41d4-a716-446655447000").onEach { result ->
-                when (result) {
-                    is DataState.Success -> {
-                        _state.update {
-                            it.copy(
-                                isLoading = false,
-                                profile = result.data
-                            )
-                        }
-                    }
-
-                    is DataState.Failure -> {
-                        loading(isLoading = false)
+        loading(isLoading = true)
+        getProfileUseCase("550e8400-e29b-41d4-a716-446655447000").onEach { result ->
+            when (result) {
+                is DataState.Success -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            profile = result.data
+                        )
                     }
                 }
-            }.launchIn(viewModelScope + ioDispatcher)
-        }
+
+                is DataState.Failure -> {
+                    loading(isLoading = false)
+                }
+            }
+        }.launchIn(viewModelScope + ioDispatcher)
     }
 
     private fun loading(isLoading: Boolean) {

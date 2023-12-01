@@ -38,7 +38,7 @@ class UserRepositoryImpl @Inject constructor(private val networkHandler: Network
         }
     }
 
-    override suspend fun getUserProfile(userId: String): Flow<DataState<Profile>> {
+    override fun getUserProfile(userId: String): Flow<DataState<Profile>> {
         return flow {
             networkHandler.request<ProfileResponse>(
                 method = HttpMethod.Get,

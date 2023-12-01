@@ -14,7 +14,7 @@ interface UserRepository {
         statusMessage: String
     ): Flow<DataState<UserInfo>>
 
-    suspend fun getUserProfile(
+    fun getUserProfile(
         userId: String
     ): Flow<DataState<Profile>>
 }

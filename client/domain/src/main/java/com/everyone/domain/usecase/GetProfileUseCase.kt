@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val userRepository: UserRepository) {
-    suspend operator fun invoke(
+    operator fun invoke(
         userId: String
     ): Flow<DataState<Profile>> {
         return userRepository.getUserProfile(
