@@ -8,6 +8,7 @@ import com.everyone.data.remote.RemoteConstants.PRESIGNED_URL
 import com.everyone.data.remote.RemoteConstants.RANDOM
 import com.everyone.data.remote.RemoteConstants.RATING
 import com.everyone.data.remote.RemoteConstants.REASON
+import com.everyone.data.remote.RemoteConstants.SEED
 import com.everyone.data.remote.RemoteConstants.THUMBNAIL_EXTENSION
 import com.everyone.data.remote.RemoteConstants.TITLE
 import com.everyone.data.remote.RemoteConstants.TOP_RATED
@@ -110,9 +111,9 @@ class VideosRepositoryImpl @Inject constructor(
                 method = HttpMethod.Get,
                 url = {
                     path(VIDEOS, RANDOM)
-                    parameters.append("limit", limit)
-                    parameters.append("category", category)
-                    parameters.append("seed", seed)
+                    parameters.append(LIMIT, limit)
+                    parameters.append(CATEGORY, category)
+                    parameters.append(SEED, seed)
                 }
             ).collect { response ->
                 response.data?.let {
