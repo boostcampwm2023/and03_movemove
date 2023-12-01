@@ -14,7 +14,5 @@ interface UserRepository {
         statusMessage: String
     ): Flow<DataState<UserInfo>>
 
-    fun getUserProfile(
-        userId: String
-    ): Flow<DataState<Profile>>
+    fun getUserProfile(userId: String): Flow<DataState<Profile>>
 }
