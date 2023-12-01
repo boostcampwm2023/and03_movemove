@@ -33,6 +33,7 @@ interface WatchingVideoContract :
         ) : Event
 
         data class ChangedVideoTab(val videoTab: VideoTab) : Event
+        data class PutVideosViews(val videoId : String) : Event
     }
 
     sealed interface Effect {}

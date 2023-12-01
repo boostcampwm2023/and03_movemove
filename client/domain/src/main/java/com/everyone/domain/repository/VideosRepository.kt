@@ -40,6 +40,11 @@ interface VideosRepository {
         reason: String
     ): Flow<DataState<Unit>>
 
+    fun putVideosViews(
+        videoId: String,
+        seed: String,
+    ): Flow<DataState<Unit>>
+
     suspend fun getVideosTopRated(category: String): Flow<DataState<VideosTrend>>
 
     suspend fun getVideosTrend(limit: String): Flow<DataState<VideosTrend>>

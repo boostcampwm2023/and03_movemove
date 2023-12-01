@@ -1,22 +1,28 @@
 package com.everyone.movemove_android.ui.screens.watching_video
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.everyone.domain.model.Videos
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetVideosRandomUseCase
 import com.everyone.domain.usecase.PutVideosRatingUseCase
+import com.everyone.domain.usecase.PutVideosViewsUseCase
+import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Category
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnClickedCategory
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnCategorySelected
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Effect
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.ChangedVideoTab
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.GetRandomVideos
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnClickedVideoRating
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.PutVideosViews
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.SetVideos
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.State
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.VideoTab
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -27,12 +33,15 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import javax.inject.Inject
 
 @HiltViewModel
 class WatchingVideoViewModel @Inject constructor(
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val getVideosRandomUseCase: GetVideosRandomUseCase,
-    private val putVideosRatingUseCase: PutVideosRatingUseCase
+    private val putVideosRatingUseCase: PutVideosRatingUseCase,
+    private val putVideosViewsUseCase: PutVideosViewsUseCase
 ) : ViewModel(), WatchingVideoContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -52,8 +61,21 @@ class WatchingVideoViewModel @Inject constructor(
                 reason = event.reason
             )
 
-            is Event.ChangedVideoTab -> changedVideoTab(videoTab = event.videoTab)
+            is ChangedVideoTab -> changedVideoTab(videoTab = event.videoTab)
+            is PutVideosViews -> putVideosViews(videoId = event.videoId)
         }
+    }
+
+    private fun putVideosViews(videoId: String) {
+        putVideosViewsUseCase(
+            videoId = videoId,
+            seed = state.value.seed
+        ).onEach { result ->
+            when (result) {
+                is DataState.Success -> {}
+                is DataState.Failure -> {}
+            }
+        }.launchIn(viewModelScope + ioDispatcher)
     }
 
     private fun getRandomVideos() {

@@ -16,6 +16,7 @@ import com.everyone.data.remote.RemoteConstants.TREND
 import com.everyone.data.remote.RemoteConstants.VIDEO
 import com.everyone.data.remote.RemoteConstants.VIDEOS
 import com.everyone.data.remote.RemoteConstants.VIDEO_EXTENSION
+import com.everyone.data.remote.RemoteConstants.VIEWS
 import com.everyone.data.remote.model.CreatedVideoResponse
 import com.everyone.data.remote.model.CreatedVideoResponse.Companion.toDomainModel
 import com.everyone.data.remote.model.VideoUploadUrlResponse
@@ -147,6 +148,21 @@ class VideosRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    override fun putVideosViews(videoId: String, seed: String): Flow<DataState<Unit>> =
+        flow {
+            networkHandler.request<Unit>(
+                method = HttpMethod.Put,
+                url = { path(VIDEOS, videoId, VIEWS) },
+                content = { append(SEED, seed) }
+            ).collect { response ->
+                response.data?.let {
+                    emit(DataState.Success(it))
+                } ?: run {
+                    emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
+                }
+            }
+        }
 
     override suspend fun getVideosTopRated(category: String): Flow<DataState<VideosTrend>> {
         return flow {

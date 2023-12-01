@@ -147,6 +147,7 @@ fun WatchingVideoScreen(
                         )
                         Column(modifier = Modifier.align(Alignment.BottomStart)) {
                             videosItem[page].video?.let { video ->
+                                event(PutVideosViews(video.id!!))
                                 MoveMoveScoreboard(
                                     video = video,
                                     event = event

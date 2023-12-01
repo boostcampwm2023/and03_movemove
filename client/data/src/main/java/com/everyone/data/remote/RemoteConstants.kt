@@ -20,4 +20,5 @@ object RemoteConstants {
     const val LIMIT = "limit"
     const val SEED = "SEED"
     const val REASON = "reason"
+    const val VIEWS = "views"
 }
