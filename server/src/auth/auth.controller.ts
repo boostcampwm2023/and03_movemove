@@ -8,8 +8,8 @@ import { LoginFailException } from 'src/exceptions/login-fail.exception';
 import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
 import { PresignedUrlResponseDto } from 'src/presigned-url/dto/presigned-url-response.dto';
-import { ProfilePresignedUrlRequestDto } from 'src/presigned-url/dto/profile-presigned-url-request.dto';
 import { PresignedUrlService } from 'src/presigned-url/presigned-url.service';
+import { SignupProfilePresignedUrlRequestDto } from 'src/presigned-url/dto/signup-profile-presigned-url-request.dto';
 import { AuthService } from './auth.service';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
@@ -75,7 +75,13 @@ export class AuthController {
     '프로필 이미지를 업로드하는 url 발급 성공',
     PresignedUrlResponseDto,
   )
-  putProfilePresignedUrl(@Query() query: ProfilePresignedUrlRequestDto) {
-    return this.presignedUrlService.putProfilePresignedUrl(query);
+  async putProfilePresignedUrl(
+    @Query() query: SignupProfilePresignedUrlRequestDto,
+  ) {
+    await this.authService.checkUserConflict(query.uuid);
+    return this.presignedUrlService.putProfilePresignedUrl(
+      query.uuid,
+      query.profileExtension,
+    );
   }
 }
