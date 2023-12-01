@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.GetRandomVideos
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnClickedCategory
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnCategorySelected
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoViewModel
@@ -69,6 +70,7 @@ fun CategoryScreen(viewModel: WatchingVideoViewModel = hiltViewModel()) {
                             .padding(top = 32.dp)
                             .clickableWithoutRipple {
                                 event(OnCategorySelected(selectedCategory = category))
+                                event(GetRandomVideos)
                             },
                         category = category.displayName,
                     )

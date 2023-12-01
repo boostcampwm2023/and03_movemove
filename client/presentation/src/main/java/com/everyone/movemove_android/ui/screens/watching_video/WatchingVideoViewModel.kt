@@ -1,8 +1,9 @@
 package com.everyone.movemove_android.ui.screens.watching_video
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.everyone.domain.model.Videos
+import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetVideosRandomUseCase
 import com.everyone.domain.usecase.PutVideosRatingUseCase
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Category
@@ -10,7 +11,11 @@ import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoCont
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnCategorySelected
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Effect
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.GetRandomVideos
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnClickedVideoRating
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.SetVideos
 import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.State
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.VideoTab
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,19 +44,70 @@ class WatchingVideoViewModel @Inject constructor(
         when (event) {
             is OnClickedCategory -> onClickedCategory()
             is OnCategorySelected -> onCategorySelected(selectedCategory = event.selectedCategory)
+            is SetVideos -> setVideos(videos = event.videos)
+            is GetRandomVideos -> getRandomVideos()
+            is OnClickedVideoRating -> onClickedVideoRating(
+                id = event.id,
+                rating = event.rating,
+                reason = event.reason
+            )
+
+            is Event.ChangedVideoTab -> changedVideoTab(videoTab = event.videoTab)
         }
     }
 
-    init {
-        // TODO 테스트!! 지우겠슴돠!!
+    private fun getRandomVideos() {
+        viewModelScope.launch {
+            loading(isLoading = true)
+            getVideosRandomUseCase(
+                limit = LIMIT,
+                category = state.value.selectedCategory.displayName,
+                seed = state.value.seed
+            ).onEach { result ->
+                when (result) {
+                    is DataState.Success -> {
+                        result.data.videos?.let { videos ->
+                            _state.update {
+                                it.copy(
+                                    videos = result.data.videos,
+                                    seed = result.data.seed.toString(),
+                                )
+                            }
+
+                        }
+                    }
+
+                    is DataState.Failure -> {
+                        loading(isLoading = false)
+                    }
+                }
+            }.launchIn(viewModelScope)
+            loading(isLoading = false)
+
+        }
+    }
+
+    private fun setVideos(videos: List<Videos>) {
+        _state.update {
+            it.copy(videos = videos)
+        }
+    }
+
+    private fun onClickedVideoRating(
+        id: String,
+        rating: String,
+        reason: String
+    ) {
         viewModelScope.launch {
             putVideosRatingUseCase(
-                id = "1",
-                rating = "4",
-                reason = "ㅇㅇ"
-            ).onEach {
-                Log.d("ttt ㅎㅎ", it.toString())
-
+                id = id,
+                rating = rating,
+                reason = reason
+            ).onEach { result ->
+                when (result) {
+                    is DataState.Success -> {}
+                    is DataState.Failure -> {}
+                }
             }.launchIn(viewModelScope)
         }
     }
@@ -69,5 +125,23 @@ class WatchingVideoViewModel @Inject constructor(
                 selectedCategory = selectedCategory
             )
         }
+    }
+
+    private fun changedVideoTab(videoTab: VideoTab) {
+        _state.update {
+            it.copy(
+                videoTab = videoTab
+            )
+        }
+    }
+
+    private fun loading(isLoading: Boolean) {
+        _state.update {
+            it.copy(isLoading = isLoading)
+        }
+    }
+
+    companion object {
+        const val LIMIT = "10"
     }
 }
