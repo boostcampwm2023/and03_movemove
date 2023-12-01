@@ -2,6 +2,7 @@ package com.everyone.movemove_android.ui.screens.watching_video
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.util.Log
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -255,7 +256,10 @@ fun WatchingVideoScreen(
 @SuppressLint("OpaqueUnitKey")
 @Composable
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-fun VideoPlayer(exoPlayer: ExoPlayer, uri: Uri) {
+fun VideoPlayer(
+    exoPlayer: ExoPlayer,
+    uri: Uri,
+) {
     val context = LocalContext.current
 
     LaunchedEffect(uri) {
@@ -310,7 +314,9 @@ fun MoveMoveCategory(
 
 @Composable
 fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
-    var sliderPosition by remember { mutableFloatStateOf(0.4f) }
+
+    val rating = video.rating?.toFloat() ?: run { 0.4f }
+    var sliderPosition by remember { mutableFloatStateOf(rating) }
 
     Box(
         modifier = Modifier
@@ -348,8 +354,8 @@ fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
                     event(
                         OnClickedVideoRating(
                             id = video.id.toString(),
-                            rating = it.toString(),
-                            reason = ""
+                            rating = (it * 5).toInt().toString(),
+                            reason = "테스트" // TODO 임시,,,
                         )
                     )
                 },
