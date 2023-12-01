@@ -5,6 +5,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
+import { RequestUser, User } from 'src/decorators/request-user';
 import { PresignedUrlService } from './presigned-url.service';
 import { AdvertisementPresignedUrlRequestDto } from './dto/advertisement-presigned-url-request.dto';
 import { ProfilePresignedUrlRequestDto } from './dto/profile-presigned-url-request.dto';
@@ -46,8 +47,14 @@ export class PresignedUrlController {
     '프로필 이미지를 업로드하는 url 발급 성공',
     PresignedUrlResponseDto,
   )
-  putProfilePresignedUrl(@Query() query: ProfilePresignedUrlRequestDto) {
-    return this.presignedUrlService.putProfilePresignedUrl(query);
+  putProfilePresignedUrl(
+    @Query() query: ProfilePresignedUrlRequestDto,
+    @RequestUser() user: User,
+  ) {
+    return this.presignedUrlService.putProfilePresignedUrl(
+      user.id,
+      query.profileExtension,
+    );
   }
 
   /**
