@@ -149,13 +149,15 @@ class ImageCropperViewModel @Inject constructor(
         _state.update {
             val originalOffset = it.sectionSelectorState.offset
             val newOffset = Offset(
-                x = it.sectionSelectorState.offset.x + offsetX,
-                y = it.sectionSelectorState.offset.y
+                x = originalOffset.x + offsetX,
+                y = originalOffset.y
             )
+            val size = it.sectionSelectorState.size
+            val boardWidth = it.boardSize.width
 
             it.copy(
                 sectionSelectorState = it.sectionSelectorState.copy(
-                    offset = if (newOffset.x - it.sectionSelectorState.size / 2f in 0f..it.boardSize.width - it.sectionSelectorState.size) {
+                    offset = if (newOffset.x - size / 2f in 0f..boardWidth - size) {
                         newOffset
                     } else {
                         originalOffset
@@ -169,13 +171,15 @@ class ImageCropperViewModel @Inject constructor(
         _state.update {
             val originalOffset = it.sectionSelectorState.offset
             val newOffset = Offset(
-                x = it.sectionSelectorState.offset.x,
-                y = it.sectionSelectorState.offset.y + offsetY
+                x = originalOffset.x,
+                y = originalOffset.y + offsetY
             )
+            val size = it.sectionSelectorState.size
+            val boardHeight = it.boardSize.height
 
             it.copy(
                 sectionSelectorState = it.sectionSelectorState.copy(
-                    offset = if (newOffset.y - it.sectionSelectorState.size / 2f in 0f..it.boardSize.height - it.sectionSelectorState.size) {
+                    offset = if (newOffset.y - size / 2f in 0f..boardHeight - size) {
                         newOffset
                     } else {
                         originalOffset
@@ -190,11 +194,14 @@ class ImageCropperViewModel @Inject constructor(
             val offsetX = it.sectionSelectorState.offset.x
             val offsetY = it.sectionSelectorState.offset.y
             val originalSize = it.sectionSelectorState.size
-            val newSize = it.sectionSelectorState.size * size
+            val newSize = originalSize * size
+            val boardWidth = it.boardSize.width
+            val boardHeight = it.boardSize.height
+
             it.copy(
                 sectionSelectorState = it.sectionSelectorState.copy(
-                    size = if (offsetX - newSize / 2f in 0f..it.boardSize.width - newSize &&
-                        offsetY - newSize / 2f in 0f..it.boardSize.height - newSize
+                    size = if (offsetX - newSize / 2f in 0f..boardWidth - newSize &&
+                        offsetY - newSize / 2f in 0f..boardHeight - newSize
                     ) {
                         newSize
                     } else {
