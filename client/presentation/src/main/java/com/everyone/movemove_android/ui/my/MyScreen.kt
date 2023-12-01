@@ -23,114 +23,126 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.R.drawable.ic_heart
 import com.everyone.movemove_android.R.drawable.img_basic_profile
 import com.everyone.movemove_android.R.string.edit_profile
 import com.everyone.movemove_android.R.string.profile_name
+import com.everyone.movemove_android.base.use
+import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 
 @Composable
-fun MyScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background)
-            .padding(horizontal = 16.dp)
-    ) {
-        Spacer(modifier = Modifier.height(70.dp))
+fun MyScreen(
+    viewModel: MyViewModel = hiltViewModel()
+) {
 
-        Image(
+    val (state, event, effect) = use(viewModel)
+
+    if (state.isLoading) {
+        LoadingDialog()
+    } else {
+        Column(
             modifier = Modifier
-                .align(alignment = Alignment.CenterHorizontally)
-                .size(110.dp)
-                .clip(shape = CircleShape),
-            painter = painterResource(id = img_basic_profile),
-            contentDescription = null
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        StyledText(
-            modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
-            text = stringResource(id = profile_name),
-            style = Typography.labelLarge
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .clickableWithoutRipple { },
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .background(color = MaterialTheme.colorScheme.background)
+                .padding(horizontal = 16.dp)
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_profile_edit),
-                contentDescription = null,
-                tint = Color.Gray
+            Spacer(modifier = Modifier.height(70.dp))
+
+            Image(
+                modifier = Modifier
+                    .align(alignment = Alignment.CenterHorizontally)
+                    .size(110.dp)
+                    .clip(shape = CircleShape),
+                painter = painterResource(id = img_basic_profile),
+                contentDescription = null
             )
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             StyledText(
-                text = stringResource(edit_profile),
-                style = Typography.bodyLarge
-            )
-        }
-
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .clickableWithoutRipple { },
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_my_video),
-                contentDescription = null,
-                tint = Color.Gray
+                modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
+                text = stringResource(id = profile_name),
+                style = Typography.labelLarge
             )
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            StyledText(
-                text = stringResource(R.string.my_video),
-                style = Typography.bodyLarge
-            )
-        }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .clickableWithoutRipple { },
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_profile_edit),
+                    contentDescription = null,
+                    tint = Color.Gray
+                )
 
-        Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .padding(start = 4.dp)
-                .clickableWithoutRipple { },
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                painter = painterResource(id = ic_heart),
-                contentDescription = null,
-                tint = Color.Gray
-            )
+                StyledText(
+                    text = stringResource(edit_profile),
+                    style = Typography.bodyLarge
+                )
+            }
 
-            Spacer(modifier = Modifier.width(12.dp))
 
-            StyledText(
-                text = stringResource(R.string.my_scored_video),
-                style = Typography.bodyLarge
-            )
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .clickableWithoutRipple { },
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_my_video),
+                    contentDescription = null,
+                    tint = Color.Gray
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                StyledText(
+                    text = stringResource(R.string.my_video),
+                    style = Typography.bodyLarge
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .padding(start = 4.dp)
+                    .clickableWithoutRipple { },
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    painter = painterResource(id = ic_heart),
+                    contentDescription = null,
+                    tint = Color.Gray
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                StyledText(
+                    text = stringResource(R.string.my_scored_video),
+                    style = Typography.bodyLarge
+                )
+            }
         }
     }
 }

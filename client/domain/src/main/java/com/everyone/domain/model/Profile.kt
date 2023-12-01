@@ -7,5 +7,6 @@ import kotlinx.android.parcel.Parcelize
 data class Profile(
     val uuid: String?,
     val nickname: String?,
-    val statusMessage: String?
+    val statusMessage: String?,
+    val profileImageUrl: String?
 ) : BaseModel
