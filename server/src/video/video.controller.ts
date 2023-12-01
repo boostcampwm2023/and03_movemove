@@ -12,6 +12,7 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiOkResponse,
   ApiProduces,
@@ -37,7 +38,6 @@ import { BadRequestFormatException } from 'src/exceptions/bad-request-format.exc
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
-import { FileExtensionPipe } from './video.pipe';
 import { RandomVideoQueryDto } from './dto/random-video-query.dto';
 import { VideoSummaryResponseDto } from './dto/video-summary-response.dto';
 import { VideoInfoDto } from './dto/video-info.dto';
@@ -55,7 +55,6 @@ export class VideoController {
   constructor(
     private videoService: VideoService,
     private actionService: ActionService,
-    private fileExtensionPipe: FileExtensionPipe,
   ) {}
 
   /**
@@ -83,8 +82,8 @@ export class VideoController {
   @ApiSuccessResponse(201, '비디오 업로드 성공', VideoSummaryResponseDto)
   @ApiFailResponse('중복된 비디오 ID', [VideoConflictException])
   @ApiFailResponse('잘못된 비디오 ID', [BadRequestFormatException])
-  @ApiFailResponse('비디오가 업로드 되지 않음', [VideoUploadRequiredException])
-  @ApiFailResponse('썸네일이 업로드 되지 않음', [
+  @ApiFailResponse('업로드가 필요함', [
+    VideoUploadRequiredException,
     ThumbnailUploadRequiredException,
   ])
   uploadVideo(
