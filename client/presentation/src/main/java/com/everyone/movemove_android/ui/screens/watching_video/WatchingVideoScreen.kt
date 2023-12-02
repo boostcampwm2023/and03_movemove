@@ -29,6 +29,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -82,7 +83,7 @@ fun WatchingVideoScreen(
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     viewModel: WatchingVideoViewModel = hiltViewModel(),
 ) {
-    var initialPage = 0
+    var initialPage by remember { mutableIntStateOf(0) }
 
     val (state, event, effect) = use(viewModel)
 
