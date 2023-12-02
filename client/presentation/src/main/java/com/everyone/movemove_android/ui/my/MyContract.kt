@@ -11,5 +11,7 @@ interface MyContract : BaseContract<MyContract.State, MyContract.Event, MyContra
 
     sealed interface Event {}
 
-    sealed interface Effect {}
+    sealed interface Effect {
+        data object CloseMyScreen : Effect
+    }
 }

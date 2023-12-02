@@ -2,10 +2,12 @@ package com.everyone.movemove_android.ui.my
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.everyone.domain.model.Profile
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetProfileUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.ui.my.MyContract.Effect
+import com.everyone.movemove_android.ui.my.MyContract.Effect.CloseMyScreen
 import com.everyone.movemove_android.ui.my.MyContract.Event
 import com.everyone.movemove_android.ui.my.MyContract.State
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,6 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
 
@@ -37,11 +40,16 @@ class MyViewModel @Inject constructor(
 
     init {
         getProfile()
+        if (state.value.profile.nickname == null) {
+            viewModelScope.launch {
+                _effect.emit(CloseMyScreen)
+            }
+        }
     }
 
     private fun getProfile() {
         loading(isLoading = true)
-        getProfileUseCase("550e8400-e29b-41d4-a716-446655447000").onEach { result ->
+        getProfileUseCase("550e8400-e13b-45d5-a826-446655440011").onEach { result ->
             when (result) {
                 is DataState.Success -> {
                     _state.update {
