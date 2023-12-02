@@ -17,8 +17,6 @@ interface StartingContract : BaseContract<StartingContract.State, StartingContra
     }
 
     sealed interface Effect {
-        data object AutoLogin : Effect
-
         data object LaunchKakaoLogin : Effect
 
         data object LaunchGoogleLogin : Effect

@@ -48,11 +48,9 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.everyone.movemove_android.BuildConfig
 import com.everyone.movemove_android.R
-import com.everyone.movemove_android.R.drawable
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.starting.LoginActivity.Companion.SIGN_IN_REQUEST_CODE
-import com.everyone.movemove_android.ui.starting.StartingContract.Effect.AutoLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchGoogleLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchKakaoLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnClickKakaoLogin
@@ -124,10 +122,6 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
     LaunchedEffect(effect) {
         effect.collectLatest { effect ->
             when (effect) {
-                is AutoLogin -> {
-
-                }
-
                 is LaunchKakaoLogin -> {
                     if (kakaoSignInClient.isKakaoTalkLoginAvailable(context)) {
                         kakaoSignInClient.loginWithKakaoTalk(context) { token, error ->
@@ -263,7 +257,7 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                                     modifier = Modifier
                                         .align(alignment = Alignment.CenterStart)
                                         .size(24.dp),
-                                    painter = painterResource(id = drawable.ic_kakao),
+                                    painter = painterResource(id = R.drawable.ic_kakao),
                                     contentDescription = null,
                                 )
                                 StyledText(
@@ -290,7 +284,7 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                                     modifier = Modifier
                                         .align(alignment = Alignment.CenterStart)
                                         .size(24.dp),
-                                    painter = painterResource(id = drawable.ic_google),
+                                    painter = painterResource(id = R.drawable.ic_google),
                                     contentDescription = null,
                                 )
                                 StyledText(
