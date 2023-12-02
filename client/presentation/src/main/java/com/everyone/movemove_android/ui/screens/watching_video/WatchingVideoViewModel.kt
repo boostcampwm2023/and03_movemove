@@ -93,6 +93,7 @@ class WatchingVideoViewModel @Inject constructor(
                                 it.copy(
                                     videos = result.data.videos,
                                     seed = result.data.seed.toString(),
+                                    isLoading = false
                                 )
                             }
 
@@ -104,8 +105,6 @@ class WatchingVideoViewModel @Inject constructor(
                     }
                 }
             }.launchIn(viewModelScope)
-            loading(isLoading = false)
-
         }
     }
 
