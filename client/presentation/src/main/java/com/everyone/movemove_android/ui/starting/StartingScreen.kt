@@ -6,6 +6,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -27,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -49,9 +52,11 @@ import com.everyone.movemove_android.R.drawable
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.starting.LoginActivity.Companion.SIGN_IN_REQUEST_CODE
+import com.everyone.movemove_android.ui.starting.StartingContract.Effect.AutoLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchGoogleLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchKakaoLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnClickKakaoLogin
+import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnStarted
 import com.everyone.movemove_android.ui.theme.GoogleGray
 import com.everyone.movemove_android.ui.theme.KakaoYellow
 import com.everyone.movemove_android.ui.theme.StartingDim
@@ -64,9 +69,12 @@ import com.google.android.gms.tasks.Task
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 
 private const val STARTING_VIDEO_NAME = "starting_video"
+private const val STARTING_DELAY = 1000L
+private const val BUTTON_ANIMATION_DURATION = 1000
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
@@ -116,6 +124,10 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
     LaunchedEffect(effect) {
         effect.collectLatest { effect ->
             when (effect) {
+                is AutoLogin -> {
+
+                }
+
                 is LaunchKakaoLogin -> {
                     if (kakaoSignInClient.isKakaoTalkLoginAvailable(context)) {
                         kakaoSignInClient.loginWithKakaoTalk(context) { token, error ->
@@ -152,6 +164,11 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                 }
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        delay(STARTING_DELAY)
+        event(OnStarted)
     }
 
     with(state) {
@@ -216,12 +233,19 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                     )
                 }
 
+                val loginButtonAlphaState = animateFloatAsState(
+                    targetValue = if (isSignUpNeeded) 1f else 0f,
+                    animationSpec = tween(durationMillis = BUTTON_ANIMATION_DURATION),
+                    label = ""
+                )
+
                 if (isSignUpNeeded) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .align(Alignment.BottomCenter)
                             .padding(16.dp)
+                            .alpha(loginButtonAlphaState.value)
                     ) {
                         Button(
                             modifier = Modifier
