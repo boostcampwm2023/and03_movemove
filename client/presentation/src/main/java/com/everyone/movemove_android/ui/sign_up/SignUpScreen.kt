@@ -27,13 +27,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.everyone.movemove_android.R.drawable.img_basic_profile
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.everyone.movemove_android.R.drawable.ic_left_arrow
 import com.everyone.movemove_android.R.drawable.ic_profile_add
+import com.everyone.movemove_android.R.drawable.img_basic_profile
 import com.everyone.movemove_android.R.string.complete
 import com.everyone.movemove_android.R.string.nickname
 import com.everyone.movemove_android.R.string.one_line_introduce
 import com.everyone.movemove_android.R.string.sign_up
+import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.StyledText
@@ -41,8 +43,10 @@ import com.everyone.movemove_android.ui.theme.ProfileAddGray
 import com.everyone.movemove_android.ui.theme.Typography
 
 @Composable
-fun SignUpScreen() {
+fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
     val context = LocalContext.current
+
+    val (state, event, effect) = use(viewModel = viewModel)
 
     val launch = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
         //imageUri = uri
@@ -143,7 +147,7 @@ fun SignUpScreen() {
                         .fillMaxWidth()
                         .height(40.dp),
                     value = "",
-                    onValueChange = { }
+                    onValueChange = {  }
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -155,7 +159,6 @@ fun SignUpScreen() {
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                //TODO 글이 안써짐
                 MoveMoveTextField(
                     modifier = Modifier
                         .padding(top = 12.dp)
@@ -175,11 +178,9 @@ fun SignUpScreen() {
                 .padding(horizontal = 20.dp)
                 .align(Alignment.CenterHorizontally),
             buttonText = stringResource(id = complete),
-            isEnabled = true,
+            isEnabled = state.isSignUpEnabled,
         ) {
 
         }
     }
-
-
 }

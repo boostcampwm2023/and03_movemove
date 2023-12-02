@@ -6,17 +6,21 @@ import com.everyone.movemove_android.base.BaseContract
 interface SignUpContract : BaseContract<SignUpContract.State, SignUpContract.Event, SignUpContract.Effect> {
 
     data class State(
-        val isPossibleSignUp: Boolean = false,
-        val profileImageUri: Uri? = null
+        val isSignUpEnabled: Boolean = false,
+        val profileImageUri: Uri? = null,
+        val nickname: String = "",
+        val introduce: String = "",
     )
 
     sealed interface Event {
         data object OnClickSignUp : Event
-        data class OnNicknameTyped(val title: String) : Event
-        data class OnIntroduceTyped(val title: String) : Event
+
+        data class OnNicknameTyped(val nickname: String) : Event
+
+        data class OnIntroduceTyped(val introduce: String) : Event
     }
 
     sealed interface Effect {
-        data object LaunchHomeScreen : Effect
+        data object GoToHomeScreen : Effect
     }
 }
