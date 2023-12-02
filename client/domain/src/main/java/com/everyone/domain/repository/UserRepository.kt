@@ -15,4 +15,8 @@ interface UserRepository {
     ): Flow<DataState<UserInfo>>
 
     fun getUserProfile(userId: String): Flow<DataState<Profile>>
+
+    fun getUserId(): Flow<String?>
+
+    fun getSignedPlatform(): Flow<String?>
 }

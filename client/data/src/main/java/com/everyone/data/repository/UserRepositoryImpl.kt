@@ -1,5 +1,6 @@
 package com.everyone.data.repository
 
+import com.everyone.data.local.UserInfoManager
 import com.everyone.data.remote.NetworkHandler
 import com.everyone.data.remote.RemoteConstants.AUTH
 import com.everyone.data.remote.RemoteConstants.PROFILE
@@ -19,40 +20,43 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
-class UserRepositoryImpl @Inject constructor(private val networkHandler: NetworkHandler) : UserRepository {
+class UserRepositoryImpl @Inject constructor(
+    private val networkHandler: NetworkHandler,
+    private val userInfoManager: UserInfoManager
+) : UserRepository {
     override fun postSignUp(
         profileImage: String,
         accessToken: String,
         uuid: String,
         nickname: String,
         statusMessage: String
-    ): Flow<DataState<UserInfo>> {
-        return flow {
-            networkHandler.request<UserInfoResponse>(
-                method = HttpMethod.Post,
-                url = { path(AUTH, SIGN_UP) }
-            ).collect { response ->
-                response.data?.let {
-                    emit(DataState.Success(it.toDomainModel()))
-                } ?: run {
-                    emit(response.toFailure())
-                }
+    ): Flow<DataState<UserInfo>> = flow {
+        networkHandler.request<UserInfoResponse>(
+            method = HttpMethod.Post,
+            url = { path(AUTH, SIGN_UP) }
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
             }
         }
     }
 
-    override fun getUserProfile(userId: String): Flow<DataState<Profile>> {
-        return flow {
-            networkHandler.request<ProfileResponse>(
-                method = HttpMethod.Get,
-                url = { path(USERS, userId, PROFILE) }
-            ).collect { response ->
-                response.data?.let {
-                    emit(DataState.Success(it.toDomainModel()))
-                } ?: run {
-                    emit(response.toFailure())
-                }
+    override fun getUserProfile(userId: String): Flow<DataState<Profile>> = flow {
+        networkHandler.request<ProfileResponse>(
+            method = HttpMethod.Get,
+            url = { path(USERS, userId, PROFILE) }
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
             }
         }
     }
+
+    override fun getUserId(): Flow<String?> = userInfoManager.load(UserInfoManager.KEY_USER_ID)
+
+    override fun getSignedPlatform(): Flow<String?> = userInfoManager.load(UserInfoManager.KEY_SIGNED_PLATFORM)
 }

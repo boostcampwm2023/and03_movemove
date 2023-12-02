@@ -9,13 +9,18 @@ interface StartingContract : BaseContract<StartingContract.State, StartingContra
     )
 
     sealed interface Event {
-        data object OnClickKakaoLogin : Event
-        data object OnClickGoogleLogin : Event
+        data object OnStarted : Event
 
+        data object OnClickKakaoLogin : Event
+
+        data object OnClickGoogleLogin : Event
     }
 
     sealed interface Effect {
+        data object AutoLogin : Effect
+
         data object LaunchKakaoLogin : Effect
+
         data object LaunchGoogleLogin : Effect
     }
 }
