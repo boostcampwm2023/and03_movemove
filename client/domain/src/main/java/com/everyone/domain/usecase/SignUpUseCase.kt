@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class SignUpUseCase @Inject constructor(private val userRepository: UserRepository) {
-    suspend operator fun invoke(
+    operator fun invoke(
         profileImage: String,
         accessToken: String,
         uuid: String,

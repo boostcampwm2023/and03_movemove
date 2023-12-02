@@ -15,6 +15,9 @@ object RemoteConstants {
     const val PRESIGNED_URL = "presigned-url"
     const val AUTH = "auth"
     const val REFRESH = "refresh"
+    const val SIGN_UP = "signup"
+    const val USERS = "users"
+    const val PROFILE = "profile"
 
     // BODY
     const val VIDEO_EXTENSION = "videoExtension"
