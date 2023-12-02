@@ -1,8 +1,6 @@
 package com.everyone.movemove_android.ui.sign_up
 
 import android.app.Activity.RESULT_OK
-import android.net.Uri
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -28,11 +27,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.everyone.movemove_android.R.drawable.ic_left_arrow
 import com.everyone.movemove_android.R.drawable.ic_profile_add
@@ -46,23 +47,25 @@ import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperActivity
-import com.everyone.movemove_android.ui.image_cropper.ImageCropperActivity.Companion.KEY_IMAGE_URI
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperActivity.Companion.KEY_CROPPED_IMAGE_URI
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.GoToHomeScreen
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.LaunchImageCropper
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.LaunchImagePicker
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnClickSelectImage
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnGetCroppedImage
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnIntroduceTyped
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnNicknameTyped
 import com.everyone.movemove_android.ui.theme.ProfileAddGray
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
+import com.everyone.movemove_android.ui.util.toImageBitmap
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
     val context = LocalContext.current
-    val (state, event, effect) = use(viewModel = viewModel)
+    val (state, event, effect) = use(viewModel)
     val imageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
@@ -73,12 +76,10 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
     )
     val imageCropperLauncher = rememberLauncherForActivityResult(
         contract = StartActivityForResult(),
-        onResult = { activityResult ->
-            if (activityResult.resultCode == RESULT_OK) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    activityResult.data?.getParcelableExtra(KEY_IMAGE_URI, Uri::class.java)
-                } else {
-                    activityResult.data?.getParcelableExtra(KEY_IMAGE_URI)
+        onResult = { result ->
+            if (result.resultCode == RESULT_OK) {
+                result.data?.getStringExtra(KEY_CROPPED_IMAGE_URI)?.toUri()?.let { uri ->
+                    event(OnGetCroppedImage(uri.toImageBitmap(context.contentResolver)))
                 }
             }
         }
@@ -152,15 +153,24 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
             Box(
                 modifier = Modifier
                     .align(alignment = Alignment.CenterHorizontally)
-                    .width(96.dp)
-                    .height(98.dp)
+                    .size(96.dp)
                     .clickableWithoutRipple { event(OnClickSelectImage) }
             ) {
-                Image(
-                    modifier = Modifier.fillMaxSize(),
-                    painter = painterResource(id = img_basic_profile),
-                    contentDescription = null
-                )
+                state.profileImage?.let { imageBitmap ->
+                    Image(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .fillMaxSize(),
+                        bitmap = imageBitmap,
+                        contentDescription = null
+                    )
+                } ?: run {
+                    Image(
+                        modifier = Modifier.fillMaxSize(),
+                        painter = painterResource(id = img_basic_profile),
+                        contentDescription = null
+                    )
+                }
 
                 IconButton(
                     modifier = Modifier

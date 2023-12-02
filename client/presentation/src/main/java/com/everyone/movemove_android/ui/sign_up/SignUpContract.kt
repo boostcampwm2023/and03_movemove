@@ -1,12 +1,13 @@
 package com.everyone.movemove_android.ui.sign_up
 
 import android.net.Uri
+import androidx.compose.ui.graphics.ImageBitmap
 import com.everyone.movemove_android.base.BaseContract
 
 interface SignUpContract : BaseContract<SignUpContract.State, SignUpContract.Event, SignUpContract.Effect> {
     data class State(
         val isSignUpEnabled: Boolean = false,
-        val profileImageUri: Uri? = null,
+        val profileImage: ImageBitmap? = null,
         val nickname: String = "",
         val introduce: String = "",
     )
@@ -19,6 +20,8 @@ interface SignUpContract : BaseContract<SignUpContract.State, SignUpContract.Eve
         data object OnClickSelectImage : Event
 
         data class OnGetUri(val uri: Uri) : Event
+
+        data class OnGetCroppedImage(val imageBitmap: ImageBitmap) : Event
 
         data object OnClickSignUp : Event
     }

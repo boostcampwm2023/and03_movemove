@@ -16,6 +16,7 @@ class ImageCropperActivity : BaseActivity() {
 
     companion object {
         const val KEY_IMAGE_URI = "key_image_uri"
+        const val KEY_CROPPED_IMAGE_URI = "key_cropped_image"
 
         fun newIntent(
             context: Context,
