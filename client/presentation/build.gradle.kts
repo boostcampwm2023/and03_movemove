@@ -82,6 +82,9 @@ dependencies {
     // splash screen
     implementation(libs.splash)
 
+    // datastore
+    implementation(libs.bundles.datastore)
+
     // test
     testImplementation(libs.junit)
     androidTestImplementation(libs.junit.ext)

@@ -13,8 +13,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-@InstallIn(SingletonComponent::class)
 @Module
+@InstallIn(SingletonComponent::class)
 object RepositoryModule {
     @Provides
     @Singleton
@@ -30,7 +30,7 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideStartingRepository(networkHandler: NetworkHandler): UserRepository {
+    fun provideUserRepository(networkHandler: NetworkHandler): UserRepository {
         return UserRepositoryImpl(networkHandler)
     }
 }

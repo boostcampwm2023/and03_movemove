@@ -21,7 +21,7 @@ junit-ext = "1.1.5"
 junit-espresso = "3.5.1"
 
 ## android-library
-data-store = "1.0.0"
+datastore = "1.0.0"
 retrofit = "2.9.0"
 okHttp = "5.0.0-alpha.2"
 coil = "2.5.0"
@@ -67,8 +67,8 @@ junit-espresso = { group = "androidx.test.espresso", name = "espresso-core", ver
 compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-manifest", version.ref = "compose-ui" }
 
 # android-library
-datastore = { group = "androidx.datstore", name = "data-store-preferences", version.ref = "data-store" }
-datastore-core = { group = "androidx.datstore", name = "data-store-preferences-core", version.ref = "data-store" }
+datastore = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+datastore-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" }
 hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version = "1.0.0-alpha18" }
@@ -108,6 +108,7 @@ common = ["hilt"]
 media3 = ["media3-common", "media3-exoplayer", "media3-ui", "media3-exoplayer-hls"]
 google = ["google-services", "firebase-auth", "firebase-bom", "google-auth"]
 ktor = ["ktor-client-core", "ktor-client-cio", "ktor-negotiation", "ktor-gson", "ktor-logging"]
+datastore = ["datastore", "datastore-core"]
 
 
 [plugins]

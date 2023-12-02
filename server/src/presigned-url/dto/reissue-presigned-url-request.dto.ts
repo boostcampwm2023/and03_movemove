@@ -1,4 +1,4 @@
-import { IsEnum } from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'class-validator';
 
 enum TypeEnum {
   thumbnail = 'thumbnail',
@@ -17,5 +17,6 @@ export class ReissuePresignedUrlRequestDto {
    * 이미지 확장자
    * @example 'webp'
    */
+  @IsNotEmpty()
   extension: string;
 }

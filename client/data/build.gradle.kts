@@ -42,4 +42,7 @@ dependencies {
 
     // ktor
     implementation(libs.bundles.ktor)
+
+    // datastore
+    implementation(libs.bundles.datastore)
 }

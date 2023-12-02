@@ -1,4 +1,4 @@
-import { IsInt, IsPositive } from 'class-validator';
+import { IsInt, IsPositive, IsOptional, IsNotEmpty } from 'class-validator';
 
 export class UserRatedVideoQueryDto {
   /**
@@ -11,5 +11,7 @@ export class UserRatedVideoQueryDto {
   /**
    * 마지막으로 조회한 비디오의 ratedAt
    */
+  @IsOptional()
+  @IsNotEmpty()
   lastRatedAt?: string;
 }

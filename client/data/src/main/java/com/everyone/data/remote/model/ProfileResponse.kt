@@ -10,14 +10,16 @@ import kotlinx.android.parcel.Parcelize
 data class ProfileResponse(
     val uuid: String?,
     val nickname: String?,
-    val statusMessage: String?
+    val statusMessage: String?,
+    val profileImageUrl: String?
 ) : BaseResponse {
     companion object : Mapper<ProfileResponse, Profile> {
         override fun ProfileResponse.toDomainModel(): Profile {
             return Profile(
                 uuid = uuid,
                 nickname = nickname,
-                statusMessage = statusMessage
+                statusMessage = statusMessage,
+                profileImageUrl = profileImageUrl
             )
         }
     }

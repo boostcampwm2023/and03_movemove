@@ -5,6 +5,8 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
+import { RequestUser, User } from 'src/decorators/request-user';
+import { ObjectNotFoundException } from 'src/exceptions/object-not-found.exception';
 import { PresignedUrlService } from './presigned-url.service';
 import { AdvertisementPresignedUrlRequestDto } from './dto/advertisement-presigned-url-request.dto';
 import { ProfilePresignedUrlRequestDto } from './dto/profile-presigned-url-request.dto';
@@ -31,6 +33,7 @@ export class PresignedUrlController {
     '광고 이미지 가져오는 url 발급 성공',
     AdvertisementPresignedUrlResponseDto,
   )
+  @ApiFailResponse('url 발급 실패', [ObjectNotFoundException])
   getAdvertisementPresignedUrl(
     @Query() query: AdvertisementPresignedUrlRequestDto,
   ) {
@@ -38,7 +41,7 @@ export class PresignedUrlController {
   }
 
   /**
-   * 프로필 이미지를 PUT하는 url 발급
+   * 프로필 이미지 변경 시 이미지를 PUT하는 url 발급
    */
   @Get('profile')
   @ApiSuccessResponse(
@@ -46,8 +49,14 @@ export class PresignedUrlController {
     '프로필 이미지를 업로드하는 url 발급 성공',
     PresignedUrlResponseDto,
   )
-  putProfilePresignedUrl(@Query() query: ProfilePresignedUrlRequestDto) {
-    return this.presignedUrlService.putProfilePresignedUrl(query);
+  putProfilePresignedUrl(
+    @Query() query: ProfilePresignedUrlRequestDto,
+    @RequestUser() user: User,
+  ) {
+    return this.presignedUrlService.putProfilePresignedUrl(
+      user.id,
+      query.profileExtension,
+    );
   }
 
   /**
@@ -72,6 +81,7 @@ export class PresignedUrlController {
     description: '썸네일 재발급 시 비디오ID, 프로필 재발급 시 유저 UUID',
   })
   @ApiSuccessResponse(200, 'presigned url 재발급 성공', PresignedUrlResponseDto)
+  @ApiFailResponse('url 발급 실패', [ObjectNotFoundException])
   getImagePresignedUrl(
     @Param('id') id: string,
     @Query() query: ReissuePresignedUrlRequestDto,

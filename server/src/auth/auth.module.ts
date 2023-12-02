@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/user/schemas/user.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
+import { PresignedUrlService } from 'src/presigned-url/presigned-url.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
@@ -17,6 +18,6 @@ import { AuthService } from './auth.service';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, PresignedUrlService],
 })
 export class AuthModule {}
