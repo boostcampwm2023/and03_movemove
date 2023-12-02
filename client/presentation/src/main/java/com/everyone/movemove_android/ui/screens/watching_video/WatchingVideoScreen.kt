@@ -54,11 +54,9 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.hls.HlsMediaSource
-import androidx.media3.extractor.TrueHdSampleRechunker
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
-import com.everyone.domain.model.Uploader
 import com.everyone.domain.model.Video
 import com.everyone.domain.model.Videos
 import com.everyone.movemove_android.R
@@ -99,12 +97,9 @@ fun WatchingVideoScreen(
         }
     }
 
-
     if (state.isLoading) {
         LoadingDialog()
     } else {
-
-
         state.videos?.let { videosItem ->
             val videoUri = videosItem.map { Uri.parse(it.video!!.manifest) }
             val pagerState = rememberPagerState(pageCount = { videoUri.size })
@@ -130,10 +125,6 @@ fun WatchingVideoScreen(
                     state = pagerState
                 ) { page ->
 
-                    LaunchedEffect(pagerState.currentPage == pagerState.pageCount) {
-                        event(GetRandomVideos)
-                    }
-
                     val exoPlayer = when (page % 3) {
                         0 -> exoPlayerPair.first
                         1 -> exoPlayerPair.second
@@ -147,16 +138,12 @@ fun WatchingVideoScreen(
                         )
                         Column(modifier = Modifier.align(Alignment.BottomStart)) {
                             videosItem[page].video?.let { video ->
-                                event(PutVideosViews(video.id!!))
                                 MoveMoveScoreboard(
                                     video = video,
                                     event = event
                                 )
                             }
-
                             MoveMoveFooter(videos = videosItem[page])
-
-
                             Divider()
                         }
                     }
@@ -180,6 +167,10 @@ fun WatchingVideoScreen(
                             exoPlayerPair.third.play()
                         }
                     }
+                }
+
+                videosItem[pagerState.settledPage].video?.let { video ->
+                    event(PutVideosViews(video.id!!))
                 }
 
                 if (state.isClickedCategory) {
@@ -332,7 +323,6 @@ fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
             .clip(shape = RoundedCornerShape(12.dp))
             .background(color = Color.Black.copy(alpha = 0.3f))
 
-
     ) {
         Column(
             modifier = Modifier
@@ -343,7 +333,6 @@ fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
                 ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             StyledText(
                 text = stringResource(R.string.scoreboard_title),
                 color = Color.White,
