@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.screens.signup
+package com.everyone.movemove_android.ui.sign_up
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult

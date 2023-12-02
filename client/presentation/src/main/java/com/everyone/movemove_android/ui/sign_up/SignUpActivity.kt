@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.screens.signup
+package com.everyone.movemove_android.ui.sign_up
 
 import androidx.compose.runtime.Composable
 import com.everyone.movemove_android.base.BaseActivity

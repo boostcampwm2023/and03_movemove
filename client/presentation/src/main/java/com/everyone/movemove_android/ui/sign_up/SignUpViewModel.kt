@@ -1,11 +1,11 @@
-package com.everyone.movemove_android.ui.screens.signup
+package com.everyone.movemove_android.ui.sign_up
 
 import androidx.lifecycle.ViewModel
-import com.everyone.movemove_android.ui.screens.signup.SignUpContract.Effect
-import com.everyone.movemove_android.ui.screens.signup.SignUpContract.Event.OnClickSignUp
-import com.everyone.movemove_android.ui.screens.signup.SignUpContract.Event.OnIntroduceTyped
-import com.everyone.movemove_android.ui.screens.signup.SignUpContract.Event.OnNicknameTyped
-import com.everyone.movemove_android.ui.screens.signup.SignUpContract.State
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnClickSignUp
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnIntroduceTyped
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnNicknameTyped
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.State
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
