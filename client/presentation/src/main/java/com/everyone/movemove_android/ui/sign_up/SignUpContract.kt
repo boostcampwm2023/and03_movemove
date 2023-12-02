@@ -4,7 +4,6 @@ import android.net.Uri
 import com.everyone.movemove_android.base.BaseContract
 
 interface SignUpContract : BaseContract<SignUpContract.State, SignUpContract.Event, SignUpContract.Effect> {
-
     data class State(
         val isSignUpEnabled: Boolean = false,
         val profileImageUri: Uri? = null,
@@ -13,14 +12,22 @@ interface SignUpContract : BaseContract<SignUpContract.State, SignUpContract.Eve
     )
 
     sealed interface Event {
-        data object OnClickSignUp : Event
-
         data class OnNicknameTyped(val nickname: String) : Event
 
         data class OnIntroduceTyped(val introduce: String) : Event
+
+        data object OnClickSelectImage : Event
+
+        data class OnGetUri(val uri: Uri) : Event
+
+        data object OnClickSignUp : Event
     }
 
     sealed interface Effect {
+        data object LaunchImagePicker : Effect
+
+        data class LaunchImageCropper(val uri: Uri) : Effect
+
         data object GoToHomeScreen : Effect
     }
 }

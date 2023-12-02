@@ -1,8 +1,13 @@
 package com.everyone.movemove_android.ui.sign_up
 
+import android.app.Activity.RESULT_OK
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +25,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,17 +45,66 @@ import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperActivity
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperActivity.Companion.KEY_IMAGE_URI
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.GoToHomeScreen
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.LaunchImageCropper
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.LaunchImagePicker
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnClickSelectImage
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnGetUri
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnIntroduceTyped
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnNicknameTyped
 import com.everyone.movemove_android.ui.theme.ProfileAddGray
 import com.everyone.movemove_android.ui.theme.Typography
+import com.everyone.movemove_android.ui.util.clickableWithoutRipple
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
     val context = LocalContext.current
-
     val (state, event, effect) = use(viewModel = viewModel)
+    val imageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            uri?.let {
+                event(OnGetUri(it))
+            }
+        }
+    )
+    val imageCropperLauncher = rememberLauncherForActivityResult(
+        contract = StartActivityForResult(),
+        onResult = { activityResult ->
+            if (activityResult.resultCode == RESULT_OK) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    activityResult.data?.getParcelableExtra(KEY_IMAGE_URI, Uri::class.java)
+                } else {
+                    activityResult.data?.getParcelableExtra(KEY_IMAGE_URI)
+                }
+            }
+        }
+    )
 
-    val launch = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
-        //imageUri = uri
+    LaunchedEffect(effect) {
+        effect.collectLatest { effect ->
+            when (effect) {
+                is LaunchImagePicker -> {
+                    imageLauncher.launch(PickVisualMediaRequest(ImageOnly))
+                }
+
+                is LaunchImageCropper -> {
+                    imageCropperLauncher.launch(
+                        ImageCropperActivity.newIntent(
+                            context = context,
+                            uri = effect.uri
+                        )
+                    )
+                }
+
+                is GoToHomeScreen -> {
+
+                }
+            }
+        }
     }
 
     Column(
@@ -99,6 +154,7 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
                     .align(alignment = Alignment.CenterHorizontally)
                     .width(96.dp)
                     .height(98.dp)
+                    .clickableWithoutRipple { event(OnClickSelectImage) }
             ) {
                 Image(
                     modifier = Modifier.fillMaxSize(),
@@ -146,8 +202,8 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
                         .padding(top = 12.dp)
                         .fillMaxWidth()
                         .height(40.dp),
-                    value = "",
-                    onValueChange = {  }
+                    value = state.nickname,
+                    onValueChange = { event(OnNicknameTyped(it)) }
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -164,14 +220,12 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
                         .padding(top = 12.dp)
                         .fillMaxWidth()
                         .height(40.dp),
-                    value = "",
-                    onValueChange = { }
+                    value = state.introduce,
+                    onValueChange = { event(OnIntroduceTyped(it)) }
                 )
             }
-
         }
 
-        //TODO 버튼 상태 로직 추가해야함
         RoundedCornerButton(
             modifier = Modifier
                 .padding(bottom = 32.dp)
@@ -179,8 +233,7 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
                 .align(Alignment.CenterHorizontally),
             buttonText = stringResource(id = complete),
             isEnabled = state.isSignUpEnabled,
-        ) {
-
-        }
+            onClick = {}
+        )
     }
 }
