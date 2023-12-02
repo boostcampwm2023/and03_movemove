@@ -40,7 +40,6 @@ class UserInfoManager @Inject constructor(@ApplicationContext private val contex
 
     companion object {
         private const val DATASTORE_NAME = "movemove_datastore"
-        const val KEY_ACCESS_TOKEN = "key_access_token"
         const val KEY_REFRESH_TOKEN = "key_refresh_token"
         const val KEY_USER_ID = "key_user_id"
     }

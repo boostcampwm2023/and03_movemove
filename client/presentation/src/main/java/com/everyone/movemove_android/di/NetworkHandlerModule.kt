@@ -1,5 +1,6 @@
 package com.everyone.movemove_android.di
 
+import com.everyone.data.local.UserInfoManager
 import com.everyone.data.remote.NetworkHandler
 import dagger.Module
 import dagger.Provides
@@ -13,5 +14,5 @@ object NetworkHandlerModule {
 
     @Provides
     @Singleton
-    fun provideNetworkHandler(): NetworkHandler = NetworkHandler()
+    fun provideNetworkHandler(userInfoManager: UserInfoManager): NetworkHandler = NetworkHandler(userInfoManager)
 }
