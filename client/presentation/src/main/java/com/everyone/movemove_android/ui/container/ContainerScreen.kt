@@ -78,10 +78,12 @@ fun MainScreen() {
         ) {
             navScreen(Destination.HOME.route) { HomeScreen(navigator = navigator) }
             navScreen(Destination.WATCHING_VIDEO.route) {
-                val videos = remember {
-                    navController.previousBackStackEntry?.savedStateHandle?.get<Videos>("videos")
+                val videosInfo = remember {
+                    val videosInfo = navController.previousBackStackEntry?.savedStateHandle?.get<Pair<List<Videos>, Int>>("videosInfo")
+                    navController.previousBackStackEntry?.savedStateHandle?.remove<Pair<List<Videos>, Int>>("videosInfo")
+                    videosInfo
                 }
-                WatchingVideoScreen(videos = videos)
+                WatchingVideoScreen(videosInfo = videosInfo)
             }
             navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
             navScreen(Destination.PROFILE.route) { ProfileScreen() }

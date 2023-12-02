@@ -259,7 +259,13 @@ fun MoveMoveVideos(
         ) {
             items(videos.size) {
                 MoveMoveVideo(
-                    navigator = navigator,
+                    modifier = Modifier.clickableWithoutRipple {
+                        navigator.navigateToArgument(
+                            key = "videosInfo",
+                            value =Pair(videos, it)
+                        )
+                        navigator.navigateTo(Destination.WATCHING_VIDEO)
+                    },
                     videos = videos[it],
                 )
             }
@@ -281,22 +287,15 @@ fun MoveMoveVideos(
 
 @Composable
 fun MoveMoveVideo(
-    navigator: Navigator,
+    modifier: Modifier,
     videos: Videos,
 ) {
     videos.video?.let { video ->
         Card(
-            modifier = Modifier
+            modifier = modifier
                 .width(150.dp)
                 .height(250.dp)
-                .padding(bottom = 8.dp)
-                .clickableWithoutRipple {
-                    navigator.navigateToArgument(
-                        key = "videos",
-                        value = videos
-                    )
-                    navigator.navigateTo(Destination.WATCHING_VIDEO)
-                },
+                .padding(bottom = 8.dp),
             shape = RoundedCornerShape(size = 8.dp),
         ) {
             AsyncImage(

@@ -31,12 +31,18 @@ interface VideosRepository {
     suspend fun getVideosRandom(
         limit: String,
         category: String,
+        seed: String
     ): Flow<DataState<VideosRandom>>
 
     suspend fun putVideosRating(
         id: String,
         rating: String,
         reason: String
+    ): Flow<DataState<Unit>>
+
+    fun putVideosViews(
+        videoId: String,
+        seed: String,
     ): Flow<DataState<Unit>>
 
     suspend fun getVideosTopRated(category: String): Flow<DataState<VideosTrend>>

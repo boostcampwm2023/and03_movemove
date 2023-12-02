@@ -8,6 +8,7 @@ import com.everyone.data.remote.RemoteConstants.PRESIGNED_URL
 import com.everyone.data.remote.RemoteConstants.RANDOM
 import com.everyone.data.remote.RemoteConstants.RATING
 import com.everyone.data.remote.RemoteConstants.REASON
+import com.everyone.data.remote.RemoteConstants.SEED
 import com.everyone.data.remote.RemoteConstants.THUMBNAIL_EXTENSION
 import com.everyone.data.remote.RemoteConstants.TITLE
 import com.everyone.data.remote.RemoteConstants.TOP_RATED
@@ -15,6 +16,7 @@ import com.everyone.data.remote.RemoteConstants.TREND
 import com.everyone.data.remote.RemoteConstants.VIDEO
 import com.everyone.data.remote.RemoteConstants.VIDEOS
 import com.everyone.data.remote.RemoteConstants.VIDEO_EXTENSION
+import com.everyone.data.remote.RemoteConstants.VIEWS
 import com.everyone.data.remote.model.CreatedVideoResponse
 import com.everyone.data.remote.model.CreatedVideoResponse.Companion.toDomainModel
 import com.everyone.data.remote.model.VideoUploadUrlResponse
@@ -103,11 +105,17 @@ class VideosRepositoryImpl @Inject constructor(
     override suspend fun getVideosRandom(
         limit: String,
         category: String,
+        seed: String
     ): Flow<DataState<VideosRandom>> {
         return flow {
             networkHandler.request<VideosRandomResponse>(
                 method = HttpMethod.Get,
-                url = { path(VIDEOS, RANDOM) }
+                url = {
+                    path(VIDEOS, RANDOM)
+                    parameters.append(LIMIT, limit)
+                    parameters.append(CATEGORY, category)
+                    parameters.append(SEED, seed)
+                }
             ).collect { response ->
                 response.data?.let {
                     emit(DataState.Success(it.toDomainModel()))
@@ -140,6 +148,21 @@ class VideosRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    override fun putVideosViews(videoId: String, seed: String): Flow<DataState<Unit>> =
+        flow {
+            networkHandler.request<Unit>(
+                method = HttpMethod.Put,
+                url = { path(VIDEOS, videoId, VIEWS) },
+                content = { append(SEED, seed) }
+            ).collect { response ->
+                response.data?.let {
+                    emit(DataState.Success(it))
+                } ?: run {
+                    emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
+                }
+            }
+        }
 
     override suspend fun getVideosTopRated(category: String): Flow<DataState<VideosTrend>> {
         return flow {

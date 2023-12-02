@@ -5,7 +5,6 @@ import android.net.Uri
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,14 +29,15 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnClickedCategory
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
@@ -57,10 +57,17 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import coil.compose.AsyncImage
+import com.everyone.domain.model.Video
 import com.everyone.domain.model.Videos
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
+import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.*
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.*
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.VideoTab.BOTTOM_TAB
+import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.VideoTab.CATEGORY_TAB
 import com.everyone.movemove_android.ui.screens.watching_video.category.CategoryScreen
 import com.everyone.movemove_android.ui.theme.FooterBottomBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterMiddleBackgroundInDark
@@ -72,130 +79,167 @@ import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WatchingVideoScreen(
-    videos: Videos?,
+    videosInfo: Pair<List<Videos>, Int>?,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     viewModel: WatchingVideoViewModel = hiltViewModel(),
 ) {
+    var initialPage by remember { mutableIntStateOf(0) }
 
     val (state, event, effect) = use(viewModel)
 
-    // TODO: 임시 url 수정 필요
-    val videoURL = listOf(
-        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/jdgdown_AVC_SD_1Pass_30fps_1.mp4/index.m3u8",
-        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/TikTok%20Video%201080x1920%20px,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8",
-        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/%EA%B8%B0%EC%84%B1%EC%9A%A9%EC%9D%B4%20%EB%B3%B4%EC%97%AC%EC%A3%BC%EC%97%88%EB%8D%98%20%EC%97%84%EC%B2%AD%EB%82%9C%20%EB%A1%B1%ED%82%A5%20%EB%8A%A5%EB%A0%A5%20%E3%84%B7%E3%84%B7%E3%84%B7,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8",
-        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/%EC%9D%B4%EA%B1%B0%20%EB%9A%AB%EC%9D%84%20%EC%88%98%20%EC%9E%88%EC%9D%84%EA%B9%8C%EC%9A%94_,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8",
-        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/%EC%BA%89%ED%85%8C...%20%EC%95%84%EB%8B%88%20%EC%A1%B0%EB%82%98%EB%8B%A8%EA%B3%BC%20%EC%B2%BC%EC%8B%9C%20%EA%B2%BD%EA%B8%B0%20%EC%A7%81%EA%B4%80,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8",
-        "https://d8mfnyqg1620.edge.naverncp.com/hls/fhnZKnJhDv726qSBreYITcVcI31NkgVYthgsQrtNurQ_/movemove/lplbisang,_AVC_HD_1Pass_30fps.mp4,_AVC_SD_1Pass_30fps_1.mp4,.smil/master.m3u8"
-    )
-    val videoUri = videoURL.map { Uri.parse(it) }
-    val pagerState = rememberPagerState(pageCount = { videoUri.size })
-    val context = LocalContext.current
-    val exoPlayerPair = remember {
-        Triple(
-            ExoPlayer.Builder(context).build(),
-            ExoPlayer.Builder(context).build(),
-            ExoPlayer.Builder(context).build()
-        )
-    }
-
-    Box {
-        VerticalPager(
-            modifier = Modifier.fillMaxSize(),
-            state = pagerState
-        ) { page ->
-
-            val exoPlayer = when (page % 3) {
-                0 -> exoPlayerPair.first
-                1 -> exoPlayerPair.second
-                else -> exoPlayerPair.third
-            }
-
-            Box(modifier = Modifier.fillMaxSize()) {
-                VideoPlayer(
-                    exoPlayer = exoPlayer,
-                    uri = videoUri[page]
-                )
-                Column(modifier = Modifier.align(Alignment.BottomStart)) {
-                    MoveMoveScoreboard()
-                    MoveMoveFooter()
-                    Divider()
-                }
-            }
-
-            when (pagerState.settledPage % 3) {
-                0 -> {
-                    exoPlayerPair.first.play()
-                    exoPlayerPair.second.pause()
-                    exoPlayerPair.third.pause()
-                }
-
-                1 -> {
-                    exoPlayerPair.first.pause()
-                    exoPlayerPair.second.play()
-                    exoPlayerPair.third.pause()
-                }
-
-                2 -> {
-                    exoPlayerPair.first.pause()
-                    exoPlayerPair.second.pause()
-                    exoPlayerPair.third.play()
-                }
-            }
-        }
-
-        if (state.isClickedCategory) {
-            CategoryScreen()
+    LaunchedEffect(videosInfo) {
+        if (videosInfo != null) {
+            event(SetVideos(videos = videosInfo.first))
+            initialPage = videosInfo.second
+            event(ChangedVideoTab(CATEGORY_TAB))
         } else {
-            MoveMoveCategory(
-                category = state.selectedCategory.displayName,
-                modifier = Modifier
-                    .padding(
-                        start = 21.dp,
-                        top = 21.dp
-                    )
-                    .align(Alignment.TopStart)
-                    .clickableWithoutRipple { event(OnClickedCategory) },
-            )
+            if (state.videoTab == CATEGORY_TAB) event(GetRandomVideos)
+            event(ChangedVideoTab(BOTTOM_TAB))
         }
     }
 
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                when (pagerState.settledPage % 3) {
-                    0 -> {
-                        exoPlayerPair.first.play()
-                        exoPlayerPair.second.pause()
-                        exoPlayerPair.third.pause()
+    if (state.isLoading) {
+        LoadingDialog()
+    } else {
+        state.videos?.let { videosItem ->
+            val videoUri = videosItem.map { Uri.parse(it.video!!.manifest) }
+            val pagerState = rememberPagerState(pageCount = { videoUri.size })
+
+            if (state.videoTab == CATEGORY_TAB) {
+                LaunchedEffect(initialPage) {
+                    pagerState.scrollToPage(initialPage)
+                }
+            }
+
+            val context = LocalContext.current
+            val exoPlayerPair = remember {
+                Triple(
+                    ExoPlayer.Builder(context).build(),
+                    ExoPlayer.Builder(context).build(),
+                    ExoPlayer.Builder(context).build()
+                )
+            }
+
+            Box {
+                VerticalPager(
+                    modifier = Modifier.fillMaxSize(),
+                    state = pagerState
+                ) { page ->
+
+                    val exoPlayer = when (page % 3) {
+                        0 -> exoPlayerPair.first
+                        1 -> exoPlayerPair.second
+                        else -> exoPlayerPair.third
                     }
 
-                    1 -> {
-                        exoPlayerPair.first.pause()
-                        exoPlayerPair.second.play()
-                        exoPlayerPair.third.pause()
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        VideoPlayer(
+                            exoPlayer = exoPlayer,
+                            uri = videoUri[page]
+                        )
+                        Column(modifier = Modifier.align(Alignment.BottomStart)) {
+                            videosItem[page].video?.let { video ->
+                                MoveMoveScoreboard(
+                                    video = video,
+                                    event = event
+                                )
+                            }
+                            MoveMoveFooter(videos = videosItem[page])
+                            Divider()
+                        }
                     }
 
-                    2 -> {
-                        exoPlayerPair.first.pause()
-                        exoPlayerPair.second.pause()
-                        exoPlayerPair.third.play()
+                    when (pagerState.settledPage % 3) {
+                        0 -> {
+                            exoPlayerPair.first.play()
+                            exoPlayerPair.second.pause()
+                            exoPlayerPair.third.pause()
+                        }
+
+                        1 -> {
+                            exoPlayerPair.first.pause()
+                            exoPlayerPair.second.play()
+                            exoPlayerPair.third.pause()
+                        }
+
+                        2 -> {
+                            exoPlayerPair.first.pause()
+                            exoPlayerPair.second.pause()
+                            exoPlayerPair.third.play()
+                        }
                     }
                 }
-            } else if (event == Lifecycle.Event.ON_STOP) {
-                exoPlayerPair.first.pause()
-                exoPlayerPair.second.pause()
-                exoPlayerPair.third.pause()
+
+                videosItem[pagerState.settledPage].video?.let { video ->
+                    event(PutVideosViews(video.id!!))
+                }
+
+                if (state.isClickedCategory) {
+                    CategoryScreen()
+                } else {
+                    if (videosInfo == null) {
+                        MoveMoveCategory(
+                            category = state.selectedCategory.displayName,
+                            modifier = Modifier
+                                .padding(
+                                    start = 21.dp,
+                                    top = 21.dp
+                                )
+                                .align(Alignment.TopStart)
+                                .clickableWithoutRipple { event(OnClickedCategory) },
+                        )
+                    }
+                }
             }
-        }
 
-        lifecycleOwner.lifecycle.addObserver(observer)
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_RESUME) {
+                        when (pagerState.settledPage % 3) {
+                            0 -> {
+                                exoPlayerPair.first.play()
+                                exoPlayerPair.second.pause()
+                                exoPlayerPair.third.pause()
+                            }
 
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-            exoPlayerPair.first.release()
-            exoPlayerPair.second.release()
-            exoPlayerPair.third.release()
+                            1 -> {
+                                exoPlayerPair.first.pause()
+                                exoPlayerPair.second.play()
+                                exoPlayerPair.third.pause()
+                            }
+
+                            2 -> {
+                                exoPlayerPair.first.pause()
+                                exoPlayerPair.second.pause()
+                                exoPlayerPair.third.play()
+                            }
+                        }
+                    } else if (event == Lifecycle.Event.ON_STOP) {
+                        exoPlayerPair.first.pause()
+                        exoPlayerPair.second.pause()
+                        exoPlayerPair.third.pause()
+                    }
+                }
+
+                lifecycleOwner.lifecycle.addObserver(observer)
+
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
+                    exoPlayerPair.first.release()
+                    exoPlayerPair.second.release()
+                    exoPlayerPair.third.release()
+                }
+            }
+        } ?: run {
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                StyledText(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = stringResource(R.string.empty_video_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
     }
 }
@@ -203,7 +247,10 @@ fun WatchingVideoScreen(
 @SuppressLint("OpaqueUnitKey")
 @Composable
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-fun VideoPlayer(exoPlayer: ExoPlayer, uri: Uri) {
+fun VideoPlayer(
+    exoPlayer: ExoPlayer,
+    uri: Uri,
+) {
     val context = LocalContext.current
 
     LaunchedEffect(uri) {
@@ -257,8 +304,10 @@ fun MoveMoveCategory(
 }
 
 @Composable
-fun MoveMoveScoreboard() {
-    var sliderPosition by remember { mutableFloatStateOf(0.5f) }
+fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
+
+    val rating = video.rating?.toFloat() ?: run { 0.4f }
+    var sliderPosition by remember { mutableFloatStateOf(rating) }
 
     Box(
         modifier = Modifier
@@ -270,7 +319,6 @@ fun MoveMoveScoreboard() {
             .clip(shape = RoundedCornerShape(12.dp))
             .background(color = Color.Black.copy(alpha = 0.3f))
 
-
     ) {
         Column(
             modifier = Modifier
@@ -281,7 +329,6 @@ fun MoveMoveScoreboard() {
                 ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             StyledText(
                 text = stringResource(R.string.scoreboard_title),
                 color = Color.White,
@@ -289,9 +336,18 @@ fun MoveMoveScoreboard() {
             )
 
             Slider(
-                steps = 10,
+                steps = 4,
                 value = sliderPosition,
-                onValueChange = { sliderPosition = it },
+                onValueChange = {
+                    sliderPosition = it
+                    event(
+                        OnClickedVideoRating(
+                            id = video.id.toString(),
+                            rating = (it * 5).toInt().toString(),
+                            reason = "테스트" // TODO 임시,,,
+                        )
+                    )
+                },
                 colors = SliderDefaults.colors(
                     thumbColor = Color.White,
                     inactiveTrackColor = Color.White
@@ -302,7 +358,7 @@ fun MoveMoveScoreboard() {
 }
 
 @Composable
-fun MoveMoveFooter() {
+fun MoveMoveFooter(videos: Videos) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -322,47 +378,52 @@ fun MoveMoveFooter() {
                 bottom = 18.dp
             ),
     ) {
-        MoveMoveFooterContents()
+        MoveMoveFooterContents(videos = videos)
     }
 }
 
 @Composable
-fun MoveMoveFooterContents() {
-    // TODO 임시 값, data class 정의시 수정할 것
+fun MoveMoveFooterContents(videos: Videos) {
     Column(
         verticalArrangement = Arrangement.Center
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            Box(
-                modifier = Modifier
-                    .height(24.dp)
-                    .width(24.dp),
-                contentAlignment = Alignment.Center
+
+        videos.uploader?.let { uploader ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_my),
-                    contentDescription = null,
+                Box(
+                    modifier = Modifier
+                        .height(24.dp)
+                        .width(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = uploader.profileImage,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                StyledText(
+                    text = uploader.nickname.toString(),
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
-            Spacer(modifier = Modifier.width(8.dp))
+        }
+
+        videos.video?.let { video ->
+            Spacer(modifier = Modifier.height(12.dp))
             StyledText(
-                text = "손흥민",
+                text = video.title.toString(),
                 style = MaterialTheme.typography.bodyMedium
             )
-
+            Spacer(modifier = Modifier.height(4.dp))
+            StyledText(
+                text = video.content.toString(),
+                style = MaterialTheme.typography.bodySmall
+            )
         }
-        Spacer(modifier = Modifier.height(12.dp))
-        StyledText(
-            text = "토트넘 만세",
-            style = MaterialTheme.typography.bodyMedium
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        StyledText(
-            text = "안녕하세요. 반갑습니다. 손흥민입니다. 토트넘만세",
-            style = MaterialTheme.typography.bodySmall
-        )
     }
 }

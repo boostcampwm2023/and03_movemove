@@ -71,6 +71,7 @@ datastore = { group = "androidx.datastore", name = "datastore-preferences", vers
 datastore-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" }
 hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+paging-compose = { group = "androidx.paging", name = "paging-compose", version = "1.0.0-alpha18" }
 
 # ksp
 ksp-hilt = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
@@ -102,7 +103,7 @@ splash = { group = "androidx.core", name = "core-splashscreen", version = "1.0.1
 
 [bundles]
 android = ["core-ktx", "lifecycle-runtime-ktx", "material", "lifecycle-extensions", "coil"]
-compose = ["activity-compose", "compose-lifecycle", "compose-ui", "compose-ui-graphics", "compose-ui-tooling-preview", "compose-material", "compose-material3", "compose-hilt-navigation", "compose-navigation"]
+compose = ["activity-compose", "compose-lifecycle", "compose-ui", "compose-ui-graphics", "compose-ui-tooling-preview", "compose-material", "compose-material3", "compose-hilt-navigation", "compose-navigation", "paging-compose"]
 common = ["hilt"]
 media3 = ["media3-common", "media3-exoplayer", "media3-ui", "media3-exoplayer-hls"]
 google = ["google-services", "firebase-auth", "firebase-bom", "google-auth"]
