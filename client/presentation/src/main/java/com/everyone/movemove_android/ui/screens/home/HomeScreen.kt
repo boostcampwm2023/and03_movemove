@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.everyone.domain.model.Ads
+import com.everyone.domain.model.Advertisements
 import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosTrend
 import com.everyone.movemove_android.R
@@ -70,7 +71,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            MultiServiceAds(ads = state.ads)
+            MultiServiceAds(advertisements = state.advertisements)
 
             Spacer(modifier = Modifier.height(44.dp))
             StyledText(
@@ -115,9 +116,9 @@ fun HomeScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MultiServiceAds(ads: Ads?) {
+fun MultiServiceAds(advertisements: Advertisements) {
 
-    ads?.adImages?.let { adImages ->
+    advertisements.advertisements?.let { advertisementsItem ->
         val autoPageChangeDelay = 3000L
 
         val pagerState = rememberPagerState(pageCount = { Int.MAX_VALUE })
@@ -125,7 +126,7 @@ fun MultiServiceAds(ads: Ads?) {
         LaunchedEffect(Unit) {
             var initialPage = Int.MAX_VALUE / 2
 
-            while (initialPage % adImages.size != 0) {
+            while (initialPage % advertisementsItem.size != 0) {
                 initialPage++
             }
             pagerState.scrollToPage(initialPage)
@@ -151,7 +152,7 @@ fun MultiServiceAds(ads: Ads?) {
             ) { index ->
                 MultiServiceAdsItem(
                     modifier = Modifier.clickableWithoutRipple {},
-                    serviceAds = adImages,
+                    serviceAds = advertisementsItem,
                     index = index
                 )
             }
@@ -159,7 +160,7 @@ fun MultiServiceAds(ads: Ads?) {
             MultiServiceAdsPageNumber(
                 modifier = Modifier.align(Alignment.BottomEnd),
                 currentPage = pagerState.currentPage,
-                serviceAds = adImages
+                serviceAds = advertisementsItem
             )
         }
     } ?: run {
@@ -180,13 +181,13 @@ fun MultiServiceAds(ads: Ads?) {
 @Composable
 fun MultiServiceAdsItem(
     modifier: Modifier,
-    serviceAds: List<String>,
+    serviceAds: List<Ads>,
     index: Int
 ) {
-    serviceAds.getOrNull(index % serviceAds.size)?.let { imageUrl ->
+    serviceAds.getOrNull(index % serviceAds.size)?.let { serviceAdsItem ->
         AsyncImage(
             modifier = modifier.fillMaxSize(),
-            model = imageUrl,
+            model = serviceAdsItem.url,
             contentDescription = null,
             contentScale = ContentScale.Crop,
         )
@@ -197,7 +198,7 @@ fun MultiServiceAdsItem(
 fun MultiServiceAdsPageNumber(
     modifier: Modifier,
     currentPage: Int,
-    serviceAds: List<String>,
+    serviceAds: List<Ads>,
 ) {
     Box(
         modifier = modifier
@@ -262,7 +263,7 @@ fun MoveMoveVideos(
                     modifier = Modifier.clickableWithoutRipple {
                         navigator.navigateToArgument(
                             key = "videosInfo",
-                            value =Pair(videos, it)
+                            value = Pair(videos, it)
                         )
                         navigator.navigateTo(Destination.WATCHING_VIDEO)
                     },

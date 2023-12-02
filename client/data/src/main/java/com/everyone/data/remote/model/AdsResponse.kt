@@ -7,12 +7,14 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class AdsResponse(
-    val adImages: List<String>?
+    val name: String?,
+    val url: String?
 ) : BaseResponse {
     companion object : Mapper<AdsResponse, Ads> {
         override fun AdsResponse.toDomainModel(): Ads {
             return Ads(
-                adImages = adImages
+                name = name,
+                url = url
             )
         }
     }
