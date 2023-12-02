@@ -10,10 +10,6 @@ object RemoteConstants {
     const val RATING = "rating"
     const val TREND = "trend"
     const val TOP_RATED = "top-rated"
-
-    // URL
-    const val VIDEO = "video"
-    const val PRESIGNED_URL = "presigned-url"
     const val AUTH = "auth"
     const val REFRESH = "refresh"
 
