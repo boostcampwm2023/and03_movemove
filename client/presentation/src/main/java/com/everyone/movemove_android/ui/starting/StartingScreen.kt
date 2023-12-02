@@ -50,10 +50,16 @@ import com.everyone.movemove_android.BuildConfig
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.UiConstants.GOOGLE
+import com.everyone.movemove_android.ui.UiConstants.KAKAO
+import com.everyone.movemove_android.ui.sign_up.SignUpActivity
 import com.everyone.movemove_android.ui.starting.StartingActivity.Companion.SIGN_IN_REQUEST_CODE
+import com.everyone.movemove_android.ui.starting.StartingContract.Effect.GoToHomeScreen
+import com.everyone.movemove_android.ui.starting.StartingContract.Effect.GoToSignUpScreen
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchGoogleLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchKakaoLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnClickKakaoLogin
+import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnSocialLoginSuccess
 import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnStarted
 import com.everyone.movemove_android.ui.theme.GoogleGray
 import com.everyone.movemove_android.ui.theme.KakaoYellow
@@ -109,7 +115,14 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
             try {
                 val account = it?.getResult(ApiException::class.java)
                 account?.let {
-                    //TODO send API , account.id or account.idToken
+                    account.idToken?.let { idToken ->
+                        event(
+                            OnSocialLoginSuccess(
+                                accessToken = idToken,
+                                platform = GOOGLE
+                            )
+                        )
+                    }
                 } ?: run {
                     //TODO retry or 카카오로 로그인 안내 문구
                 }
@@ -135,7 +148,12 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                                     callback = { _, _ -> }
                                 )
                             } else if (token != null) {
-                                //success , use token.accessToken
+                                event(
+                                    OnSocialLoginSuccess(
+                                        accessToken = token.accessToken,
+                                        platform = KAKAO
+                                    )
+                                )
                             }
                         }
                     } else {
@@ -155,6 +173,20 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
 
                 is LaunchGoogleLogin -> {
                     authResultLauncher.launch(SIGN_IN_REQUEST_CODE)
+                }
+
+                is GoToSignUpScreen -> {
+                    context.startActivity(
+                        SignUpActivity.newIntent(
+                            context = context,
+                            accessToken = effect.accessToken,
+                            platform = effect.platform
+                        )
+                    )
+                }
+
+                is GoToHomeScreen -> {
+
                 }
             }
         }

@@ -26,6 +26,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ui.sign_up.SignUpActivity"
+            android:theme="@style/Theme.MoveMoveAndroid" />
+        <activity
             android:name=".ui.container.ContainerActivity"
             android:theme="@style/Theme.MoveMoveAndroid" />
         <activity

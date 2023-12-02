@@ -7,11 +7,13 @@ import com.everyone.domain.usecase.GetStoredUserIdUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect
+import com.everyone.movemove_android.ui.starting.StartingContract.Effect.GoToSignUpScreen
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchGoogleLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchKakaoLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Event
 import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnClickGoogleLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnClickKakaoLogin
+import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnSocialLoginSuccess
 import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnStarted
 import com.everyone.movemove_android.ui.starting.StartingContract.State
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -48,6 +50,11 @@ class StartingViewModel @Inject constructor(
         is OnClickKakaoLogin -> onClickKakaoLogin()
 
         is OnClickGoogleLogin -> onClickGoogleLogin()
+
+        is OnSocialLoginSuccess -> onSocialLoginSuccess(
+            accessToken = event.accessToken,
+            platform = event.platform
+        )
     }
 
     private fun onStarted() {
@@ -74,6 +81,18 @@ class StartingViewModel @Inject constructor(
         }
     }
 
+    private fun onSocialLoginSuccess(
+        accessToken: String,
+        platform: String
+    ) {
+        // todo : 로그인 시도 로직
+
+        goToSignUpScreen(
+            accessToken = accessToken,
+            platform = platform
+        )
+    }
+
     private suspend fun getUserInfo(): Pair<String, String>? {
         return getStoredUserIdUseCase().zip(getStoredSignedPlatformUseCase()) { userId, signedPlatform ->
             if (userId != null && signedPlatform != null) Pair(userId, signedPlatform) else null
@@ -83,6 +102,20 @@ class StartingViewModel @Inject constructor(
     private fun showSocialLoginButtons() {
         _state.update {
             it.copy(isSignUpNeeded = true)
+        }
+    }
+
+    private fun goToSignUpScreen(
+        accessToken: String,
+        platform: String
+    ) {
+        viewModelScope.launch {
+            _effect.emit(
+                GoToSignUpScreen(
+                    accessToken = accessToken,
+                    platform = platform
+                )
+            )
         }
     }
 }

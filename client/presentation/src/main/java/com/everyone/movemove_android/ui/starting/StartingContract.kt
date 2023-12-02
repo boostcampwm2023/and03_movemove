@@ -14,11 +14,23 @@ interface StartingContract : BaseContract<StartingContract.State, StartingContra
         data object OnClickKakaoLogin : Event
 
         data object OnClickGoogleLogin : Event
+
+        data class OnSocialLoginSuccess(
+            val accessToken: String,
+            val platform: String
+        ) : Event
     }
 
     sealed interface Effect {
         data object LaunchKakaoLogin : Effect
 
         data object LaunchGoogleLogin : Effect
+
+        data class GoToSignUpScreen(
+            val accessToken: String,
+            val platform: String
+        ) : Effect
+
+        data object GoToHomeScreen : Effect
     }
 }
