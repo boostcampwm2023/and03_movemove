@@ -97,12 +97,9 @@ fun WatchingVideoScreen(
         }
     }
 
-
     if (state.isLoading) {
         LoadingDialog()
     } else {
-
-
         state.videos?.let { videosItem ->
             val videoUri = videosItem.map { Uri.parse(it.video!!.manifest) }
             val pagerState = rememberPagerState(pageCount = { videoUri.size })
@@ -146,10 +143,7 @@ fun WatchingVideoScreen(
                                     event = event
                                 )
                             }
-
                             MoveMoveFooter(videos = videosItem[page])
-
-
                             Divider()
                         }
                     }
@@ -324,7 +318,6 @@ fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
             .clip(shape = RoundedCornerShape(12.dp))
             .background(color = Color.Black.copy(alpha = 0.3f))
 
-
     ) {
         Column(
             modifier = Modifier
@@ -335,7 +328,6 @@ fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
                 ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             StyledText(
                 text = stringResource(R.string.scoreboard_title),
                 color = Color.White,
