@@ -5,7 +5,7 @@ import com.everyone.movemove_android.base.BaseActivity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class LoginActivity : BaseActivity() {
+class StartingActivity : BaseActivity() {
     @Composable
     override fun InitComposeUi() {
         StartingScreen()
