@@ -7,6 +7,7 @@ import com.everyone.data.local.UserInfoManager.Companion.KEY_UUID
 import com.everyone.data.remote.NetworkHandler
 import com.everyone.data.remote.RemoteConstants.ACCESS_TOKEN
 import com.everyone.data.remote.RemoteConstants.AUTH
+import com.everyone.data.remote.RemoteConstants.LOGIN
 import com.everyone.data.remote.RemoteConstants.NICKNAME
 import com.everyone.data.remote.RemoteConstants.PRESIGNED_URL
 import com.everyone.data.remote.RemoteConstants.PROFILE
@@ -111,5 +112,26 @@ class UserRepositoryImpl @Inject constructor(
 
     override fun setAccessToken(accessToken: String) {
         networkHandler.setAccessToken(accessToken)
+    }
+
+    override fun login(
+        accessToken: String,
+        uuid: String
+    ): Flow<DataState<UserInfo>> = flow {
+        networkHandler.request<UserInfoResponse>(
+            method = HttpMethod.Post,
+            isAccessTokenNeeded = false,
+            url = { path(AUTH, LOGIN) },
+            content = {
+                append(ACCESS_TOKEN, accessToken)
+                append(UUID, uuid)
+            }
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
+            }
+        }
     }
 }

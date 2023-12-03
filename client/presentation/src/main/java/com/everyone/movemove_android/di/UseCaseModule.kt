@@ -6,9 +6,11 @@ import com.everyone.domain.usecase.GetProfileImageUploadUrlUseCase
 import com.everyone.domain.usecase.GetStoredSignedPlatformUseCase
 import com.everyone.domain.usecase.GetStoredUUIDUseCase
 import com.everyone.domain.usecase.GetVideoUploadUrlUseCase
+import com.everyone.domain.usecase.LoginUseCase
 import com.everyone.domain.usecase.PostVideoInfoUseCase
 import com.everyone.domain.usecase.PutFileUseCase
 import com.everyone.domain.usecase.SetAccessTokenUseCase
+import com.everyone.domain.usecase.SignUpUseCase
 import com.everyone.domain.usecase.StoreRefreshTokenUseCase
 import com.everyone.domain.usecase.StoreSignedPlatformUseCase
 import com.everyone.domain.usecase.StoreUUIDUseCase
@@ -24,6 +26,14 @@ object UseCaseModule {
     /*
     유저
      */
+    @Provides
+    @ViewModelScoped
+    fun provideSignUpUseCase(repository: UserRepository): SignUpUseCase = SignUpUseCase(repository)
+
+    @Provides
+    @ViewModelScoped
+    fun provideLoginUseCase(repository: UserRepository): LoginUseCase = LoginUseCase(repository)
+
     @Provides
     @ViewModelScoped
     fun provideGetStoredUUIDUseCase(repository: UserRepository): GetStoredUUIDUseCase = GetStoredUUIDUseCase(repository)

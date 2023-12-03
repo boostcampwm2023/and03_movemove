@@ -34,4 +34,9 @@ interface UserRepository {
     fun storeSignedPlatform(signedPlatform: String): Flow<Boolean>
 
     fun setAccessToken(accessToken: String)
+
+    fun login(
+        accessToken: String,
+        uuid: String
+    ): Flow<DataState<UserInfo>>
 }

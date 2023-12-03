@@ -51,6 +51,7 @@ import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.UiConstants
 import com.everyone.movemove_android.ui.UiConstants.GOOGLE
 import com.everyone.movemove_android.ui.UiConstants.KAKAO
 import com.everyone.movemove_android.ui.container.ContainerActivity
