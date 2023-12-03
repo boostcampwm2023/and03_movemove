@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,15 +34,29 @@ import coil.compose.AsyncImage
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event
 import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event.*
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
+fun ProfileScreen(
+    navigateToMy: () -> Unit,
+    viewModel: ProfileViewModel = hiltViewModel()
+) {
 
     val (state, event, effect) = use(viewModel)
+
+    LaunchedEffect(effect) {
+        effect.collectLatest { effect ->
+            when (effect) {
+                is ProfileContract.Effect.NavigateToMy -> navigateToMy()
+            }
+        }
+    }
 
     // TODO 내가 업로드한 영상
     val preUploadingVideo = listOf(
@@ -71,7 +86,7 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
     )
 
     Column(Modifier.fillMaxSize()) {
-        MoveMoveTopBar()
+        MoveMoveTopBar(event = event)
 
         Spacer(
             modifier = Modifier
@@ -111,7 +126,7 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
                                     model = rowItems[i],
                                     onLoading = { event(LoadingStart) },
                                     onSuccess = { event(LoadingEnd) },
-                                    onError = { event(LoadingEnd)}
+                                    onError = { event(LoadingEnd) }
                                 )
                             }
                         }
@@ -128,7 +143,7 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel()) {
 }
 
 @Composable
-fun MoveMoveTopBar() {
+fun MoveMoveTopBar(event: (Event) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -144,7 +159,7 @@ fun MoveMoveTopBar() {
             modifier = Modifier
                 .size(24.dp)
                 .align(Alignment.CenterEnd)
-                .clickableWithoutRipple { },
+                .clickableWithoutRipple { event(OnClickedMenu) },
             painter = painterResource(id = R.drawable.ic_menu),
             contentDescription = null,
             tint = Color.White
