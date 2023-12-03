@@ -4,7 +4,7 @@ object RemoteConstants {
     // URL
     const val VIDEO = "video"
     const val PRESIGNED_URL = "presigned-url"
-    const val ADS = "ads"
+    const val ADS = "advertisements"
     const val VIDEOS = "videos"
     const val RANDOM = "random"
     const val RATING = "rating"

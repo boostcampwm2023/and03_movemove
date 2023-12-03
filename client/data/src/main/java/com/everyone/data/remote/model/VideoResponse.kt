@@ -17,7 +17,7 @@ data class VideoResponse(
     val content: String?,
     val uploadedAt: Date?,
     val manifest: String?,
-    val thumbnailImage: String?
+    val thumbnailImageUrl: String?
 ) : BaseResponse {
     companion object : Mapper<VideoResponse, Video> {
         override fun VideoResponse.toDomainModel(): Video {
@@ -30,7 +30,7 @@ data class VideoResponse(
                 content = content,
                 uploadedAt = uploadedAt,
                 manifest = manifest,
-                thumbnailImage = thumbnailImage
+                thumbnailImageUrl = thumbnailImageUrl
             )
         }
     }

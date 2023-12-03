@@ -1,10 +1,9 @@
 package com.everyone.domain.model
 
 import com.everyone.domain.model.base.BaseModel
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Ads(
-    val name: String?,
-    val url: String?
+data class Advertisements(
+    val advertisements: List<Ads>?
 ) : BaseModel

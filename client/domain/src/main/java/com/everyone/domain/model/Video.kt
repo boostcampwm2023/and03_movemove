@@ -14,5 +14,5 @@ data class Video(
     val content: String?,
     val uploadedAt: Date?,
     val manifest: String?,
-    val thumbnailImage: String?
+    val thumbnailImageUrl: String?
 ) : BaseModel

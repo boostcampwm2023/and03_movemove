@@ -52,7 +52,7 @@ class HomeViewModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 isLoading = false,
-                                ads = result.data
+                                advertisements = result.data
                             )
                         }
                     }
