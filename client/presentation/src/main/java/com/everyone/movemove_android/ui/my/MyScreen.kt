@@ -43,9 +43,7 @@ import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun MyScreen(
-    viewModel: MyViewModel = hiltViewModel()
-) {
+fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val (state, event, effect) = use(viewModel)
 
