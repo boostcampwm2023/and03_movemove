@@ -231,6 +231,7 @@ class SignUpViewModel @Inject constructor(
 
         if (accessToken != null && refreshToken != null && uuid != null) {
             setAccessTokenUseCase(accessToken)
+
             return combine(
                 storeRefreshTokenUseCase(refreshToken),
                 storeUUIDUseCase(uuid),

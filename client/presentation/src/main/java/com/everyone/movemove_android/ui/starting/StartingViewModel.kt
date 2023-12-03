@@ -2,11 +2,16 @@ package com.everyone.movemove_android.ui.starting
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetStoredSignedPlatformUseCase
 import com.everyone.domain.usecase.GetStoredUUIDUseCase
+import com.everyone.domain.usecase.LoginUseCase
+import com.everyone.domain.usecase.SetAccessTokenUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
+import com.everyone.movemove_android.ui.UiConstants.KAKAO
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect
+import com.everyone.movemove_android.ui.starting.StartingContract.Effect.GoToHomeScreen
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.GoToSignUpScreen
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchGoogleLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchKakaoLogin
@@ -25,9 +30,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -36,7 +44,9 @@ class StartingViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
     private val getStoredUUIDUseCase: GetStoredUUIDUseCase,
-    private val getStoredSignedPlatformUseCase: GetStoredSignedPlatformUseCase
+    private val getStoredSignedPlatformUseCase: GetStoredSignedPlatformUseCase,
+    private val loginUseCase: LoginUseCase,
+    private val setAccessTokenUseCase: SetAccessTokenUseCase
 ) : ViewModel(), StartingContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -60,8 +70,17 @@ class StartingViewModel @Inject constructor(
 
     private fun onStarted() {
         viewModelScope.launch(ioDispatcher) {
-            getUserInfo()?.let {
-                // todo : 로그인
+            getUserInfo()?.let { userInfo ->
+                val signedPlatform = userInfo.second
+                withContext(mainImmediateDispatcher) {
+                    _effect.emit(
+                        if (signedPlatform == KAKAO) {
+                            LaunchKakaoLogin
+                        } else {
+                            LaunchGoogleLogin
+                        }
+                    )
+                }
             } ?: run {
                 withContext(mainImmediateDispatcher) {
                     showSocialLoginButtons()
@@ -87,13 +106,31 @@ class StartingViewModel @Inject constructor(
         uuid: String,
         platform: String
     ) {
-        // todo : 로그인 시도 로직
-
-        goToSignUpScreen(
+        loginUseCase(
             accessToken = accessToken,
-            uuid = uuid,
-            platform = platform
-        )
+            uuid = uuid
+        ).onEach { result ->
+            withContext(mainImmediateDispatcher) {
+                when (result) {
+                    is DataState.Success -> {
+                        result.data.jsonWebToken?.accessToken?.let { accessToken ->
+                            setAccessTokenUseCase(accessToken)
+                            _effect.emit(GoToHomeScreen)
+                        } ?: run {
+                            // todo : 액세스 토큰 없는 경우 예외 처리
+                        }
+                    }
+
+                    is DataState.Failure -> {
+                        GoToSignUpScreen(
+                            accessToken = accessToken,
+                            uuid = uuid,
+                            platform = platform,
+                        )
+                    }
+                }
+            }
+        }.launchIn(viewModelScope + ioDispatcher)
     }
 
     private suspend fun getUserInfo(): Pair<String, String>? {
@@ -105,22 +142,6 @@ class StartingViewModel @Inject constructor(
     private fun showSocialLoginButtons() {
         _state.update {
             it.copy(isSignUpNeeded = true)
-        }
-    }
-
-    private fun goToSignUpScreen(
-        accessToken: String,
-        platform: String,
-        uuid: String
-    ) {
-        viewModelScope.launch {
-            _effect.emit(
-                GoToSignUpScreen(
-                    accessToken = accessToken,
-                    platform = platform,
-                    uuid = uuid
-                )
-            )
         }
     }
 }
