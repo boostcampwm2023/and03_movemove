@@ -245,7 +245,7 @@ fun StyledColorText(
 @Composable
 fun MoveMoveVideos(
     navigator: Navigator,
-    videosTrend: VideosTrend
+    videosTrend: VideosTrend,
 ) {
     videosTrend.videos?.let { videos ->
         LazyRow(
@@ -280,7 +280,7 @@ fun MoveMoveVideos(
             StyledText(
                 modifier = Modifier.align(Alignment.Center),
                 text = stringResource(R.string.empty_video_title),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
             )
         }
     }
@@ -301,7 +301,7 @@ fun MoveMoveVideo(
         ) {
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
-                model = video.thumbnailImage,
+                model = video.thumbnailImageUrl,
                 contentDescription = null,
                 contentScale = ContentScale.FillWidth,
             )
