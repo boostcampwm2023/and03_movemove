@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,7 +38,6 @@ import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event
 import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event.*
-import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
@@ -58,33 +58,6 @@ fun ProfileScreen(
             }
         }
     }
-
-    // TODO 내가 업로드한 영상
-    val preUploadingVideo = listOf(
-        "https://blog.kakaocdn.net/dn/cffuLh/btsAuPqk00r/foBKGJJZn1FjWew2fBB7k1/img.png",
-        "https://user-images.githubusercontent.com/69616347/212330945-b0deabd7-0a2c-4325-a9a8-e3ed5a8605f0.png",
-        "https://user-images.githubusercontent.com/82919343/175826091-6e020fb2-34db-47aa-a4af-d02a2ebe7a8c.png",
-        "https://user-images.githubusercontent.com/82919343/172618036-57a39779-3f5f-43c6-9b6d-47432d43c2eb.png",
-        "https://camo.githubusercontent.com/467aa234a3ca939f6f06b6f919046467c2894354f9c1f16e1e3c89298f64db33/68747470733a2f2f626c6f672e6b616b616f63646e2e6e65742f646e2f6c376363332f6274724978537a6b334a762f566c4b7545586b63434a5332316c6a3358504154746b2f696d672e706e67",
-        "https://user-images.githubusercontent.com/82919343/244449569-0c252b64-d1b9-4ce7-b7d5-010c871276a3.png",
-        "https://blog.kakaocdn.net/dn/cffuLh/btsAuPqk00r/foBKGJJZn1FjWew2fBB7k1/img.png",
-        "https://user-images.githubusercontent.com/69616347/212330945-b0deabd7-0a2c-4325-a9a8-e3ed5a8605f0.png",
-        "https://user-images.githubusercontent.com/82919343/175826091-6e020fb2-34db-47aa-a4af-d02a2ebe7a8c.png",
-        "https://user-images.githubusercontent.com/82919343/172618036-57a39779-3f5f-43c6-9b6d-47432d43c2eb.png",
-        "https://camo.githubusercontent.com/467aa234a3ca939f6f06b6f919046467c2894354f9c1f16e1e3c89298f64db33/68747470733a2f2f626c6f672e6b616b616f63646e2e6e65742f646e2f6c376363332f6274724978537a6b334a762f566c4b7545586b63434a5332316c6a3358504154746b2f696d672e706e67",
-        "https://user-images.githubusercontent.com/82919343/244449569-0c252b64-d1b9-4ce7-b7d5-010c871276a3.png",
-        "https://blog.kakaocdn.net/dn/cffuLh/btsAuPqk00r/foBKGJJZn1FjWew2fBB7k1/img.png",
-        "https://user-images.githubusercontent.com/69616347/212330945-b0deabd7-0a2c-4325-a9a8-e3ed5a8605f0.png",
-        "https://user-images.githubusercontent.com/82919343/175826091-6e020fb2-34db-47aa-a4af-d02a2ebe7a8c.png",
-        "https://user-images.githubusercontent.com/82919343/172618036-57a39779-3f5f-43c6-9b6d-47432d43c2eb.png",
-        "https://camo.githubusercontent.com/467aa234a3ca939f6f06b6f919046467c2894354f9c1f16e1e3c89298f64db33/68747470733a2f2f626c6f672e6b616b616f63646e2e6e65742f646e2f6c376363332f6274724978537a6b334a762f566c4b7545586b63434a5332316c6a3358504154746b2f696d672e706e67",
-        "https://user-images.githubusercontent.com/82919343/244449569-0c252b64-d1b9-4ce7-b7d5-010c871276a3.png",
-        "https://blog.kakaocdn.net/dn/cffuLh/btsAuPqk00r/foBKGJJZn1FjWew2fBB7k1/img.png",
-        "https://user-images.githubusercontent.com/69616347/212330945-b0deabd7-0a2c-4325-a9a8-e3ed5a8605f0.png",
-        "https://user-images.githubusercontent.com/82919343/175826091-6e020fb2-34db-47aa-a4af-d02a2ebe7a8c.png",
-        "https://user-images.githubusercontent.com/82919343/172618036-57a39779-3f5f-43c6-9b6d-47432d43c2eb.png",
-        "https://camo.githubusercontent.com/467aa234a3ca939f6f06b6f919046467c2894354f9c1f16e1e3c89298f64db33/68747470733a2f2f626c6f672e6b616b616f63646e2e6e65742f646e2f6c376363332f6274724978537a6b334a762f566c4b7545586b63434a5332316c6a3358504154746b2f696d672e706e67",
-    )
 
     Column(Modifier.fillMaxSize()) {
         MoveMoveTopBar(event = event)
@@ -110,27 +83,43 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            items(preUploadingVideo.chunked(3)) { rowItems ->
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = 8.dp,
-                            end = 8.dp,
+            if (state.videosUploaded.video.isNullOrEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp),
+                    ) {
+                        StyledText(
+                            modifier = Modifier.align(Alignment.Center),
+                            text = stringResource(R.string.empty_video_title),
+                            style = MaterialTheme.typography.titleMedium,
                         )
-                ) {
-                    for (i in 0 until 3) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            if (i < rowItems.size) {
-                                MoveMoveGridImageItem(
-                                    model = rowItems[i],
-                                )
+                    }
+                }
+            } else {
+                items(state.videosUploaded.video!!.chunked(3)) { rowItems ->
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = 8.dp,
+                                end = 8.dp,
+                            )
+                    ) {
+                        for (i in 0 until 3) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                if (i < rowItems.size) {
+                                    MoveMoveGridImageItem(
+                                        model = rowItems[i].thumbnailImageUrl!!,
+                                    )
+                                }
                             }
                         }
                     }
+                    Spacer(modifier = Modifier.height(0.5.dp))
                 }
-                Spacer(modifier = Modifier.height(0.5.dp))
             }
         }
 

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetProfileUseCase
+import com.everyone.domain.usecase.GetUsersVideosUploadedUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.ui.screens.profile.ProfileContract.*
 import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Effect.NavigateToMy
@@ -25,7 +26,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
+    private val getUsersVideosUploadedUseCase: GetUsersVideosUploadedUseCase
 ) : ViewModel(), ProfileContract {
     private val _state = MutableStateFlow(State())
     override val state = _state.asStateFlow()
@@ -39,6 +41,7 @@ class ProfileViewModel @Inject constructor(
 
     init {
         getProfile()
+        getUsersVideosUploaded()
     }
 
     private fun getProfile() {
@@ -50,6 +53,30 @@ class ProfileViewModel @Inject constructor(
                         it.copy(
                             isLoading = false,
                             profile = result.data
+                        )
+                    }
+                }
+
+                is DataState.Failure -> {
+                    loading(isLoading = false)
+                }
+            }
+        }.launchIn(viewModelScope + ioDispatcher)
+    }
+
+    private fun getUsersVideosUploaded() {
+        loading(isLoading = true)
+        getUsersVideosUploadedUseCase(
+            limit = "10",
+            userId = "550e8400-e13b-45d5-a826-446655440011",
+            lastId = ""
+        ).onEach { result ->
+            when (result) {
+                is DataState.Success -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            videosUploaded = result.data
                         )
                     }
                 }
