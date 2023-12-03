@@ -31,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.everyone.domain.model.Profile
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
@@ -98,7 +99,7 @@ fun ProfileScreen(
         LazyColumn {
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                MoveMoveProfile()
+                MoveMoveProfile(profile = state.profile)
                 Spacer(modifier = Modifier.height(24.dp))
                 Spacer(
                     modifier = Modifier
@@ -165,7 +166,7 @@ fun MoveMoveTopBar(event: (Event) -> Unit) {
 }
 
 @Composable
-fun MoveMoveProfile() {
+fun MoveMoveProfile(profile: Profile) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -177,7 +178,7 @@ fun MoveMoveProfile() {
             shape = CircleShape,
         ) {
             AsyncImage(
-                model = "https://blog.kakaocdn.net/dn/WJ908/btqB5hqMc9u/gexmVhbL0GdptqAvecZBs0/img.jpg",
+                model = profile.profileImageUrl,
                 contentDescription = null,
                 modifier = Modifier.clip(CircleShape),
                 contentScale = ContentScale.Crop
@@ -188,14 +189,14 @@ fun MoveMoveProfile() {
         Column {
             StyledText(
                 modifier = Modifier,
-                text = "손흥민",
+                text = profile.nickname ?: "",
                 style = Typography.titleLarge,
                 color = Color.White
             )
 
             StyledText(
                 modifier = Modifier,
-                text = "월드클래스 맞습니다.",
+                text = profile.statusMessage ?: "",
                 style = Typography.titleSmall,
             )
         }

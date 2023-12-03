@@ -23,7 +23,10 @@ import kotlinx.coroutines.plus
 import javax.inject.Inject
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor() : ViewModel(), ProfileContract {
+class ProfileViewModel @Inject constructor(
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val getProfileUseCase: GetProfileUseCase
+) : ViewModel(), ProfileContract {
     private val _state = MutableStateFlow(State())
     override val state = _state.asStateFlow()
 
@@ -32,6 +35,30 @@ class ProfileViewModel @Inject constructor() : ViewModel(), ProfileContract {
     override fun event(event: Event) = when (event) {
         is OnClickedMenu -> onClickedMenu()
 
+    }
+
+    init {
+        getProfile()
+    }
+
+    private fun getProfile() {
+        loading(isLoading = true)
+        getProfileUseCase("550e8400-e13b-45d5-a826-446655440011").onEach { result ->
+            when (result) {
+                is DataState.Success -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            profile = result.data
+                        )
+                    }
+                }
+
+                is DataState.Failure -> {
+                    loading(isLoading = false)
+                }
+            }
+        }.launchIn(viewModelScope + ioDispatcher)
     }
 
     private fun onClickedMenu() {
