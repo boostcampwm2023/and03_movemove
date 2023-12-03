@@ -126,7 +126,11 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                             OnSocialLoginSuccess(
                                 accessToken = idToken,
                                 platform = GOOGLE,
-                                uuid = UUID(id.toLong(), id.toLong()).toString()
+                                uuid = UUID(
+                                    id.substring(0 until 10).toLong(),
+                                    id.substring(10 until id.length).toLong()
+                                ).toString()
+                                // 구글 ID 는 Long 이 아니라 String 으로 들어오는데, 그 수가 Long 의 최대값을 넘기 때문에 잘라내어 사용합니다.
                             )
                         )
                     } else {
