@@ -32,12 +32,12 @@ import coil.compose.AsyncImage
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.R.drawable.ic_heart
 import com.everyone.movemove_android.R.drawable.img_basic_profile
-import com.everyone.movemove_android.R.string.basic_profile_name
 import com.everyone.movemove_android.R.string.edit_profile
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.my.MyContract.Effect.CloseMyScreen
+import com.everyone.movemove_android.ui.my.MyContract.Event.OnNullProfileNickname
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import kotlinx.coroutines.flow.collectLatest
@@ -93,12 +93,14 @@ fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            StyledText(
-                modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
-                text = state.profile.nickname!!,
-                style = Typography.labelLarge
-            )
-
+            val profileNickname = state.profile.nickname
+            profileNickname?.let {
+                StyledText(
+                    modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
+                    text = profileNickname,
+                    style = Typography.labelLarge
+                )
+            } ?: event(OnNullProfileNickname)
 
             Spacer(modifier = Modifier.height(20.dp))
 
