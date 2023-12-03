@@ -18,6 +18,7 @@ object RemoteConstants {
     const val LOGIN = "login"
     const val UPLOADED = "uploaded"
     const val LAST_ID = "lastId"
+    const val LAST_RATED_AT = "lastRatedAt"
 
 
     // BODY
