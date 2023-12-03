@@ -7,17 +7,17 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class SignUpUseCase @Inject constructor(private val userRepository: UserRepository) {
-    suspend operator fun invoke(
-        profileImage: String,
+    operator fun invoke(
         accessToken: String,
         uuid: String,
         nickname: String,
+        profileImageExtension: String,
         statusMessage: String
     ): Flow<DataState<UserInfo>> {
         return userRepository.postSignUp(
-            profileImage = profileImage,
             accessToken = accessToken,
             uuid = uuid,
+            profileImageExtension = profileImageExtension,
             nickname = nickname,
             statusMessage = statusMessage
         )

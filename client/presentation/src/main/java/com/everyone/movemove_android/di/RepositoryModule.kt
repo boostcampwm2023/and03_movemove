@@ -1,5 +1,6 @@
 package com.everyone.movemove_android.di
 
+import com.everyone.data.local.UserInfoManager
 import com.everyone.data.remote.NetworkHandler
 import com.everyone.data.repository.AdsRepositoryImpl
 import com.everyone.data.repository.UserRepositoryImpl
@@ -30,7 +31,13 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideUserRepository(networkHandler: NetworkHandler): UserRepository {
-        return UserRepositoryImpl(networkHandler)
+    fun provideUserRepository(
+        networkHandler: NetworkHandler,
+        userInfoManager: UserInfoManager
+    ): UserRepository {
+        return UserRepositoryImpl(
+            networkHandler = networkHandler,
+            userInfoManager = userInfoManager
+        )
     }
 }

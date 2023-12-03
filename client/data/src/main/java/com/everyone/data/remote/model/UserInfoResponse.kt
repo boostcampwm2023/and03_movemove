@@ -9,14 +9,14 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class UserInfoResponse(
-    val jsonWebTokenResponse: JsonWebTokenResponse?,
-    val profileResponse: ProfileResponse?
+    val jwt: JsonWebTokenResponse?,
+    val profile: ProfileResponse?
 ) : BaseResponse {
     companion object : Mapper<UserInfoResponse, UserInfo> {
         override fun UserInfoResponse.toDomainModel(): UserInfo {
             return UserInfo(
-                jsonWebToken = jsonWebTokenResponse?.toDomainModel(),
-                profile = profileResponse?.toDomainModel()
+                jsonWebToken = jwt?.toDomainModel(),
+                profile = profile?.toDomainModel()
             )
         }
     }

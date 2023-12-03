@@ -43,7 +43,7 @@ class VideosRepositoryImpl @Inject constructor(
     private val networkHandler: NetworkHandler
 ) : VideosRepository {
 
-    override fun postExtensionInfo(
+    override fun getVideoUploadUrl(
         videoExtension: String,
         thumbnailExtension: String
     ): Flow<DataState<VideoUploadUrl>> = flow {

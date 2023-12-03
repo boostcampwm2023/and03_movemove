@@ -19,7 +19,7 @@ class UserInfoManager @Inject constructor(@ApplicationContext private val contex
     다른 타입의 로컬 저장이 필요한 경우, 오버로딩 해주세요.
      */
 
-    suspend fun store(
+    fun store(
         key: String,
         value: String
     ): Flow<Boolean> = flow {
@@ -41,6 +41,7 @@ class UserInfoManager @Inject constructor(@ApplicationContext private val contex
     companion object {
         private const val DATASTORE_NAME = "movemove_datastore"
         const val KEY_REFRESH_TOKEN = "key_refresh_token"
-        const val KEY_USER_ID = "key_user_id"
+        const val KEY_UUID = "key_uuid"
+        const val KEY_SIGNED_PLATFORM = "key_signed_platform"
     }
 }

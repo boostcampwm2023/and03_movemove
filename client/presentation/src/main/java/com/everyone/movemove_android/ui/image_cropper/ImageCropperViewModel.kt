@@ -1,19 +1,24 @@
 package com.everyone.movemove_android.ui.image_cropper
 
+import android.net.Uri
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Effect
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Effect.ConvertUriToImageBitmap
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Effect.CropImage
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Effect.GoToPreviousScreen
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickCompleteButton
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickCrop
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickImage
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickSectionSelector
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnCropped
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnImageUriConverted
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnStarted
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetBoardSize
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetImageOffset
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetImageRotation
@@ -23,7 +28,6 @@ import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetSectionSelectorSize
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.State
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -35,62 +39,57 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ImageCropperViewModel @Inject constructor(
-    @IoDispatcher ioDispatcher: CoroutineDispatcher
-) : ImageCropperContract, ViewModel() {
+class ImageCropperViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle) : ImageCropperContract, ViewModel() {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
 
-    private val _effect = MutableSharedFlow<Effect>()
+    private val _effect = MutableSharedFlow<Effect>(replay = 1)
     override val effect: SharedFlow<Effect> = _effect.asSharedFlow()
 
     override fun event(event: Event) = when (event) {
-        is OnClickImage -> {
-            onClickImage()
-        }
+        is OnStarted -> onStarted()
 
-        is OnClickSectionSelector -> {
-            onClickSectionSelector()
-        }
+        is OnImageUriConverted -> onImageUriConverted(event.imageBitmap)
 
-        is OnClickCrop -> {
-            onClickCrop()
-        }
+        is OnClickImage -> onClickImage()
 
-        is OnClickCompleteButton -> {
-            onClickCompleteButton()
-        }
+        is OnClickSectionSelector -> onClickSectionSelector()
 
-        is SetImageOffset -> {
-            setImageOffset(event.offset)
-        }
+        is OnClickCrop -> onClickCrop()
 
-        is SetImageScale -> {
-            setImageScale(event.scale)
-        }
+        is OnClickCompleteButton -> onClickCompleteButton()
 
-        is SetImageRotation -> {
-            setImageRotation(event.rotation)
-        }
+        is SetImageOffset -> setImageOffset(event.offset)
 
-        is SetBoardSize -> {
-            setBoardSize(event.size)
-        }
+        is SetImageScale -> setImageScale(event.scale)
 
-        is SetSectionSelectorOffsetX -> {
-            setSectionSelectorOffsetX(event.offsetX)
-        }
+        is SetImageRotation -> setImageRotation(event.rotation)
 
-        is SetSectionSelectorOffsetY -> {
-            setSectionSelectorOffsetY(event.offsetY)
-        }
+        is SetBoardSize -> setBoardSize(event.size)
 
-        is SetSectionSelectorSize -> {
-            setSectionSelectorSize(event.size)
-        }
+        is SetSectionSelectorOffsetX -> setSectionSelectorOffsetX(event.offsetX)
 
-        is OnCropped -> {
-            onCropped(event.imageBitmap)
+        is SetSectionSelectorOffsetY -> setSectionSelectorOffsetY(event.offsetY)
+
+        is SetSectionSelectorSize -> setSectionSelectorSize(event.size)
+
+        is OnCropped -> onCropped(event.imageBitmap)
+    }
+
+    private fun onStarted() {
+        savedStateHandle.get<Uri>(ImageCropperActivity.KEY_IMAGE_URI)?.let {
+            convertUriToImageBitmap(it)
+        } ?: run {
+            // todo : 예외 처리
+        }
+    }
+
+    private fun onImageUriConverted(imageBitmap: ImageBitmap) {
+        _state.update {
+            it.copy(
+                isLoading = false,
+                imageBitmap = imageBitmap
+            )
         }
     }
 
@@ -118,7 +117,11 @@ class ImageCropperViewModel @Inject constructor(
     }
 
     private fun onClickCompleteButton() {
-
+        state.value.croppedImage?.let { imageBitmap ->
+            viewModelScope.launch {
+                _effect.emit(GoToPreviousScreen(imageBitmap))
+            }
+        }
     }
 
     private fun setImageOffset(offset: Offset) {
@@ -215,6 +218,12 @@ class ImageCropperViewModel @Inject constructor(
     private fun onCropped(imageBitmap: ImageBitmap) {
         _state.update {
             it.copy(croppedImage = imageBitmap)
+        }
+    }
+
+    private fun convertUriToImageBitmap(uri: Uri) {
+        viewModelScope.launch {
+            _effect.emit(ConvertUriToImageBitmap(uri))
         }
     }
 }

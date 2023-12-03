@@ -1,6 +1,9 @@
 package com.everyone.movemove_android.ui.image_cropper
 
 import android.app.Activity
+import android.app.Activity.RESULT_OK
+import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Handler
 import android.os.Looper
@@ -48,23 +51,29 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
+import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperActivity.Companion.KEY_CROPPED_IMAGE_URI
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Effect.ConvertUriToImageBitmap
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Effect.CropImage
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Effect.GoToPreviousScreen
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickCompleteButton
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickCrop
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickImage
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnClickSectionSelector
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnCropped
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnImageUriConverted
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.OnStarted
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetBoardSize
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetImageOffset
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperContract.Event.SetImageRotation
@@ -80,6 +89,8 @@ import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.BranchedModifier
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import com.everyone.movemove_android.ui.util.pxToDp
+import com.everyone.movemove_android.ui.util.toImageBitmap
+import com.everyone.movemove_android.ui.util.toUri
 import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.roundToInt
 
@@ -87,27 +98,41 @@ private const val BORDER_PX = 8f
 
 @Composable
 fun ImageCropperScreen(viewModel: ImageCropperViewModel = hiltViewModel()) {
+    val context = LocalContext.current
     val (state, event, effect) = use(viewModel)
     val view = LocalView.current
 
     LaunchedEffect(effect) {
         effect.collectLatest { effect ->
             when (effect) {
+                is ConvertUriToImageBitmap -> {
+                    event(OnImageUriConverted(effect.uri.toImageBitmap(context.contentResolver)))
+                }
+
                 is CropImage -> {
                     capture(
                         view = view,
                         offset = effect.offset,
                         size = effect.size,
-                        onSuccess = {
-                            event(OnCropped(it))
-                        },
+                        onSuccess = { event(OnCropped(it)) },
                         onError = {
                             // todo : 캡처 실패
                         }
                     )
                 }
+
+                is GoToPreviousScreen -> {
+                    finishWithImage(
+                        imageBitmap = effect.imageBitmap,
+                        context = context
+                    )
+                }
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        event(OnStarted)
     }
 
     Column(
@@ -115,6 +140,10 @@ fun ImageCropperScreen(viewModel: ImageCropperViewModel = hiltViewModel()) {
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.background)
     ) {
+        if (state.isLoading) {
+            LoadingDialog()
+        }
+
         ImageBoard(state, event)
 
         Divider(color = if (isSystemInDarkTheme()) BorderInDark else Color.White) // todo : 라이트 모드의 Border 색상이 정해지지 않음
@@ -159,22 +188,24 @@ private fun ColumnScope.ImageBoard(
                 }
             )
         ) {
-            AsyncImage(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .absoluteOffset(
-                        x = imageState.offset.x.pxToDp(),
-                        y = imageState.offset.y.pxToDp()
-                    )
-                    .graphicsLayer(
-                        scaleX = imageState.scale,
-                        scaleY = imageState.scale,
-                        rotationZ = imageState.rotation
-                    ),
-                model = "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fcbm2On%2FbtsAMUCNzYT%2FOMfDTvo682j6X0xiKv3a20%2Fimg.jpg",
-                contentScale = ContentScale.Fit,
-                contentDescription = null
-            )
+            imageBitmap?.let {
+                Image(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .absoluteOffset(
+                            x = imageState.offset.x.pxToDp(),
+                            y = imageState.offset.y.pxToDp()
+                        )
+                        .graphicsLayer(
+                            scaleX = imageState.scale,
+                            scaleY = imageState.scale,
+                            rotationZ = imageState.rotation
+                        ),
+                    bitmap = imageBitmap,
+                    contentScale = ContentScale.Fit,
+                    contentDescription = null
+                )
+            }
 
             SectionSelector(state, event)
         }
@@ -368,4 +399,16 @@ private fun getStatusBarHeight(window: Window): Int {
     val rectangle = android.graphics.Rect()
     window.decorView.getWindowVisibleDisplayFrame(rectangle)
     return rectangle.top
+}
+
+private fun finishWithImage(
+    imageBitmap: ImageBitmap,
+    context: Context
+) {
+    (context as Activity).setResult(
+        RESULT_OK,
+        Intent().putExtra(KEY_CROPPED_IMAGE_URI, imageBitmap.toUri().toString())
+    )
+
+    context.finish()
 }

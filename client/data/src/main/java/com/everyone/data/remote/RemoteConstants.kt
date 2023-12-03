@@ -12,10 +12,18 @@ object RemoteConstants {
     const val TOP_RATED = "top-rated"
     const val AUTH = "auth"
     const val REFRESH = "refresh"
+    const val SIGN_UP = "signup"
+    const val USERS = "users"
+    const val PROFILE = "profile"
 
     // BODY
     const val VIDEO_EXTENSION = "videoExtension"
     const val THUMBNAIL_EXTENSION = "thumbnailExtension"
+    const val PROFILE_EXTENSION = "profileExtension"
+    const val UUID = "uuid"
+    const val ACCESS_TOKEN = "accessToken"
+    const val NICKNAME = "nickname"
+    const val STATUS_MESSAGE = "statusMessage"
     const val TITLE = "title"
     const val CONTENT = "content"
     const val CATEGORY = "category"

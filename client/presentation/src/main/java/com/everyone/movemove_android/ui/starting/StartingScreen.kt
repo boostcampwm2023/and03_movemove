@@ -6,6 +6,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -27,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -45,13 +48,21 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.everyone.movemove_android.BuildConfig
 import com.everyone.movemove_android.R
-import com.everyone.movemove_android.R.drawable
 import com.everyone.movemove_android.base.use
+import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.starting.LoginActivity.Companion.SIGN_IN_REQUEST_CODE
+import com.everyone.movemove_android.ui.UiConstants.GOOGLE
+import com.everyone.movemove_android.ui.UiConstants.KAKAO
+import com.everyone.movemove_android.ui.container.ContainerActivity
+import com.everyone.movemove_android.ui.sign_up.SignUpActivity
+import com.everyone.movemove_android.ui.starting.StartingActivity.Companion.SIGN_IN_REQUEST_CODE
+import com.everyone.movemove_android.ui.starting.StartingContract.Effect.GoToHomeScreen
+import com.everyone.movemove_android.ui.starting.StartingContract.Effect.GoToSignUpScreen
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchGoogleLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.LaunchKakaoLogin
 import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnClickKakaoLogin
+import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnSocialLoginSuccess
+import com.everyone.movemove_android.ui.starting.StartingContract.Event.OnStarted
 import com.everyone.movemove_android.ui.theme.GoogleGray
 import com.everyone.movemove_android.ui.theme.KakaoYellow
 import com.everyone.movemove_android.ui.theme.StartingDim
@@ -64,9 +75,13 @@ import com.google.android.gms.tasks.Task
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import java.util.UUID
 
 private const val STARTING_VIDEO_NAME = "starting_video"
+private const val STARTING_DELAY = 1000L
+private const val BUTTON_ANIMATION_DURATION = 1000
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
@@ -103,7 +118,24 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
             try {
                 val account = it?.getResult(ApiException::class.java)
                 account?.let {
-                    //TODO send API , account.id or account.idToken
+                    val idToken = account.idToken
+                    val id = account.id
+
+                    if (idToken != null && id != null) {
+                        event(
+                            OnSocialLoginSuccess(
+                                accessToken = idToken,
+                                platform = GOOGLE,
+                                uuid = UUID(
+                                    id.substring(0 until 10).toLong(),
+                                    id.substring(10 until id.length).toLong()
+                                ).toString()
+                                // 구글 ID 는 Long 이 아니라 String 으로 들어오는데, 그 수가 Long 의 최대값을 넘기 때문에 잘라내어 사용합니다.
+                            )
+                        )
+                    } else {
+                        // todo : 예외 처리
+                    }
                 } ?: run {
                     //TODO retry or 카카오로 로그인 안내 문구
                 }
@@ -128,8 +160,22 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                                     context = context,
                                     callback = { _, _ -> }
                                 )
-                            } else if (token != null) {
-                                //success , use token.accessToken
+                            } else {
+                                val accessToken = token?.accessToken
+                                kakaoSignInClient.me { user, error ->
+                                    val userId = user?.id
+                                    if (accessToken != null && userId != null) {
+                                        event(
+                                            OnSocialLoginSuccess(
+                                                accessToken = accessToken,
+                                                platform = KAKAO,
+                                                uuid = UUID(userId, userId).toString()
+                                            )
+                                        )
+                                    } else {
+                                        // todo : 예외 처리
+                                    }
+                                }
                             }
                         }
                     } else {
@@ -150,8 +196,29 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                 is LaunchGoogleLogin -> {
                     authResultLauncher.launch(SIGN_IN_REQUEST_CODE)
                 }
+
+                is GoToSignUpScreen -> {
+                    context.startActivity(
+                        SignUpActivity.newIntent(
+                            context = context,
+                            accessToken = effect.accessToken,
+                            platform = effect.platform,
+                            uuid = effect.uuid
+                        )
+                    )
+                }
+
+                is GoToHomeScreen -> {
+                    context.startActivity(ContainerActivity.newIntent(context))
+                    (context as Activity).finish()
+                }
             }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        delay(STARTING_DELAY)
+        event(OnStarted)
     }
 
     with(state) {
@@ -216,12 +283,19 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                     )
                 }
 
+                val loginButtonAlphaState = animateFloatAsState(
+                    targetValue = if (isSignUpNeeded) 1f else 0f,
+                    animationSpec = tween(durationMillis = BUTTON_ANIMATION_DURATION),
+                    label = ""
+                )
+
                 if (isSignUpNeeded) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .align(Alignment.BottomCenter)
                             .padding(16.dp)
+                            .alpha(loginButtonAlphaState.value)
                     ) {
                         Button(
                             modifier = Modifier
@@ -239,7 +313,7 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                                     modifier = Modifier
                                         .align(alignment = Alignment.CenterStart)
                                         .size(24.dp),
-                                    painter = painterResource(id = drawable.ic_kakao),
+                                    painter = painterResource(id = R.drawable.ic_kakao),
                                     contentDescription = null,
                                 )
                                 StyledText(
@@ -266,7 +340,7 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                                     modifier = Modifier
                                         .align(alignment = Alignment.CenterStart)
                                         .size(24.dp),
-                                    painter = painterResource(id = drawable.ic_google),
+                                    painter = painterResource(id = R.drawable.ic_google),
                                     contentDescription = null,
                                 )
                                 StyledText(
@@ -280,6 +354,10 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                     }
                 }
             }
+        }
+
+        if (isLoading) {
+            LoadingDialog()
         }
     }
 }

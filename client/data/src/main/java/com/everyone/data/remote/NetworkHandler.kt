@@ -43,6 +43,10 @@ class NetworkHandler @Inject constructor(private val userInfoManager: UserInfoMa
         private set
     var isTokenRefreshing = false
 
+    fun setAccessToken(accessToken: String) {
+        this.accessToken = accessToken
+    }
+
     val client: HttpClient
         get() = HttpClient(CIO) {
             install(ContentNegotiation) {
