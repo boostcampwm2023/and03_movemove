@@ -124,9 +124,6 @@ fun ProfileScreen(
                             if (i < rowItems.size) {
                                 MoveMoveGridImageItem(
                                     model = rowItems[i],
-                                    onLoading = { event(LoadingStart) },
-                                    onSuccess = { event(LoadingEnd) },
-                                    onError = { event(LoadingEnd) }
                                 )
                             }
                         }
@@ -208,10 +205,7 @@ fun MoveMoveProfile() {
 @Composable
 fun MoveMoveGridImageItem(
     modifier: Modifier = Modifier,
-    model: String,
-    onLoading: () -> Unit,
-    onSuccess: () -> Unit,
-    onError: () -> Unit
+    model: String
 ) {
     AsyncImage(
         modifier = modifier
@@ -219,9 +213,6 @@ fun MoveMoveGridImageItem(
             .padding(1.dp),
         model = model,
         contentDescription = null,
-        contentScale = ContentScale.Crop,
-        onLoading = { onLoading() },
-        onSuccess = { onSuccess() },
-        onError = { onError() }
+        contentScale = ContentScale.Crop
     )
 }
