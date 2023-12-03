@@ -1,5 +1,6 @@
 package com.everyone.movemove_android.ui.my
 
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -16,31 +17,47 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.R.drawable.ic_heart
 import com.everyone.movemove_android.R.drawable.img_basic_profile
 import com.everyone.movemove_android.R.string.edit_profile
-import com.everyone.movemove_android.R.string.profile_name
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.my.MyContract.Effect.CloseMyScreen
+import com.everyone.movemove_android.ui.my.MyContract.Event.OnNullProfileNickname
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun MyScreen(
-    viewModel: MyViewModel = hiltViewModel()
-) {
-
+fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
+    val context = LocalContext.current
     val (state, event, effect) = use(viewModel)
+
+    LaunchedEffect(effect) {
+        effect.collectLatest { effect ->
+            when (effect) {
+                is CloseMyScreen -> {
+                    if (context is ComponentActivity) {
+                        context.finish()
+                    }
+                }
+            }
+        }
+    }
 
     if (state.isLoading) {
         LoadingDialog()
@@ -53,22 +70,37 @@ fun MyScreen(
         ) {
             Spacer(modifier = Modifier.height(70.dp))
 
-            Image(
-                modifier = Modifier
-                    .align(alignment = Alignment.CenterHorizontally)
-                    .size(110.dp)
-                    .clip(shape = CircleShape),
-                painter = painterResource(id = img_basic_profile),
-                contentDescription = null
-            )
+            if (state.profile.profileImageUrl == null) {
+                Image(
+                    modifier = Modifier
+                        .align(alignment = Alignment.CenterHorizontally)
+                        .size(110.dp)
+                        .clip(shape = CircleShape),
+                    painter = painterResource(id = img_basic_profile),
+                    contentDescription = null
+                )
+            } else {
+                AsyncImage(
+                    modifier = Modifier
+                        .align(alignment = Alignment.CenterHorizontally)
+                        .size(110.dp)
+                        .clip(shape = CircleShape),
+                    model = state.profile.profileImageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            StyledText(
-                modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
-                text = stringResource(id = profile_name),
-                style = Typography.labelLarge
-            )
+            val profileNickname = state.profile.nickname
+            profileNickname?.let {
+                StyledText(
+                    modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
+                    text = profileNickname,
+                    style = Typography.labelLarge
+                )
+            } ?: event(OnNullProfileNickname)
 
             Spacer(modifier = Modifier.height(20.dp))
 

@@ -9,7 +9,11 @@ interface MyContract : BaseContract<MyContract.State, MyContract.Event, MyContra
         val profile: Profile = Profile()
     )
 
-    sealed interface Event {}
+    sealed interface Event {
+        data object OnNullProfileNickname : Event
+    }
 
-    sealed interface Effect {}
+    sealed interface Effect {
+        data object CloseMyScreen : Effect
+    }
 }
