@@ -29,7 +29,7 @@ fun Uri.toImageBitmap(contentResolver: ContentResolver): ImageBitmap {
     }
 }
 
-fun ImageBitmap.toWebpFile(): File {
+fun ImageBitmap.toWebpFile(isCompressNeeded: Boolean = true): File {
     val stream = ByteArrayOutputStream()
 
     stream.use {
@@ -39,7 +39,7 @@ fun ImageBitmap.toWebpFile(): File {
             } else {
                 Bitmap.CompressFormat.WEBP
             },
-            50,
+            if (isCompressNeeded) 50 else 100,
             stream
         )
     }

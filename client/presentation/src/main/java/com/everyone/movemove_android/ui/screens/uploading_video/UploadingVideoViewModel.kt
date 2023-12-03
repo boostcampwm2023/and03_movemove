@@ -10,7 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.everyone.domain.model.UploadCategory
 import com.everyone.domain.model.VideoUploadUrl
 import com.everyone.domain.model.base.DataState
-import com.everyone.domain.usecase.PostExtensionInfoUseCase
+import com.everyone.domain.usecase.GetVideoUploadUrlUseCase
 import com.everyone.domain.usecase.PostVideoInfoUseCase
 import com.everyone.domain.usecase.PutFileUseCase
 import com.everyone.movemove_android.di.DefaultDispatcher
@@ -65,7 +65,7 @@ class UploadingVideoViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
     @ApplicationContext private val context: Context,
-    private val postExtensionInfoUseCase: PostExtensionInfoUseCase,
+    private val getVideoUploadUrlUseCase: GetVideoUploadUrlUseCase,
     private val putFileUseCase: PutFileUseCase,
     private val postVideoInfoUseCase: PostVideoInfoUseCase,
 ) : ViewModel(), UploadingVideoContract {
@@ -306,7 +306,7 @@ class UploadingVideoViewModel @Inject constructor(
     }
 
     private fun onClickUpload() {
-        postExtensionInfoUseCase(
+        getVideoUploadUrlUseCase(
             videoExtension = MP4,
             thumbnailExtension = WEBP
         ).onEach { result ->
@@ -316,7 +316,7 @@ class UploadingVideoViewModel @Inject constructor(
                 }
 
                 is DataState.Failure -> {
-                    // todo :
+                    // todo : 예외 처리
                 }
             }
         }.launchIn(viewModelScope + ioDispatcher)

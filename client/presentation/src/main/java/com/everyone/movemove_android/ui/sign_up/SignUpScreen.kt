@@ -1,6 +1,7 @@
 package com.everyone.movemove_android.ui.sign_up
 
 import android.app.Activity.RESULT_OK
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,12 +46,14 @@ import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.container.ContainerActivity
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperActivity
 import com.everyone.movemove_android.ui.image_cropper.ImageCropperActivity.Companion.KEY_CROPPED_IMAGE_URI
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.GoToHomeScreen
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.LaunchImageCropper
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.LaunchImagePicker
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnClickSelectImage
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnClickSignUp
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnGetCroppedImage
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnIntroduceTyped
@@ -102,7 +104,10 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
                 }
 
                 is GoToHomeScreen -> {
-
+                    context.startActivity(ContainerActivity.newIntent(context).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    })
                 }
             }
         }
@@ -243,7 +248,7 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
                 .align(Alignment.CenterHorizontally),
             buttonText = stringResource(id = complete),
             isEnabled = state.isSignUpEnabled,
-            onClick = {}
+            onClick = { event(OnClickSignUp) }
         )
     }
 }

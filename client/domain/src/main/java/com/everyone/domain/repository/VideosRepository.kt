@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import java.io.File
 
 interface VideosRepository {
-    fun postExtensionInfo(
+    fun getVideoUploadUrl(
         videoExtension: String,
         thumbnailExtension: String
     ): Flow<DataState<VideoUploadUrl>>

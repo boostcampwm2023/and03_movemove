@@ -2,11 +2,16 @@ package com.everyone.movemove_android.di
 
 import com.everyone.domain.repository.UserRepository
 import com.everyone.domain.repository.VideosRepository
+import com.everyone.domain.usecase.GetProfileImageUploadUrlUseCase
 import com.everyone.domain.usecase.GetStoredSignedPlatformUseCase
-import com.everyone.domain.usecase.GetStoredUserIdUseCase
-import com.everyone.domain.usecase.PostExtensionInfoUseCase
+import com.everyone.domain.usecase.GetStoredUUIDUseCase
+import com.everyone.domain.usecase.GetVideoUploadUrlUseCase
 import com.everyone.domain.usecase.PostVideoInfoUseCase
 import com.everyone.domain.usecase.PutFileUseCase
+import com.everyone.domain.usecase.SetAccessTokenUseCase
+import com.everyone.domain.usecase.StoreRefreshTokenUseCase
+import com.everyone.domain.usecase.StoreSignedPlatformUseCase
+import com.everyone.domain.usecase.StoreUUIDUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,18 +26,38 @@ object UseCaseModule {
      */
     @Provides
     @ViewModelScoped
-    fun provideGetStoredUserIdUseCase(repository: UserRepository): GetStoredUserIdUseCase = GetStoredUserIdUseCase(repository)
+    fun provideGetStoredUUIDUseCase(repository: UserRepository): GetStoredUUIDUseCase = GetStoredUUIDUseCase(repository)
 
     @Provides
     @ViewModelScoped
     fun provideGetStoredSignedPlatformUseCase(repository: UserRepository): GetStoredSignedPlatformUseCase = GetStoredSignedPlatformUseCase(repository)
+
+    @Provides
+    @ViewModelScoped
+    fun provideGetProfileImageUploadUrlUseCase(repository: UserRepository): GetProfileImageUploadUrlUseCase = GetProfileImageUploadUrlUseCase(repository)
+
+    @Provides
+    @ViewModelScoped
+    fun provideSetAccessTokenUseCase(repository: UserRepository): SetAccessTokenUseCase = SetAccessTokenUseCase(repository)
+
+    @Provides
+    @ViewModelScoped
+    fun provideStoreRefreshTokenUseCase(repository: UserRepository): StoreRefreshTokenUseCase = StoreRefreshTokenUseCase(repository)
+
+    @Provides
+    @ViewModelScoped
+    fun provideStoreUUIDUseCase(repository: UserRepository): StoreUUIDUseCase = StoreUUIDUseCase(repository)
+
+    @Provides
+    @ViewModelScoped
+    fun provideSignedPlatformUseCase(repository: UserRepository): StoreSignedPlatformUseCase = StoreSignedPlatformUseCase(repository)
 
     /*
     비디오
      */
     @Provides
     @ViewModelScoped
-    fun providePostExtensionInfoUseCase(repository: VideosRepository): PostExtensionInfoUseCase = PostExtensionInfoUseCase(repository)
+    fun provideGetVideoUploadUrlUseCase(repository: VideosRepository): GetVideoUploadUrlUseCase = GetVideoUploadUrlUseCase(repository)
 
     @Provides
     @ViewModelScoped

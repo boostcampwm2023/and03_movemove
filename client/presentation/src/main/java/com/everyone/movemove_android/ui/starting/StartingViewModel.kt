@@ -3,7 +3,7 @@ package com.everyone.movemove_android.ui.starting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.everyone.domain.usecase.GetStoredSignedPlatformUseCase
-import com.everyone.domain.usecase.GetStoredUserIdUseCase
+import com.everyone.domain.usecase.GetStoredUUIDUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect
@@ -35,7 +35,7 @@ import javax.inject.Inject
 class StartingViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
-    private val getStoredUserIdUseCase: GetStoredUserIdUseCase,
+    private val getStoredUUIDUseCase: GetStoredUUIDUseCase,
     private val getStoredSignedPlatformUseCase: GetStoredSignedPlatformUseCase
 ) : ViewModel(), StartingContract {
     private val _state = MutableStateFlow(State())
@@ -53,6 +53,7 @@ class StartingViewModel @Inject constructor(
 
         is OnSocialLoginSuccess -> onSocialLoginSuccess(
             accessToken = event.accessToken,
+            uuid = event.uuid,
             platform = event.platform
         )
     }
@@ -83,19 +84,21 @@ class StartingViewModel @Inject constructor(
 
     private fun onSocialLoginSuccess(
         accessToken: String,
+        uuid: String,
         platform: String
     ) {
         // todo : 로그인 시도 로직
 
         goToSignUpScreen(
             accessToken = accessToken,
+            uuid = uuid,
             platform = platform
         )
     }
 
     private suspend fun getUserInfo(): Pair<String, String>? {
-        return getStoredUserIdUseCase().zip(getStoredSignedPlatformUseCase()) { userId, signedPlatform ->
-            if (userId != null && signedPlatform != null) Pair(userId, signedPlatform) else null
+        return getStoredUUIDUseCase().zip(getStoredSignedPlatformUseCase()) { uuid, signedPlatform ->
+            if (uuid != null && signedPlatform != null) Pair(uuid, signedPlatform) else null
         }.first()
     }
 
@@ -107,13 +110,15 @@ class StartingViewModel @Inject constructor(
 
     private fun goToSignUpScreen(
         accessToken: String,
-        platform: String
+        platform: String,
+        uuid: String
     ) {
         viewModelScope.launch {
             _effect.emit(
                 GoToSignUpScreen(
                     accessToken = accessToken,
-                    platform = platform
+                    platform = platform,
+                    uuid = uuid
                 )
             )
         }

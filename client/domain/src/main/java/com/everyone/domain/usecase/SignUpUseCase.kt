@@ -8,16 +8,16 @@ import javax.inject.Inject
 
 class SignUpUseCase @Inject constructor(private val userRepository: UserRepository) {
     operator fun invoke(
-        profileImage: String,
         accessToken: String,
         uuid: String,
         nickname: String,
+        profileImageExtension: String,
         statusMessage: String
     ): Flow<DataState<UserInfo>> {
         return userRepository.postSignUp(
-            profileImage = profileImage,
             accessToken = accessToken,
             uuid = uuid,
+            profileImageExtension = profileImageExtension,
             nickname = nickname,
             statusMessage = statusMessage
         )

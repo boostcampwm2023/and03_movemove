@@ -8,10 +8,10 @@ import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val userRepository: UserRepository) {
     operator fun invoke(
-        userId: String
+        uuid: String
     ): Flow<DataState<Profile>> {
         return userRepository.getUserProfile(
-            userId = userId
+            uuid = uuid
         )
     }
 }

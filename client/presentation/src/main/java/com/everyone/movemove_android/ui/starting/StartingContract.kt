@@ -17,7 +17,8 @@ interface StartingContract : BaseContract<StartingContract.State, StartingContra
 
         data class OnSocialLoginSuccess(
             val accessToken: String,
-            val platform: String
+            val uuid: String,
+            val platform: String,
         ) : Event
     }
 
@@ -28,6 +29,7 @@ interface StartingContract : BaseContract<StartingContract.State, StartingContra
 
         data class GoToSignUpScreen(
             val accessToken: String,
+            val uuid: String,
             val platform: String
         ) : Effect
 

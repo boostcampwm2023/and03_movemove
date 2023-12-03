@@ -6,6 +6,7 @@ import com.everyone.movemove_android.base.BaseContract
 
 interface SignUpContract : BaseContract<SignUpContract.State, SignUpContract.Event, SignUpContract.Effect> {
     data class State(
+        val isLoading: Boolean = false,
         val isSignUpEnabled: Boolean = false,
         val profileImage: ImageBitmap? = null,
         val nickname: String = "",

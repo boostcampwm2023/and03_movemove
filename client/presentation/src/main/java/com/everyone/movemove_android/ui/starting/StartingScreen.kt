@@ -49,9 +49,11 @@ import androidx.media3.ui.PlayerView
 import com.everyone.movemove_android.BuildConfig
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
+import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.UiConstants.GOOGLE
 import com.everyone.movemove_android.ui.UiConstants.KAKAO
+import com.everyone.movemove_android.ui.container.ContainerActivity
 import com.everyone.movemove_android.ui.sign_up.SignUpActivity
 import com.everyone.movemove_android.ui.starting.StartingActivity.Companion.SIGN_IN_REQUEST_CODE
 import com.everyone.movemove_android.ui.starting.StartingContract.Effect.GoToHomeScreen
@@ -75,6 +77,7 @@ import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import java.util.UUID
 
 private const val STARTING_VIDEO_NAME = "starting_video"
 private const val STARTING_DELAY = 1000L
@@ -115,13 +118,19 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
             try {
                 val account = it?.getResult(ApiException::class.java)
                 account?.let {
-                    account.idToken?.let { idToken ->
+                    val idToken = account.idToken
+                    val id = account.id
+
+                    if (idToken != null && id != null) {
                         event(
                             OnSocialLoginSuccess(
                                 accessToken = idToken,
-                                platform = GOOGLE
+                                platform = GOOGLE,
+                                uuid = UUID(id.toLong(), id.toLong()).toString()
                             )
                         )
+                    } else {
+                        // todo : 예외 처리
                     }
                 } ?: run {
                     //TODO retry or 카카오로 로그인 안내 문구
@@ -147,13 +156,22 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                                     context = context,
                                     callback = { _, _ -> }
                                 )
-                            } else if (token != null) {
-                                event(
-                                    OnSocialLoginSuccess(
-                                        accessToken = token.accessToken,
-                                        platform = KAKAO
-                                    )
-                                )
+                            } else {
+                                val accessToken = token?.accessToken
+                                kakaoSignInClient.me { user, error ->
+                                    val userId = user?.id
+                                    if (accessToken != null && userId != null) {
+                                        event(
+                                            OnSocialLoginSuccess(
+                                                accessToken = accessToken,
+                                                platform = KAKAO,
+                                                uuid = UUID(userId, userId).toString()
+                                            )
+                                        )
+                                    } else {
+                                        // todo : 예외 처리
+                                    }
+                                }
                             }
                         }
                     } else {
@@ -180,13 +198,15 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                         SignUpActivity.newIntent(
                             context = context,
                             accessToken = effect.accessToken,
-                            platform = effect.platform
+                            platform = effect.platform,
+                            uuid = effect.uuid
                         )
                     )
                 }
 
                 is GoToHomeScreen -> {
-
+                    context.startActivity(ContainerActivity.newIntent(context))
+                    (context as Activity).finish()
                 }
             }
         }
@@ -330,6 +350,10 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                     }
                 }
             }
+        }
+
+        if (isLoading) {
+            LoadingDialog()
         }
     }
 }
