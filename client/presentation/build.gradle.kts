@@ -1,4 +1,5 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.lang)
@@ -17,9 +18,9 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField("String","KAKAO_NATIVE_APP_KEY", getApiKey("KAKAO_NATIVE_APP_KEY"))
-        buildConfigField("String","GOOGLE_CLIENT_ID", getApiKey("GOOGLE_CLIENT_ID"))
-        resValue("string","KAKAO_OAUTH_HOST", getApiKey("KAKAO_OAUTH_HOST"))
+        buildConfigField("String", "KAKAO_NATIVE_APP_KEY", getApiKey("KAKAO_NATIVE_APP_KEY"))
+        buildConfigField("String", "GOOGLE_CLIENT_ID", getApiKey("GOOGLE_CLIENT_ID"))
+        resValue("string", "KAKAO_OAUTH_HOST", getApiKey("KAKAO_OAUTH_HOST"))
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -52,9 +53,12 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    tasks.withType<Test>().configureEach {
+        useJUnitPlatform()
+    }
 }
 
-fun getApiKey(propertyKey: String): String{
+fun getApiKey(propertyKey: String): String {
     return gradleLocalProperties(rootDir).getProperty(propertyKey)
 }
 
@@ -86,10 +90,16 @@ dependencies {
     implementation(libs.bundles.datastore)
 
     // test
+    testImplementation(libs.kotest)
+    testImplementation(libs.mockK)
     testImplementation(libs.junit)
+
     androidTestImplementation(libs.junit.ext)
     androidTestImplementation(libs.junit.espresso)
+
     debugImplementation(libs.compose.ui.test)
     debugImplementation(libs.compose.ui.tooling.debug)
+
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
+    androidTestImplementation(libs.mockK.android)
 }

@@ -10,13 +10,13 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class VideosUploadedResponse(
     val uploader: UploaderResponse?,
-    val video: List<VideoResponse>?,
+    val videos: List<VideoResponse>?,
 ) : BaseResponse {
     companion object : Mapper<VideosUploadedResponse, VideosUploaded> {
         override fun VideosUploadedResponse.toDomainModel(): VideosUploaded {
             return VideosUploaded(
                 uploader = uploader?.toDomainModel(),
-                video = video?.map { it.toDomainModel() }
+                videos = videos?.map { it.toDomainModel() }
             )
         }
     }

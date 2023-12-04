@@ -6,5 +6,5 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class VideosUploaded(
     val uploader: Uploader?,
-    val video: List<Video>?,
+    val videos: List<Video>?,
 ) : BaseModel
