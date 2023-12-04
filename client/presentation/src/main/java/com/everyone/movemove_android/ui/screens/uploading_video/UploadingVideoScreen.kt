@@ -13,6 +13,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absoluteOffset
@@ -71,7 +72,6 @@ import com.everyone.domain.model.UploadCategory.K_POP
 import com.everyone.domain.model.UploadCategory.NEW_SCHOOL
 import com.everyone.domain.model.UploadCategory.OLD_SCHOOL
 import com.everyone.movemove_android.R
-import com.everyone.movemove_android.base.BaseActivity
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.MoveMoveTextField
@@ -80,6 +80,7 @@ import com.everyone.movemove_android.ui.SelectThumbnailDialog
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.Finish
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnBottomSheetHide
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnCategorySelected
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickPlayAndPause
@@ -97,6 +98,7 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnVideoReady
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoEndTime
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoStartTime
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.State
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.EditorTimelineDim
 import com.everyone.movemove_android.ui.theme.Point
@@ -112,7 +114,6 @@ import kotlin.math.abs
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
 fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
-    val context = LocalContext.current
     val (state, event, effect) = use(viewModel)
     val videoLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -139,428 +140,462 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
         }
     }
 
-    with(state) {
-        val sheetState = rememberModalBottomSheetState(
-            initialValue = Hidden,
-            skipHalfExpanded = true
+    val sheetState = rememberModalBottomSheetState(
+        initialValue = Hidden,
+        skipHalfExpanded = true
+    )
+
+    LaunchedEffect(state.isBottomSheetShowing) {
+        if (state.isBottomSheetShowing) {
+            sheetState.show()
+        } else {
+            sheetState.hide()
+        }
+    }
+
+    LaunchedEffect(sheetState.isVisible) {
+        if (!sheetState.isVisible) {
+            event(OnBottomSheetHide)
+        }
+    }
+
+    ModalBottomSheetLayout(
+        sheetState = sheetState,
+        sheetContent = { CategoryBottomSheet(event) }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = MaterialTheme.colorScheme.background)
+                .addFocusCleaner()
+        ) {
+            VideoFrame(
+                state = state,
+                event = event
+            )
+
+            VideoInfoSection(
+                state = state,
+                event = event
+            )
+        }
+
+        if (state.isLoading) {
+            LoadingDialog()
+        }
+
+        if (state.isSelectThumbnailDialogShowing) {
+            SelectThumbnailDialog(
+                thumbnailList = state.thumbnailList,
+                selectedThumbnail = state.selectedThumbnail,
+                onClickThumbnail = { event(OnClickThumbnail(it)) },
+                onClickComplete = { event(OnClickUpload) },
+                onDismissRequest = { event(OnSelectThumbnailDialogDismissed) }
+            )
+        }
+
+        BackHandler(enabled = state.videoInfo.uri != null) {
+            // todo: show dialog
+        }
+
+        BackHandler(enabled = state.isBottomSheetShowing) {
+            event(OnBottomSheetHide)
+        }
+    }
+}
+
+@Composable
+private fun CategoryBottomSheet(event: (Event) -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(350.dp)
+            .background(color = MaterialTheme.colorScheme.background)
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(top = 12.dp)
+                .align(TopCenter)
+                .clip(shape = RoundedCornerShape(24.dp))
+                .width(40.dp)
+                .height(4.dp)
+                .background(color = MaterialTheme.colorScheme.onBackground)
         )
 
-        LaunchedEffect(isBottomSheetShowing) {
-            if (isBottomSheetShowing) {
-                sheetState.show()
-            } else {
-                sheetState.hide()
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            UploadCategory.values().forEach { category ->
+                StyledText(
+                    modifier = Modifier.clickableWithoutRipple { event(OnCategorySelected(category)) },
+                    text = category.getString(),
+                    style = Typography.titleLarge
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
 
-        LaunchedEffect(sheetState.isVisible) {
-            if (!sheetState.isVisible) {
-                event(OnBottomSheetHide)
-            }
+        StyledText(
+            modifier = Modifier
+                .padding(top = 36.dp)
+                .align(TopCenter),
+            text = stringResource(id = R.string.select_category),
+            style = Typography.titleMedium
+        )
+    }
+}
+
+@Composable
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+private fun ColumnScope.VideoFrame(
+    state: State,
+    event: (Event) -> Unit
+) {
+    state.videoInfo.uri?.let { uri ->
+        val context = LocalContext.current
+        val videoDataSource by remember {
+            val dataSourceFactory = DefaultDataSource.Factory(context, DefaultDataSource.Factory(context))
+            mutableStateOf(ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(uri)))
         }
+        val exoPlayer = remember {
+            ExoPlayer.Builder(context).build().apply {
+                setMediaSource(videoDataSource)
+                videoScalingMode = C.VIDEO_SCALING_MODE_DEFAULT
+                repeatMode = Player.REPEAT_MODE_ONE
+                playWhenReady = true
+                prepare()
 
-        ModalBottomSheetLayout(
-            sheetState = sheetState,
-            sheetContent = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(350.dp)
-                        .background(color = MaterialTheme.colorScheme.background)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .padding(top = 12.dp)
-                            .align(TopCenter)
-                            .clip(shape = RoundedCornerShape(24.dp))
-                            .width(40.dp)
-                            .height(4.dp)
-                            .background(color = MaterialTheme.colorScheme.onBackground)
-                    )
-
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        UploadCategory.values().forEach { category ->
-                            StyledText(
-                                modifier = Modifier.clickableWithoutRipple { event(OnCategorySelected(category)) },
-                                text = category.getString(),
-                                style = Typography.titleLarge
-                            )
-
-                            Spacer(modifier = Modifier.height(12.dp))
-                        }
+                addListener(object : Player.Listener {
+                    override fun onPlaybackStateChanged(playbackState: Int) {
+                        if (duration > 0) event(OnVideoReady(duration = duration))
                     }
+                })
+            }
+        }
 
-                    StyledText(
-                        modifier = Modifier
-                            .padding(top = 36.dp)
-                            .align(TopCenter),
-                        text = stringResource(id = R.string.select_category),
-                        style = Typography.titleMedium
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+        ) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .clickableWithoutRipple { event(OnClickPlayer) }
+            ) {
+                if (state.isVideoReady) {
+                    AndroidView(
+                        modifier = Modifier.fillMaxSize(),
+                        factory = {
+                            PlayerView(context).apply {
+                                useController = false
+                                player = exoPlayer
+                            }
+                        }
                     )
                 }
+
+                StyledText(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .align(TopEnd)
+                        .clip(shape = RoundedCornerShape(24.dp))
+                        .alpha(0.5f)
+                        .border(
+                            width = 1.dp,
+                            shape = RoundedCornerShape(24.dp),
+                            color = Color.White
+                        )
+                        .padding(
+                            vertical = 4.dp,
+                            horizontal = 12.dp
+                        )
+                        .clickableWithoutRipple { event(OnClickSelectVideo) },
+                    text = stringResource(id = R.string.video_re_select),
+                    style = Typography.labelMedium,
+                    color = Color.White
+                )
+
+                if (state.isPlayAndPauseShowing) {
+                    Icon(
+                        modifier = Modifier
+                            .align(Center)
+                            .size(48.dp)
+                            .clickableWithoutRipple {
+                                if (state.isPlaying) exoPlayer.pause() else exoPlayer.play()
+                                event(OnClickPlayAndPause)
+                            },
+                        painter = painterResource(id = if (state.isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
+                        tint = Color.White,
+                        contentDescription = null
+                    )
+                }
+
+                LaunchedEffect(state.isPlayAndPauseShowing) {
+                    if (state.isPlayAndPauseShowing) {
+                        delay(5000L)
+                        event(OnPlayAndPauseTimeOut)
+                    }
+                }
             }
+
+            Divider(color = if (isSystemInDarkTheme()) BorderInDark else Color.White) // todo : 라이트 모드의 Border 색상이 정해지지 않음
+
+            EditorTimeline(
+                exoPlayer = exoPlayer,
+                state = state,
+                event = event
+            )
+        }
+
+        DisposableEffect(Unit) {
+            onDispose {
+                exoPlayer.release()
+            }
+        }
+    } ?: run {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .clickableWithoutRipple { event(OnClickSelectVideo) }
         ) {
+
             Column(
+                modifier = Modifier.align(Center),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    modifier = Modifier.size(160.dp),
+                    painter = painterResource(id = R.drawable.ic_add_video),
+                    contentDescription = null
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                StyledText(
+                    text = stringResource(id = R.string.add_video_description),
+                    style = Typography.labelMedium
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EditorTimeline(
+    exoPlayer: ExoPlayer,
+    state: State,
+    event: (Event) -> Unit
+) {
+    var timelineWidthState by remember { mutableIntStateOf(0) }
+    var timelineUnitWidthState by remember { mutableLongStateOf(0L) }
+    var videoLengthUnitState by remember { mutableLongStateOf(0L) }
+    val boundWidthDp = 4.dp
+
+    timelineUnitWidthState = timelineWidthState.toLong() / 1000L
+    videoLengthUnitState = state.videoInfo.duration / 1000L
+    if (state.videoEndTime == 0L && state.videoInfo.duration > 0L) {
+        event(SetVideoEndTime(state.videoInfo.duration))
+    }
+
+    if (exoPlayer.currentPosition < state.videoStartTime || exoPlayer.currentPosition > state.videoEndTime) {
+        exoPlayer.seekTo(state.videoStartTime)
+    }
+
+    if (state.videoEndTime > 0) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            var indicatorXPositionState by remember { mutableIntStateOf(0) }
+            var lowerBoundDraggingState by remember { mutableStateOf(false) }
+            var lowerBoundOffsetState by remember { mutableFloatStateOf(0f) }
+            var upperBoundDraggingState by remember { mutableStateOf(false) }
+            var upperBoundOffsetState by remember { mutableFloatStateOf(0f) }
+
+            Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(color = MaterialTheme.colorScheme.background)
-                    .addFocusCleaner()
+                    .padding(horizontal = boundWidthDp)
+                    .onGloballyPositioned { timelineWidthState = it.size.width }
             ) {
-                videoInfo.uri?.let { uri ->
-                    val videoDataSource by remember {
-                        val dataSourceFactory = DefaultDataSource.Factory(context, DefaultDataSource.Factory(context))
-                        mutableStateOf(ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(uri)))
-                    }
-                    val exoPlayer = remember {
-                        ExoPlayer.Builder(context).build().apply {
-                            setMediaSource(videoDataSource)
-                            videoScalingMode = C.VIDEO_SCALING_MODE_DEFAULT
-                            repeatMode = Player.REPEAT_MODE_ONE
-                            playWhenReady = true
-                            prepare()
-
-                            addListener(object : Player.Listener {
-                                override fun onPlaybackStateChanged(playbackState: Int) {
-                                    if (duration > 0) {
-                                        event(
-                                            OnVideoReady(duration = duration)
-                                        )
-                                    }
-                                }
-                            })
-                        }
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                    ) {
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .clickableWithoutRipple { event(OnClickPlayer) }
-                        ) {
-                            if (isVideoReady) {
-                                AndroidView(
-                                    modifier = Modifier.fillMaxSize(),
-                                    factory = {
-                                        PlayerView(context).apply {
-                                            useController = false
-                                            player = exoPlayer
-                                        }
-                                    }
-                                )
-                            }
-
-                            StyledText(
-                                modifier = Modifier
-                                    .padding(24.dp)
-                                    .align(TopEnd)
-                                    .clip(shape = RoundedCornerShape(24.dp))
-                                    .alpha(0.5f)
-                                    .border(
-                                        width = 1.dp,
-                                        shape = RoundedCornerShape(24.dp),
-                                        color = Color.White
-                                    )
-                                    .padding(
-                                        vertical = 4.dp,
-                                        horizontal = 12.dp
-                                    )
-                                    .clickableWithoutRipple { event(OnClickSelectVideo) },
-                                text = stringResource(id = R.string.video_re_select),
-                                style = Typography.labelMedium,
-                                color = Color.White
-                            )
-
-                            if (isPlayAndPauseShowing) {
-                                Icon(
-                                    modifier = Modifier
-                                        .align(Center)
-                                        .size(48.dp)
-                                        .clickableWithoutRipple {
-                                            if (isPlaying) exoPlayer.pause() else exoPlayer.play()
-                                            event(OnClickPlayAndPause)
-                                        },
-                                    painter = painterResource(id = if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
-                                    tint = Color.White,
-                                    contentDescription = null
-                                )
-                            }
-
-                            LaunchedEffect(isPlayAndPauseShowing) {
-                                if (isPlayAndPauseShowing) {
-                                    delay(5000L)
-                                    event(OnPlayAndPauseTimeOut)
-                                }
-                            }
-                        }
-
-                        Divider(color = if (isSystemInDarkTheme()) BorderInDark else Color.White) // todo : 라이트 모드의 Border 색상이 정해지지 않음
-
-                        var timelineWidthState by remember { mutableIntStateOf(0) }
-                        var timelineUnitWidthState by remember { mutableLongStateOf(0L) }
-                        var videoLengthUnitState by remember { mutableLongStateOf(0L) }
-                        val boundWidthDp = 4.dp
-
-                        timelineUnitWidthState = timelineWidthState.toLong() / 1000L
-                        videoLengthUnitState = videoInfo.duration / 1000L
-                        if (videoEndTime == 0L && videoInfo.duration > 0L) {
-                            event(SetVideoEndTime(videoInfo.duration))
-                        }
-
-                        if (exoPlayer.currentPosition < videoStartTime || exoPlayer.currentPosition > videoEndTime) {
-                            exoPlayer.seekTo(videoStartTime)
-                        }
-
-                        if (videoEndTime > 0) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(50.dp)
-                            ) {
-                                var indicatorXPositionState by remember { mutableIntStateOf(0) }
-                                var lowerBoundDraggingState by remember { mutableStateOf(false) }
-                                var lowerBoundOffsetState by remember { mutableFloatStateOf(0f) }
-                                var upperBoundDraggingState by remember { mutableStateOf(false) }
-                                var upperBoundOffsetState by remember { mutableFloatStateOf(0f) }
-
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(horizontal = boundWidthDp)
-                                        .onGloballyPositioned { timelineWidthState = it.size.width }
-                                ) {
-                                    if (thumbnailList.isNotEmpty()) {
-                                        thumbnailList.forEach { thumbnail ->
-                                            Image(
-                                                modifier = Modifier
-                                                    .fillMaxHeight()
-                                                    .weight(1f),
-                                                bitmap = thumbnail,
-                                                contentDescription = null
-                                            )
-                                        }
-                                    } else {
-                                        Box(modifier = Modifier.fillMaxSize()) {
-                                            CircularProgressIndicator(
-                                                modifier = Modifier
-                                                    .align(Center)
-                                                    .size(24.dp),
-                                                color = Point
-                                            )
-                                        }
-                                    }
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .absoluteOffset(x = lowerBoundOffsetState.pxToDp())
-                                        .width(boundWidthDp)
-                                        .fillMaxHeight()
-                                        .background(color = if (lowerBoundDraggingState) Point else Color.White)
-                                        .pointerInput(Unit) {
-                                            detectHorizontalDragGestures(
-                                                onDragStart = { lowerBoundDraggingState = true },
-                                                onDragEnd = {
-                                                    lowerBoundDraggingState = false
-                                                    event(SetVideoStartTime((videoLengthUnitState * (lowerBoundOffsetState / timelineUnitWidthState)).toLong()))
-                                                },
-                                                onDragCancel = { lowerBoundDraggingState = false },
-                                                onHorizontalDrag = { _, dragAmount ->
-                                                    val sum = lowerBoundOffsetState + dragAmount
-                                                    if (sum >= 0 && sum < timelineWidthState + upperBoundOffsetState - (boundWidthDp.toPx() * 3)) {
-                                                        lowerBoundOffsetState = sum
-                                                    }
-                                                }
-                                            )
-                                        }
-                                )
-
-                                Box(
-                                    modifier = Modifier
-                                        .width(lowerBoundOffsetState.pxToDp())
-                                        .fillMaxHeight()
-                                        .background(EditorTimelineDim)
-                                )
-
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.CenterEnd)
-                                        .absoluteOffset(x = upperBoundOffsetState.pxToDp())
-                                        .width(boundWidthDp)
-                                        .fillMaxHeight()
-                                        .background(color = if (upperBoundDraggingState) Point else Color.White)
-                                        .pointerInput(Unit) {
-                                            detectHorizontalDragGestures(
-                                                onDragStart = { upperBoundDraggingState = true },
-                                                onDragEnd = {
-                                                    upperBoundDraggingState = false
-                                                    event(SetVideoEndTime(videoLengthUnitState * ((timelineWidthState + upperBoundOffsetState) / timelineUnitWidthState).toLong()))
-                                                },
-                                                onDragCancel = { upperBoundDraggingState = false },
-                                                onHorizontalDrag = { _, dragAmount ->
-                                                    val sum = upperBoundOffsetState + dragAmount
-                                                    if (sum <= 0 && sum > lowerBoundOffsetState - timelineWidthState + (boundWidthDp.toPx() * 3)) {
-                                                        upperBoundOffsetState = sum
-                                                    }
-                                                }
-                                            )
-                                        }
-                                )
-
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.CenterEnd)
-                                        .fillMaxHeight()
-                                        .background(EditorTimelineDim)
-                                        .padding(end = abs(upperBoundOffsetState).pxToDp())
-                                )
-
-                                Box(
-                                    modifier = Modifier
-                                        .absoluteOffset(x = indicatorXPositionState.pxToDp() + boundWidthDp)
-                                        .width(1.dp)
-                                        .fillMaxHeight()
-                                        .background(color = Point)
-                                )
-
-                                LaunchedEffect(Unit) {
-                                    while (true) {
-                                        indicatorXPositionState = (timelineUnitWidthState * (exoPlayer.currentPosition / videoLengthUnitState)).toInt()
-                                        delay(100)
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    DisposableEffect(Unit) {
-                        onDispose {
-                            exoPlayer.release()
-                        }
-                    }
-                } ?: run {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .clickableWithoutRipple { event(OnClickSelectVideo) }
-                    ) {
-
-                        Column(
-                            modifier = Modifier.align(Center),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Image(
-                                modifier = Modifier.size(160.dp),
-                                painter = painterResource(id = R.drawable.ic_add_video),
-                                contentDescription = null
-                            )
-
-                            Spacer(modifier = Modifier.height(18.dp))
-
-                            StyledText(
-                                text = stringResource(id = R.string.add_video_description),
-                                style = Typography.labelMedium
-                            )
-                        }
-                    }
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(350.dp)
-                        .background(color = MaterialTheme.colorScheme.surface)
-                ) {
-                    Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                        StyledText(
-                            modifier = Modifier.padding(top = 30.dp),
-                            text = stringResource(id = R.string.title),
-                            style = Typography.labelLarge
-                        )
-
-                        MoveMoveTextField(
+                if (state.thumbnailList.isNotEmpty()) {
+                    state.thumbnailList.forEach { thumbnail ->
+                        Image(
                             modifier = Modifier
-                                .padding(top = 12.dp)
-                                .fillMaxWidth()
-                                .height(40.dp),
-                            value = title,
-                            onValueChange = { event(OnTitleTyped(it)) }
+                                .fillMaxHeight()
+                                .weight(1f),
+                            bitmap = thumbnail,
+                            contentDescription = null
                         )
-
-                        StyledText(
-                            modifier = Modifier.padding(top = 12.dp),
-                            text = stringResource(id = R.string.video_description),
-                            style = Typography.labelLarge
-                        )
-
-                        MoveMoveTextField(
-                            modifier = Modifier
-                                .padding(top = 12.dp)
-                                .fillMaxWidth()
-                                .height(40.dp),
-                            value = description,
-                            onValueChange = { event(OnDescriptionTyped(it)) }
-                        )
-
-                        Row(modifier = Modifier.padding(top = 12.dp)) {
-                            StyledText(
-                                text = stringResource(id = R.string.category),
-                                style = Typography.labelLarge
-                            )
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            StyledText(
-                                modifier = Modifier.clickableWithoutRipple { event(OnClickSelectCategory) },
-                                text = category?.getString() ?: stringResource(id = R.string.select),
-                                style = Typography.labelLarge,
-                                color = Point
-                            )
-                        }
                     }
-
-                    RoundedCornerButton(
-                        modifier = Modifier
-                            .padding(bottom = 12.dp)
-                            .padding(horizontal = 24.dp)
-                            .align(Alignment.BottomCenter),
-                        buttonText = stringResource(id = R.string.select_thumbnail),
-                        isEnabled = isUploadEnabled,
-                        onClick = { event(OnClickSelectThumbnail) }
-                    )
+                } else {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .align(Center)
+                                .size(24.dp),
+                            color = Point
+                        )
+                    }
                 }
             }
 
-            if (isLoading) {
-                LoadingDialog()
-            }
+            Box(
+                modifier = Modifier
+                    .absoluteOffset(x = lowerBoundOffsetState.pxToDp())
+                    .width(boundWidthDp)
+                    .fillMaxHeight()
+                    .background(color = if (lowerBoundDraggingState) Point else Color.White)
+                    .pointerInput(Unit) {
+                        detectHorizontalDragGestures(
+                            onDragStart = { lowerBoundDraggingState = true },
+                            onDragEnd = {
+                                lowerBoundDraggingState = false
+                                event(SetVideoStartTime((videoLengthUnitState * (lowerBoundOffsetState / timelineUnitWidthState)).toLong()))
+                            },
+                            onDragCancel = { lowerBoundDraggingState = false },
+                            onHorizontalDrag = { _, dragAmount ->
+                                val sum = lowerBoundOffsetState + dragAmount
+                                if (sum >= 0 && sum < timelineWidthState + upperBoundOffsetState - (boundWidthDp.toPx() * 3)) {
+                                    lowerBoundOffsetState = sum
+                                }
+                            }
+                        )
+                    }
+            )
 
-            if (isSelectThumbnailDialogShowing) {
-                SelectThumbnailDialog(
-                    thumbnailList = thumbnailList,
-                    selectedThumbnail = selectedThumbnail,
-                    onClickThumbnail = { event(OnClickThumbnail(it)) },
-                    onClickComplete = { event(OnClickUpload) },
-                    onDismissRequest = { event(OnSelectThumbnailDialogDismissed) }
+            Box(
+                modifier = Modifier
+                    .width(lowerBoundOffsetState.pxToDp())
+                    .fillMaxHeight()
+                    .background(EditorTimelineDim)
+            )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .absoluteOffset(x = upperBoundOffsetState.pxToDp())
+                    .width(boundWidthDp)
+                    .fillMaxHeight()
+                    .background(color = if (upperBoundDraggingState) Point else Color.White)
+                    .pointerInput(Unit) {
+                        detectHorizontalDragGestures(
+                            onDragStart = { upperBoundDraggingState = true },
+                            onDragEnd = {
+                                upperBoundDraggingState = false
+                                event(SetVideoEndTime(videoLengthUnitState * ((timelineWidthState + upperBoundOffsetState) / timelineUnitWidthState).toLong()))
+                            },
+                            onDragCancel = { upperBoundDraggingState = false },
+                            onHorizontalDrag = { _, dragAmount ->
+                                val sum = upperBoundOffsetState + dragAmount
+                                if (sum <= 0 && sum > lowerBoundOffsetState - timelineWidthState + (boundWidthDp.toPx() * 3)) {
+                                    upperBoundOffsetState = sum
+                                }
+                            }
+                        )
+                    }
+            )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .fillMaxHeight()
+                    .background(EditorTimelineDim)
+                    .padding(end = abs(upperBoundOffsetState).pxToDp())
+            )
+
+            Box(
+                modifier = Modifier
+                    .absoluteOffset(x = indicatorXPositionState.pxToDp() + boundWidthDp)
+                    .width(1.dp)
+                    .fillMaxHeight()
+                    .background(color = Point)
+            )
+
+            LaunchedEffect(Unit) {
+                while (true) {
+                    indicatorXPositionState = (timelineUnitWidthState * (exoPlayer.currentPosition / videoLengthUnitState)).toInt()
+                    delay(100)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun VideoInfoSection(
+    state: State,
+    event: (Event) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(350.dp)
+            .background(color = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            StyledText(
+                modifier = Modifier.padding(top = 30.dp),
+                text = stringResource(id = R.string.title),
+                style = Typography.labelLarge
+            )
+
+            MoveMoveTextField(
+                modifier = Modifier
+                    .padding(top = 12.dp)
+                    .fillMaxWidth()
+                    .height(40.dp),
+                value = state.title,
+                onValueChange = { event(OnTitleTyped(it)) }
+            )
+
+            StyledText(
+                modifier = Modifier.padding(top = 12.dp),
+                text = stringResource(id = R.string.video_description),
+                style = Typography.labelLarge
+            )
+
+            MoveMoveTextField(
+                modifier = Modifier
+                    .padding(top = 12.dp)
+                    .fillMaxWidth()
+                    .height(40.dp),
+                value = state.description,
+                onValueChange = { event(OnDescriptionTyped(it)) }
+            )
+
+            Row(modifier = Modifier.padding(top = 12.dp)) {
+                StyledText(
+                    text = stringResource(id = R.string.category),
+                    style = Typography.labelLarge
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                StyledText(
+                    modifier = Modifier.clickableWithoutRipple { event(OnClickSelectCategory) },
+                    text = state.category?.getString() ?: stringResource(id = R.string.select),
+                    style = Typography.labelLarge,
+                    color = Point
                 )
             }
         }
 
-        BackHandler(enabled = videoInfo.uri != null) {
-            // todo: show dialog
-        }
-
-        BackHandler(enabled = isBottomSheetShowing) {
-            event(OnBottomSheetHide)
-        }
+        RoundedCornerButton(
+            modifier = Modifier
+                .padding(bottom = 12.dp)
+                .padding(horizontal = 24.dp)
+                .align(Alignment.BottomCenter),
+            buttonText = stringResource(id = R.string.select_thumbnail),
+            isEnabled = state.isUploadEnabled,
+            onClick = { event(OnClickSelectThumbnail) }
+        )
     }
 }
 
