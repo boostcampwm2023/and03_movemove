@@ -26,11 +26,14 @@ import com.everyone.data.remote.model.ProfileResponse
 import com.everyone.data.remote.model.ProfileResponse.Companion.toDomainModel
 import com.everyone.data.remote.model.UserInfoResponse
 import com.everyone.data.remote.model.UserInfoResponse.Companion.toDomainModel
+import com.everyone.data.remote.model.VideosRatedResponse
+import com.everyone.data.remote.model.VideosRatedResponse.Companion.toDomainModel
 import com.everyone.data.remote.model.VideosUploadedResponse
 import com.everyone.data.remote.model.VideosUploadedResponse.Companion.toDomainModel
 import com.everyone.domain.model.Profile
 import com.everyone.domain.model.ProfileImageUploadUrl
 import com.everyone.domain.model.UserInfo
+import com.everyone.domain.model.VideosRated
 import com.everyone.domain.model.VideosUploaded
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.repository.UserRepository
@@ -154,6 +157,28 @@ class UserRepositoryImpl @Inject constructor(
             content = {
                 append(LIMIT, limit)
                 append(LAST_ID, lastId)
+            }
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
+            }
+        }
+    }
+
+    override fun getUsersVideosRated(
+        userId: String,
+        limit: String,
+        lastRatedAt: String
+    ): Flow<DataState<VideosRated>> = flow {
+        networkHandler.request<VideosRatedResponse>(
+            method = HttpMethod.Post,
+            isAccessTokenNeeded = false,
+            url = { path(USERS, userId, VIDEOS, UPLOADED) },
+            content = {
+                append(LIMIT, limit)
+                append(lastRatedAt, lastRatedAt)
             }
         ).collect { response ->
             response.data?.let {
