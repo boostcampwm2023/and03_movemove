@@ -43,7 +43,7 @@ interface WatchingVideoContract :
         CHALLENGE("챌린지"),
         OLD_SCHOOL("올드스쿨"),
         NEW_SCHOOL("뉴스쿨"),
-        K_POP("K-POP")
+        K_POP("Kpop")
     }
 
     enum class VideoTab {
