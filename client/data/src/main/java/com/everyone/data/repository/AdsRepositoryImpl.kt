@@ -19,7 +19,7 @@ class AdsRepositoryImpl @Inject constructor(
     private val networkHandler: NetworkHandler
 ) : AdsRepository {
 
-    override suspend fun getAds(): Flow<DataState<Advertisements>> {
+    override fun getAds(): Flow<DataState<Advertisements>> {
         return flow {
             networkHandler.request<AdvertisementsResponse>(
                 method = HttpMethod.Get,
