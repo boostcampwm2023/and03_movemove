@@ -48,7 +48,7 @@ import com.everyone.movemove_android.ui.theme.InActiveInDark
 import com.everyone.movemove_android.ui.theme.Point
 
 @Composable
-fun MainScreen() {
+fun MainScreen(navigateToMy: () -> Unit) {
     val navController = rememberNavController()
     val navigator = rememberNavigator(navController = navController)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -79,14 +79,19 @@ fun MainScreen() {
             navScreen(Destination.HOME.route) { HomeScreen(navigator = navigator) }
             navScreen(Destination.WATCHING_VIDEO.route) {
                 val videosInfo = remember {
-                    val videosInfo = navController.previousBackStackEntry?.savedStateHandle?.get<Pair<List<Videos>, Int>>("videosInfo")
-                    navController.previousBackStackEntry?.savedStateHandle?.remove<Pair<List<Videos>, Int>>("videosInfo")
+                    val videosInfo =
+                        navController.previousBackStackEntry?.savedStateHandle?.get<Pair<List<Videos>, Int>>(
+                            "videosInfo"
+                        )
+                    navController.previousBackStackEntry?.savedStateHandle?.remove<Pair<List<Videos>, Int>>(
+                        "videosInfo"
+                    )
                     videosInfo
                 }
                 WatchingVideoScreen(videosInfo = videosInfo)
             }
             navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
-            navScreen(Destination.PROFILE.route) { ProfileScreen() }
+            navScreen(Destination.PROFILE.route) { ProfileScreen(navigateToMy = navigateToMy) }
         }
     }
 }
