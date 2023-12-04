@@ -12,7 +12,8 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         val isPlaying: Boolean = false,
         val isPlayAndPauseShowing: Boolean = false,
         val isVideoReady: Boolean = false,
-        val videoInfo: VideoInfo = VideoInfo(),
+        val videoUri: Uri? = null,
+        val videoDuration: Long = 0L,
         val videoStartTime: Long = 0L,
         val videoEndTime: Long = 0L,
         val thumbnailList: List<ImageBitmap> = emptyList(),
@@ -24,11 +25,6 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         val isSelectThumbnailDialogShowing: Boolean = false,
         val selectedThumbnail: ImageBitmap? = null,
         val stagedVideoFile: File? = null
-    )
-
-    data class VideoInfo(
-        val uri: Uri? = null,
-        val duration: Long = 0L
     )
 
     sealed interface Event {

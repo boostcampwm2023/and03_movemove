@@ -194,7 +194,7 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
             )
         }
 
-        BackHandler(enabled = state.videoInfo.uri != null) {
+        BackHandler(enabled = state.videoUri != null) {
             // todo: show dialog
         }
 
@@ -254,7 +254,7 @@ private fun ColumnScope.VideoFrame(
     state: State,
     event: (Event) -> Unit
 ) {
-    state.videoInfo.uri?.let { uri ->
+    state.videoUri?.let { uri ->
         val context = LocalContext.current
         val videoDataSource by remember {
             val dataSourceFactory = DefaultDataSource.Factory(context, DefaultDataSource.Factory(context))
@@ -397,9 +397,9 @@ private fun EditorTimeline(
     val boundWidthDp = 4.dp
 
     timelineUnitWidthState = timelineWidthState.toLong() / 1000L
-    videoLengthUnitState = state.videoInfo.duration / 1000L
-    if (state.videoEndTime == 0L && state.videoInfo.duration > 0L) {
-        event(SetVideoEndTime(state.videoInfo.duration))
+    videoLengthUnitState = state.videoDuration / 1000L
+    if (state.videoEndTime == 0L && state.videoDuration > 0L) {
+        event(SetVideoEndTime(state.videoDuration))
     }
 
     if (exoPlayer.currentPosition < state.videoStartTime || exoPlayer.currentPosition > state.videoEndTime) {

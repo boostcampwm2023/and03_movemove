@@ -121,7 +121,7 @@ class UploadingVideoViewModel @Inject constructor(
 
     private fun onGetUri(uri: Uri) {
         _state.update {
-            it.copy(videoInfo = it.videoInfo.copy(uri = uri))
+            it.copy(videoUri = uri)
         }
 
         checkUploadEnable()
@@ -149,7 +149,8 @@ class UploadingVideoViewModel @Inject constructor(
         _state.update {
             it.copy(
                 isVideoReady = true,
-                isPlaying = true, videoInfo = it.videoInfo.copy(duration = duration)
+                isPlaying = true,
+                videoDuration = duration
             )
         }
 
@@ -157,37 +158,35 @@ class UploadingVideoViewModel @Inject constructor(
     }
 
     private fun getThumbnailList() {
-        with(state.value.videoInfo) {
-            viewModelScope.launch(ioDispatcher) {
-                val tempList = mutableListOf<ImageBitmap>()
-                val mediaMetadataRetriever = MediaMetadataRetriever().apply {
-                    uri?.let {
-                        getVideoFilePath(context, uri)?.let { path ->
-                            videoFilePath = path
-                            setDataSource(path)
-                        }
+        viewModelScope.launch(ioDispatcher) {
+            val tempList = mutableListOf<ImageBitmap>()
+            val mediaMetadataRetriever = MediaMetadataRetriever().apply {
+                state.value.videoUri?.let { videoUri ->
+                    getVideoFilePath(context, videoUri)?.let { path ->
+                        videoFilePath = path
+                        setDataSource(path)
                     }
                 }
-
-                withContext(defaultDispatcher) {
-                    repeat(THUMBNAIL_COUNT) {
-                        mediaMetadataRetriever.getFrameAtTime(
-                            ((state.value.videoInfo.duration / THUMBNAIL_COUNT) * it + 1) * 1000L,
-                            MediaMetadataRetriever.OPTION_CLOSEST
-                        )?.let { bitmap ->
-                            tempList.add(bitmap.asImageBitmap())
-                        }
-                    }
-                }
-
-                withContext(mainImmediateDispatcher) {
-                    _state.update {
-                        it.copy(thumbnailList = tempList)
-                    }
-                }
-
-                mediaMetadataRetriever.release()
             }
+
+            withContext(defaultDispatcher) {
+                repeat(THUMBNAIL_COUNT) {
+                    mediaMetadataRetriever.getFrameAtTime(
+                        ((state.value.videoDuration / THUMBNAIL_COUNT) * it + 1) * 1000L,
+                        MediaMetadataRetriever.OPTION_CLOSEST
+                    )?.let { bitmap ->
+                        tempList.add(bitmap.asImageBitmap())
+                    }
+                }
+            }
+
+            withContext(mainImmediateDispatcher) {
+                _state.update {
+                    it.copy(thumbnailList = tempList)
+                }
+            }
+
+            mediaMetadataRetriever.release()
         }
     }
 
@@ -284,7 +283,7 @@ class UploadingVideoViewModel @Inject constructor(
         with(state.value) {
             _state.update {
                 it.copy(
-                    isUploadEnabled = videoInfo.uri != null &&
+                    isUploadEnabled = videoUri != null &&
                             title.isNotEmpty() &&
                             description.isNotEmpty() &&
                             category != null
