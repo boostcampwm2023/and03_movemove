@@ -88,10 +88,10 @@ fun WatchingVideoScreen(
 
     val (state, event, effect) = use(viewModel)
 
-    LaunchedEffect(viewModel.videosInfo) {
-        if (viewModel.videosInfo != null) {
-            event(SetVideos(videos = viewModel.videosInfo.first))
-            initialPage = viewModel.videosInfo.second
+    LaunchedEffect(viewModel.videosTrend) {
+        if (viewModel.videosTrend != null) {
+            event(SetVideos(videos = viewModel.videosTrend.videos!!))
+            initialPage = viewModel.page!!
             event(ChangedVideoTab(CATEGORY_TAB))
         } else {
             if (state.videoTab == CATEGORY_TAB) event(GetRandomVideos)
@@ -181,7 +181,7 @@ fun WatchingVideoScreen(
                     if (state.isClickedCategory) {
                         CategoryScreen()
                     } else {
-                        if (viewModel.videosInfo == null) {
+                        if (viewModel.videosTrend == null) {
                             MoveMoveCategory(
                                 category = state.selectedCategory.displayName,
                                 modifier = Modifier

@@ -56,7 +56,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    navigateToWatchingVideo: (List<Videos>?, Int?) -> Unit
+    navigateToWatchingVideo: (VideosTrend?, Int?) -> Unit
 ) {
 
     val (state, event, effect) = use(viewModel)
@@ -244,7 +244,7 @@ fun StyledColorText(
 
 @Composable
 fun MoveMoveVideos(
-    navigateToWatchingVideo: (List<Videos>?, Int?) -> Unit,
+    navigateToWatchingVideo: (VideosTrend?, Int?) -> Unit,
     videosTrend: VideosTrend,
 ) {
     videosTrend.videos?.let { videos ->
@@ -261,7 +261,7 @@ fun MoveMoveVideos(
             items(videos.size) {
                 MoveMoveVideo(
                     modifier = Modifier.clickableWithoutRipple {
-                        navigateToWatchingVideo(videos, it)
+                        navigateToWatchingVideo(videosTrend, it)
                     },
                     videos = videos[it],
                 )

@@ -1,15 +1,19 @@
 package com.everyone.movemove_android.ui.watching_video
 
+import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.everyone.domain.model.Videos
+import com.everyone.domain.model.VideosTrend
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetVideosRandomUseCase
 import com.everyone.domain.usecase.PutVideosRatingUseCase
 import com.everyone.domain.usecase.PutVideosViewsUseCase
 import com.everyone.movemove_android.di.IoDispatcher
+import com.everyone.movemove_android.ui.container.ContainerActivity
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnClickedCategory
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnCategorySelected
@@ -46,7 +50,9 @@ class WatchingVideoViewModel @Inject constructor(
     private val putVideosViewsUseCase: PutVideosViewsUseCase
 ) : ViewModel(), WatchingVideoContract {
 
-    val videosInfo = savedStateHandle.get<Pair<List<Videos>, Int>>("EXTRA_KEY_PHOTO_ID")
+    val videosTrend = savedStateHandle.get<VideosTrend>(EXTRA_KEY_VIDEOS_TREND)
+    val page = savedStateHandle.get<Int>(EXTRA_KEY_VIDEOS_PAGE)
+
 
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -169,5 +175,7 @@ class WatchingVideoViewModel @Inject constructor(
 
     companion object {
         const val LIMIT = "10"
+        const val EXTRA_KEY_VIDEOS_TREND = "EXTRA_KEY_VIDEOS_TREND"
+        const val EXTRA_KEY_VIDEOS_PAGE = "EXTRA_KEY_VIDEOS_PAGE"
     }
 }

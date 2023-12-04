@@ -35,6 +35,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.everyone.domain.model.Videos
+import com.everyone.domain.model.VideosTrend
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.home.HomeScreen
 import com.everyone.movemove_android.ui.screens.profile.ProfileScreen
@@ -48,7 +49,7 @@ import com.everyone.movemove_android.ui.theme.Point
 
 @Composable
 fun MainScreen(
-    navigateToWatchingVideo: (List<Videos>?, Int?) -> Unit,
+    navigateToWatchingVideo: (VideosTrend?, Int?) -> Unit,
     navigateToMy: () -> Unit
 ) {
     val navController = rememberNavController()
@@ -90,7 +91,7 @@ fun MainScreen(
 fun MoveMoveNavigationBar(
     currentDestination: NavDestination?,
     onNavigate: (Destination) -> Unit,
-    navigateToWatchingVideo: (List<Videos>?, Int?) -> Unit
+    navigateToWatchingVideo: (VideosTrend?, Int?) -> Unit
 ) {
 
     Column {
@@ -131,11 +132,11 @@ fun MoveMoveNavigationBar(
                         },
                         selected = false,
                         onClick = {
-                            if (destination == Destination.WATCHING_VIDEO) navigateToWatchingVideo(
-                                null,
-                                null
-                            )
-                            else onNavigate(destination)
+                            if (destination == Destination.WATCHING_VIDEO) {
+                                navigateToWatchingVideo(null, null)
+                            } else {
+                                onNavigate(destination)
+                            }
                         },
                         interactionSource = MutableInteractionSource()
                     )
