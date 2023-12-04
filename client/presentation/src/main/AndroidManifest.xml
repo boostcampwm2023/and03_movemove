@@ -52,6 +52,10 @@
         <activity
             android:name=".ui.image_cropper.ImageCropperActivity"
             android:theme="@style/Theme.MoveMoveAndroid" />
+
+        <activity
+            android:name=".ui.rating_video.RatingVideoActivity"
+            android:theme="@style/Theme.MoveMoveAndroid" />
     </application>
 
 </manifest>
