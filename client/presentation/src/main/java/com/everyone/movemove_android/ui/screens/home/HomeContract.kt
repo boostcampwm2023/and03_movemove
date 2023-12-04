@@ -1,10 +1,8 @@
 package com.everyone.movemove_android.ui.screens.home
 
 import com.everyone.domain.model.Advertisements
-import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosTrend
 import com.everyone.movemove_android.base.BaseContract
-import com.everyone.movemove_android.ui.rating_video.RatingVideoContract
 
 interface HomeContract :
     BaseContract<HomeContract.State, HomeContract.Event, HomeContract.Effect> {

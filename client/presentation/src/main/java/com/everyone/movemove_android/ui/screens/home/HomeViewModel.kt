@@ -8,7 +8,6 @@ import com.everyone.domain.usecase.GetAdsUseCase
 import com.everyone.domain.usecase.GetVideosTopRatedUseCase
 import com.everyone.domain.usecase.GetVideosTrendUseCase
 import com.everyone.movemove_android.di.IoDispatcher
-import com.everyone.movemove_android.ui.rating_video.RatingVideoContract
 import com.everyone.movemove_android.ui.screens.home.HomeContract.*
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,14 +43,13 @@ class HomeViewModel @Inject constructor(
     }
 
     init {
-        // TODO 광고 API 문제가 있어 주석 처리했슴돠
         getAds()
         getVideosTrend()
         geVideosTopRated(category = Category.CHALLENGE)
         geVideosTopRated(category = Category.OLD_SCHOOL)
     }
 
-    fun onClickedVideo(videosTrend: VideosTrend, page: Int) {
+    private fun onClickedVideo(videosTrend: VideosTrend, page: Int) {
         viewModelScope.launch {
             _effect.emit(Effect.OnClickedVideo(videosTrend, page))
         }
