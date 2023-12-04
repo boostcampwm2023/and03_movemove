@@ -41,14 +41,13 @@ import com.everyone.movemove_android.ui.screens.profile.ProfileScreen
 import com.everyone.movemove_android.ui.container.navigation.Destination
 import com.everyone.movemove_android.ui.container.navigation.Navigator
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoScreen
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoScreen
 import com.everyone.movemove_android.ui.theme.BackgroundInDark
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.InActiveInDark
 import com.everyone.movemove_android.ui.theme.Point
 
 @Composable
-fun MainScreen() {
+fun MainScreen(navigateToWatchingVideo: (List<Videos>?, Int?) -> Unit) {
     val navController = rememberNavController()
     val navigator = rememberNavigator(navController = navController)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -67,6 +66,7 @@ fun MainScreen() {
                 MoveMoveNavigationBar(
                     currentDestination = currentDestination,
                     onNavigate = { navigator.navigateTo(it) },
+                    navigateToWatchingVideo = navigateToWatchingVideo
                 )
             }
 
@@ -76,15 +76,7 @@ fun MainScreen() {
             startDestination = Destination.HOME.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            navScreen(Destination.HOME.route) { HomeScreen(navigator = navigator) }
-            navScreen(Destination.WATCHING_VIDEO.route) {
-                val videosInfo = remember {
-                    val videosInfo = navController.previousBackStackEntry?.savedStateHandle?.get<Pair<List<Videos>, Int>>("videosInfo")
-                    navController.previousBackStackEntry?.savedStateHandle?.remove<Pair<List<Videos>, Int>>("videosInfo")
-                    videosInfo
-                }
-                WatchingVideoScreen(videosInfo = videosInfo)
-            }
+            navScreen(Destination.HOME.route) { HomeScreen(navigateToWatchingVideo = navigateToWatchingVideo) }
             navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
             navScreen(Destination.PROFILE.route) { ProfileScreen() }
         }
@@ -94,7 +86,8 @@ fun MainScreen() {
 @Composable
 fun MoveMoveNavigationBar(
     currentDestination: NavDestination?,
-    onNavigate: (Destination) -> Unit
+    onNavigate: (Destination) -> Unit,
+    navigateToWatchingVideo: (List<Videos>?, Int?) -> Unit
 ) {
 
     Column {
@@ -134,7 +127,10 @@ fun MoveMoveNavigationBar(
                             )
                         },
                         selected = false,
-                        onClick = { onNavigate(destination) },
+                        onClick = {
+                            if (destination == Destination.WATCHING_VIDEO) navigateToWatchingVideo(null, null)
+                            else onNavigate(destination)
+                        },
                         interactionSource = MutableInteractionSource()
                     )
                 }

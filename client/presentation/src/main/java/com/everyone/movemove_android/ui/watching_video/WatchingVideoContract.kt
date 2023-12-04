@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.screens.watching_video
+package com.everyone.movemove_android.ui.watching_video
 
 import com.everyone.domain.model.Videos
 import com.everyone.movemove_android.base.BaseContract

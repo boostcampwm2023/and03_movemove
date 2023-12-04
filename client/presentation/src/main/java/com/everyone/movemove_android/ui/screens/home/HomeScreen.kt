@@ -56,7 +56,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    navigator: Navigator
+    navigateToWatchingVideo: (List<Videos>?, Int?) -> Unit
 ) {
 
     val (state, event, effect) = use(viewModel)
@@ -81,7 +81,7 @@ fun HomeScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             MoveMoveVideos(
-                navigator = navigator,
+                navigateToWatchingVideo = navigateToWatchingVideo,
                 videosTrend = state.videosTrend
             )
 
@@ -94,7 +94,7 @@ fun HomeScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             MoveMoveVideos(
-                navigator = navigator,
+                navigateToWatchingVideo = navigateToWatchingVideo,
                 videosTrend = state.videosTopRatedChallenge
             )
 
@@ -107,7 +107,7 @@ fun HomeScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             MoveMoveVideos(
-                navigator = navigator,
+                navigateToWatchingVideo = navigateToWatchingVideo,
                 videosTrend = state.videosTopRatedOldSchool
             )
         }
@@ -244,7 +244,7 @@ fun StyledColorText(
 
 @Composable
 fun MoveMoveVideos(
-    navigator: Navigator,
+    navigateToWatchingVideo: (List<Videos>?, Int?) -> Unit,
     videosTrend: VideosTrend,
 ) {
     videosTrend.videos?.let { videos ->
@@ -261,11 +261,7 @@ fun MoveMoveVideos(
             items(videos.size) {
                 MoveMoveVideo(
                     modifier = Modifier.clickableWithoutRipple {
-                        navigator.navigateToArgument(
-                            key = "videosInfo",
-                            value = Pair(videos, it)
-                        )
-                        navigator.navigateTo(Destination.WATCHING_VIDEO)
+                        navigateToWatchingVideo(videos, it)
                     },
                     videos = videos[it],
                 )

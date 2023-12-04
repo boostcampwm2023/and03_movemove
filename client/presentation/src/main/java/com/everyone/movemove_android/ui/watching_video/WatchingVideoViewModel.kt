@@ -1,6 +1,7 @@
-package com.everyone.movemove_android.ui.screens.watching_video
+package com.everyone.movemove_android.ui.watching_video
 
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.everyone.domain.model.Videos
@@ -9,18 +10,18 @@ import com.everyone.domain.usecase.GetVideosRandomUseCase
 import com.everyone.domain.usecase.PutVideosRatingUseCase
 import com.everyone.domain.usecase.PutVideosViewsUseCase
 import com.everyone.movemove_android.di.IoDispatcher
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Category
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnClickedCategory
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnCategorySelected
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Effect
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.ChangedVideoTab
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.GetRandomVideos
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnClickedVideoRating
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.PutVideosViews
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.SetVideos
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.State
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.VideoTab
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnClickedCategory
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnCategorySelected
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Effect
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.ChangedVideoTab
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.GetRandomVideos
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnClickedVideoRating
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.PutVideosViews
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.SetVideos
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.State
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.VideoTab
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -38,11 +39,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WatchingVideoViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val getVideosRandomUseCase: GetVideosRandomUseCase,
     private val putVideosRatingUseCase: PutVideosRatingUseCase,
     private val putVideosViewsUseCase: PutVideosViewsUseCase
 ) : ViewModel(), WatchingVideoContract {
+
+    val videosInfo = savedStateHandle.get<Pair<List<Videos>, Int>>("EXTRA_KEY_PHOTO_ID")
+
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
 

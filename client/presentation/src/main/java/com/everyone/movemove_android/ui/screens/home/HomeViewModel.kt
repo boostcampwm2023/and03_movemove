@@ -7,7 +7,7 @@ import com.everyone.domain.usecase.GetAdsUseCase
 import com.everyone.domain.usecase.GetVideosTopRatedUseCase
 import com.everyone.domain.usecase.GetVideosTrendUseCase
 import com.everyone.movemove_android.ui.screens.home.HomeContract.*
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Category
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
