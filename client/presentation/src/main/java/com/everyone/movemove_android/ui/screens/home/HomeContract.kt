@@ -1,8 +1,10 @@
 package com.everyone.movemove_android.ui.screens.home
 
 import com.everyone.domain.model.Advertisements
+import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosTrend
 import com.everyone.movemove_android.base.BaseContract
+import com.everyone.movemove_android.ui.rating_video.RatingVideoContract
 
 interface HomeContract :
     BaseContract<HomeContract.State, HomeContract.Event, HomeContract.Effect> {
@@ -14,7 +16,17 @@ interface HomeContract :
         val videosTopRatedChallenge: VideosTrend = VideosTrend(null)
     )
 
-    sealed interface Event {}
+    sealed interface Event {
+        data class OnClickedVideo(
+            val videosTrend: VideosTrend,
+            val page: Int
+        ) : Event
+    }
 
-    sealed interface Effect {}
+    sealed interface Effect {
+        data class OnClickedVideo(
+            val videosTrend: VideosTrend,
+            val page: Int
+        ) : Effect
+    }
 }

@@ -2,11 +2,13 @@ package com.everyone.movemove_android.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.everyone.domain.model.VideosTrend
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetAdsUseCase
 import com.everyone.domain.usecase.GetVideosTopRatedUseCase
 import com.everyone.domain.usecase.GetVideosTrendUseCase
 import com.everyone.movemove_android.di.IoDispatcher
+import com.everyone.movemove_android.ui.rating_video.RatingVideoContract
 import com.everyone.movemove_android.ui.screens.home.HomeContract.*
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
 
@@ -36,7 +39,9 @@ class HomeViewModel @Inject constructor(
     private val _effect = MutableSharedFlow<Effect>()
     override val effect: SharedFlow<Effect> = _effect.asSharedFlow()
 
-    override fun event(event: Event) {}
+    override fun event(event: Event) = when (event) {
+        is Event.OnClickedVideo -> onClickedVideo(event.videosTrend, event.page)
+    }
 
     init {
         // TODO 광고 API 문제가 있어 주석 처리했슴돠
@@ -44,6 +49,12 @@ class HomeViewModel @Inject constructor(
         getVideosTrend()
         geVideosTopRated(category = Category.CHALLENGE)
         geVideosTopRated(category = Category.OLD_SCHOOL)
+    }
+
+    fun onClickedVideo(videosTrend: VideosTrend, page: Int) {
+        viewModelScope.launch {
+            _effect.emit(Effect.OnClickedVideo(videosTrend, page))
+        }
     }
 
     private fun getAds() {
