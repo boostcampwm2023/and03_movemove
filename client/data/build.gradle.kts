@@ -48,4 +48,5 @@ dependencies {
 
     // test
     testImplementation(libs.kotest)
+    testImplementation(libs.mockK)
 }
