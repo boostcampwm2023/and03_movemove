@@ -410,7 +410,7 @@ fun MoveMoveFooterContents(videos: Videos) {
                     contentAlignment = Alignment.Center
                 ) {
                     AsyncImage(
-                        model = uploader.profileImage,
+                        model = uploader.profileImageUrl,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                     )

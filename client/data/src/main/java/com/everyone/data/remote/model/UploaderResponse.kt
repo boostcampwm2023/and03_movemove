@@ -10,7 +10,7 @@ data class UploaderResponse(
     val uuid: String?,
     val nickname: String?,
     val statusMessage: String?,
-    val profileImage: String?
+    val profileImageUrl: String?
 ) : BaseResponse {
     companion object : Mapper<UploaderResponse, Uploader> {
         override fun UploaderResponse.toDomainModel(): Uploader {
@@ -18,7 +18,7 @@ data class UploaderResponse(
                 uuid = uuid,
                 nickname = nickname,
                 statusMessage = statusMessage,
-                profileImage = profileImage
+                profileImageUrl = profileImageUrl
             )
         }
     }
