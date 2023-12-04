@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.screens.watching_video.category
+package com.everyone.movemove_android.ui.watching_video.category
 
 import android.annotation.SuppressLint
 import androidx.annotation.DrawableRes
@@ -29,10 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.GetRandomVideos
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnClickedCategory
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.OnCategorySelected
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoViewModel
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.GetRandomVideos
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnClickedCategory
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnCategorySelected
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoViewModel
 import com.everyone.movemove_android.ui.theme.CategoryBackgroundInDark
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 

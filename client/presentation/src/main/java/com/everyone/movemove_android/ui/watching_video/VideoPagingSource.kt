@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.screens.watching_video
+package com.everyone.movemove_android.ui.watching_video
 
 import androidx.paging.Pager
 import androidx.paging.PagingConfig

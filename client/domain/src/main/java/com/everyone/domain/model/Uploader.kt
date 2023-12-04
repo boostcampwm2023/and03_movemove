@@ -8,5 +8,5 @@ data class Uploader(
     val uuid: String?,
     val nickname: String?,
     val statusMessage: String?,
-    val profileImage: String?
+    val profileImageUrl: String?
 ) : BaseModel
