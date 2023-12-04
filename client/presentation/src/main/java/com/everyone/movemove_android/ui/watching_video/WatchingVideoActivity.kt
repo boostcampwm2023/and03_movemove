@@ -1,7 +1,5 @@
 package com.everyone.movemove_android.ui.watching_video
 
-import android.content.Context
-import android.content.Intent
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import com.everyone.movemove_android.base.BaseActivity
@@ -21,8 +19,4 @@ class WatchingVideoActivity : BaseActivity() {
     }
 
     private fun navigateUp() = finish()
-
-    companion object {
-        fun newIntent(context: Context): Intent = Intent(context, WatchingVideoActivity::class.java)
-    }
 }
