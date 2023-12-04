@@ -19,6 +19,7 @@ import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.Finish
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.SeekToStart
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnBottomSheetHide
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnCategorySelected
@@ -31,9 +32,17 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickUpload
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnGetUri
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDrag
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDraggingFinished
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDraggingStarted
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnSelectThumbnailDialogDismissed
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTimelineWidthMeasured
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTitleTyped
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnUpperBoundDrag
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnUpperBoundDraggingFinished
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnUpperBoundDraggingStarted
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnVideoPositionUpdated
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnVideoReady
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoEndTime
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoStartTime
@@ -90,9 +99,31 @@ class UploadingVideoViewModel @Inject constructor(
 
         is OnVideoReady -> onVideoReady(event.duration)
 
-        is SetVideoStartTime -> setVideoStartTime(event.time)
+        is OnTimelineWidthMeasured -> onTimelineWidthMeasured(event.timelineWidth)
 
-        is SetVideoEndTime -> setVideoEndTime(event.time)
+        is OnLowerBoundDraggingStarted -> onLowerBoundDraggingStarted()
+
+        is OnLowerBoundDraggingFinished -> onLowerBoundDraggingFinished()
+
+        is OnLowerBoundDrag -> onLowerBoundDrag(
+            offset = event.offset,
+            boundWidthPx = event.boundWidthPx
+        )
+
+        is OnUpperBoundDraggingStarted -> onUpperBoundDraggingStarted()
+
+        is OnUpperBoundDraggingFinished -> onUpperBoundDraggingFinished()
+
+        is OnUpperBoundDrag -> onUpperBoundDrag(
+            offset = event.offset,
+            boundWidthPx = event.boundWidthPx
+        )
+
+        is OnVideoPositionUpdated -> onVideoPositionUpdated(event.videoPosition)
+
+        is SetVideoStartTime -> setVideoStartTime()
+
+        is SetVideoEndTime -> setVideoEndTime()
 
         is OnTitleTyped -> onTitleTyped(event.title)
 
@@ -150,11 +181,88 @@ class UploadingVideoViewModel @Inject constructor(
             it.copy(
                 isVideoReady = true,
                 isPlaying = true,
-                videoDuration = duration
+                videoDuration = duration,
+                videoEndTime = duration,
+                videoLengthUnit = duration / 1000L
             )
         }
 
         getThumbnailList()
+    }
+
+    private fun onTimelineWidthMeasured(width: Int) {
+        _state.update {
+            it.copy(
+                timelineWidth = width,
+                timelineUnitWidth = width / 1000L
+            )
+        }
+    }
+
+    private fun onLowerBoundDraggingStarted() {
+        _state.update {
+            it.copy(isLowerBoundDragging = true)
+        }
+    }
+
+    private fun onLowerBoundDraggingFinished() {
+        _state.update {
+            it.copy(isLowerBoundDragging = false)
+        }
+    }
+
+    private fun onLowerBoundDrag(
+        offset: Float,
+        boundWidthPx: Float
+    ) {
+        val sum = state.value.lowerBoundPosition + offset
+        val timelineWidth = state.value.timelineWidth
+        val upperBoundPosition = state.value.upperBoundPosition
+
+        if (sum >= 0 && sum < timelineWidth + upperBoundPosition - (boundWidthPx * 3)) {
+            _state.update {
+                it.copy(lowerBoundPosition = sum)
+            }
+        }
+    }
+
+    private fun onUpperBoundDraggingStarted() {
+        _state.update {
+            it.copy(isUpperBoundDragging = true)
+        }
+    }
+
+    private fun onUpperBoundDraggingFinished() {
+        _state.update {
+            it.copy(isUpperBoundDragging = false)
+        }
+    }
+
+    private fun onUpperBoundDrag(
+        offset: Float,
+        boundWidthPx: Float
+    ) {
+        val sum = state.value.upperBoundPosition + offset
+        val timelineWidth = state.value.timelineWidth
+        val lowerBoundPosition = state.value.lowerBoundPosition
+
+        if (sum <= 0 && sum > lowerBoundPosition - timelineWidth + (boundWidthPx * 3)) {
+            _state.update {
+                it.copy(upperBoundPosition = sum)
+            }
+        }
+    }
+
+    private fun onVideoPositionUpdated(videoPosition: Long) {
+        _state.update {
+            it.copy(indicatorPosition = (it.timelineUnitWidth * (videoPosition / it.videoLengthUnit)).toInt())
+        }
+
+        if (videoPosition < state.value.videoStartTime || videoPosition > state.value.videoEndTime) {
+            viewModelScope.launch {
+                _effect.emit(SeekToStart(state.value.videoStartTime))
+            }
+        }
     }
 
     private fun getThumbnailList() {
@@ -190,15 +298,15 @@ class UploadingVideoViewModel @Inject constructor(
         }
     }
 
-    private fun setVideoStartTime(time: Long) {
+    private fun setVideoStartTime() {
         _state.update {
-            it.copy(videoStartTime = time)
+            it.copy(videoStartTime = it.videoLengthUnit * (it.lowerBoundPosition / it.timelineUnitWidth).toLong())
         }
     }
 
-    private fun setVideoEndTime(time: Long) {
+    private fun setVideoEndTime() {
         _state.update {
-            it.copy(videoEndTime = time)
+            it.copy(videoEndTime = it.videoLengthUnit * ((it.timelineWidth + it.upperBoundPosition) / it.timelineUnitWidth).toLong())
         }
     }
 

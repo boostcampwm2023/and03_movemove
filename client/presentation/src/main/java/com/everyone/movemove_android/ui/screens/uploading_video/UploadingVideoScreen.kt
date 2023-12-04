@@ -36,13 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.TopCenter
@@ -62,6 +56,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Tracks
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
@@ -80,6 +75,7 @@ import com.everyone.movemove_android.ui.SelectThumbnailDialog
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.Finish
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.SeekToStart
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnBottomSheetHide
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnCategorySelected
@@ -92,9 +88,17 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickUpload
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnGetUri
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDrag
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDraggingFinished
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDraggingStarted
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnSelectThumbnailDialogDismissed
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTimelineWidthMeasured
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTitleTyped
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnUpperBoundDrag
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnUpperBoundDraggingFinished
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnUpperBoundDraggingStarted
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnVideoPositionUpdated
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnVideoReady
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoEndTime
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoStartTime
@@ -114,7 +118,25 @@ import kotlin.math.abs
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
 fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
+    val context = LocalContext.current
     val (state, event, effect) = use(viewModel)
+
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            videoScalingMode = C.VIDEO_SCALING_MODE_DEFAULT
+            repeatMode = Player.REPEAT_MODE_ONE
+            playWhenReady = true
+            prepare()
+
+            addListener(object : Player.Listener {
+                override fun onTracksChanged(tracks: Tracks) {
+                    super.onTracksChanged(tracks)
+                    event(OnVideoReady(duration))
+                }
+            })
+        }
+    }
+
     val videoLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
@@ -133,10 +155,22 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                     videoLauncher.launch(PickVisualMediaRequest(VideoOnly))
                 }
 
+                is SeekToStart -> {
+                    exoPlayer.seekTo(effect.position)
+                }
+
                 is Finish -> {
 
                 }
             }
+        }
+    }
+
+    LaunchedEffect(state.videoUri) {
+        state.videoUri?.let { videoUri ->
+            val dataSourceFactory = DefaultDataSource.Factory(context, DefaultDataSource.Factory(context))
+            val dataSource = ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(videoUri))
+            exoPlayer.setMediaSource(dataSource)
         }
     }
 
@@ -170,6 +204,7 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                 .addFocusCleaner()
         ) {
             VideoFrame(
+                exoPlayer = exoPlayer,
                 state = state,
                 event = event
             )
@@ -251,30 +286,12 @@ private fun CategoryBottomSheet(event: (Event) -> Unit) {
 @Composable
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 private fun ColumnScope.VideoFrame(
+    exoPlayer: ExoPlayer,
     state: State,
     event: (Event) -> Unit
 ) {
-    state.videoUri?.let { uri ->
+    state.videoUri?.let {
         val context = LocalContext.current
-        val videoDataSource by remember {
-            val dataSourceFactory = DefaultDataSource.Factory(context, DefaultDataSource.Factory(context))
-            mutableStateOf(ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(uri)))
-        }
-        val exoPlayer = remember {
-            ExoPlayer.Builder(context).build().apply {
-                setMediaSource(videoDataSource)
-                videoScalingMode = C.VIDEO_SCALING_MODE_DEFAULT
-                repeatMode = Player.REPEAT_MODE_ONE
-                playWhenReady = true
-                prepare()
-
-                addListener(object : Player.Listener {
-                    override fun onPlaybackStateChanged(playbackState: Int) {
-                        if (duration > 0) event(OnVideoReady(duration = duration))
-                    }
-                })
-            }
-        }
 
         Column(
             modifier = Modifier
@@ -385,44 +402,25 @@ private fun ColumnScope.VideoFrame(
     }
 }
 
+private val boundWidthDp = 4.dp
+
 @Composable
 private fun EditorTimeline(
     exoPlayer: ExoPlayer,
     state: State,
     event: (Event) -> Unit
 ) {
-    var timelineWidthState by remember { mutableIntStateOf(0) }
-    var timelineUnitWidthState by remember { mutableLongStateOf(0L) }
-    var videoLengthUnitState by remember { mutableLongStateOf(0L) }
-    val boundWidthDp = 4.dp
-
-    timelineUnitWidthState = timelineWidthState.toLong() / 1000L
-    videoLengthUnitState = state.videoDuration / 1000L
-    if (state.videoEndTime == 0L && state.videoDuration > 0L) {
-        event(SetVideoEndTime(state.videoDuration))
-    }
-
-    if (exoPlayer.currentPosition < state.videoStartTime || exoPlayer.currentPosition > state.videoEndTime) {
-        exoPlayer.seekTo(state.videoStartTime)
-    }
-
-    if (state.videoEndTime > 0) {
+    if (state.videoDuration > 0) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
         ) {
-            var indicatorXPositionState by remember { mutableIntStateOf(0) }
-            var lowerBoundDraggingState by remember { mutableStateOf(false) }
-            var lowerBoundOffsetState by remember { mutableFloatStateOf(0f) }
-            var upperBoundDraggingState by remember { mutableStateOf(false) }
-            var upperBoundOffsetState by remember { mutableFloatStateOf(0f) }
-
             Row(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = boundWidthDp)
-                    .onGloballyPositioned { timelineWidthState = it.size.width }
+                    .onGloballyPositioned { if (state.timelineWidth == 0) event(OnTimelineWidthMeasured(it.size.width)) }
             ) {
                 if (state.thumbnailList.isNotEmpty()) {
                     state.thumbnailList.forEach { thumbnail ->
@@ -448,23 +446,25 @@ private fun EditorTimeline(
 
             Box(
                 modifier = Modifier
-                    .absoluteOffset(x = lowerBoundOffsetState.pxToDp())
+                    .absoluteOffset(x = state.lowerBoundPosition.pxToDp())
                     .width(boundWidthDp)
                     .fillMaxHeight()
-                    .background(color = if (lowerBoundDraggingState) Point else Color.White)
+                    .background(color = if (state.isLowerBoundDragging) Point else Color.White)
                     .pointerInput(Unit) {
                         detectHorizontalDragGestures(
-                            onDragStart = { lowerBoundDraggingState = true },
+                            onDragStart = { event(OnLowerBoundDraggingStarted) },
                             onDragEnd = {
-                                lowerBoundDraggingState = false
-                                event(SetVideoStartTime((videoLengthUnitState * (lowerBoundOffsetState / timelineUnitWidthState)).toLong()))
+                                event(OnLowerBoundDraggingFinished)
+                                event(SetVideoStartTime)
                             },
-                            onDragCancel = { lowerBoundDraggingState = false },
+                            onDragCancel = { event(OnLowerBoundDraggingFinished) },
                             onHorizontalDrag = { _, dragAmount ->
-                                val sum = lowerBoundOffsetState + dragAmount
-                                if (sum >= 0 && sum < timelineWidthState + upperBoundOffsetState - (boundWidthDp.toPx() * 3)) {
-                                    lowerBoundOffsetState = sum
-                                }
+                                event(
+                                    OnLowerBoundDrag(
+                                        offset = dragAmount,
+                                        boundWidthPx = boundWidthDp.toPx()
+                                    )
+                                )
                             }
                         )
                     }
@@ -472,7 +472,7 @@ private fun EditorTimeline(
 
             Box(
                 modifier = Modifier
-                    .width(lowerBoundOffsetState.pxToDp())
+                    .width(state.lowerBoundPosition.pxToDp())
                     .fillMaxHeight()
                     .background(EditorTimelineDim)
             )
@@ -480,23 +480,25 @@ private fun EditorTimeline(
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .absoluteOffset(x = upperBoundOffsetState.pxToDp())
+                    .absoluteOffset(x = state.upperBoundPosition.pxToDp())
                     .width(boundWidthDp)
                     .fillMaxHeight()
-                    .background(color = if (upperBoundDraggingState) Point else Color.White)
+                    .background(color = if (state.isUpperBoundDragging) Point else Color.White)
                     .pointerInput(Unit) {
                         detectHorizontalDragGestures(
-                            onDragStart = { upperBoundDraggingState = true },
+                            onDragStart = { event(OnUpperBoundDraggingStarted) },
                             onDragEnd = {
-                                upperBoundDraggingState = false
-                                event(SetVideoEndTime(videoLengthUnitState * ((timelineWidthState + upperBoundOffsetState) / timelineUnitWidthState).toLong()))
+                                event(OnUpperBoundDraggingFinished)
+                                event(SetVideoEndTime)
                             },
-                            onDragCancel = { upperBoundDraggingState = false },
+                            onDragCancel = { event(OnUpperBoundDraggingFinished) },
                             onHorizontalDrag = { _, dragAmount ->
-                                val sum = upperBoundOffsetState + dragAmount
-                                if (sum <= 0 && sum > lowerBoundOffsetState - timelineWidthState + (boundWidthDp.toPx() * 3)) {
-                                    upperBoundOffsetState = sum
-                                }
+                                event(
+                                    OnUpperBoundDrag(
+                                        offset = dragAmount,
+                                        boundWidthPx = boundWidthDp.toPx()
+                                    )
+                                )
                             }
                         )
                     }
@@ -507,12 +509,12 @@ private fun EditorTimeline(
                     .align(Alignment.CenterEnd)
                     .fillMaxHeight()
                     .background(EditorTimelineDim)
-                    .padding(end = abs(upperBoundOffsetState).pxToDp())
+                    .padding(end = abs(state.upperBoundPosition).pxToDp())
             )
 
             Box(
                 modifier = Modifier
-                    .absoluteOffset(x = indicatorXPositionState.pxToDp() + boundWidthDp)
+                    .absoluteOffset(x = state.indicatorPosition.pxToDp() + boundWidthDp)
                     .width(1.dp)
                     .fillMaxHeight()
                     .background(color = Point)
@@ -520,7 +522,7 @@ private fun EditorTimeline(
 
             LaunchedEffect(Unit) {
                 while (true) {
-                    indicatorXPositionState = (timelineUnitWidthState * (exoPlayer.currentPosition / videoLengthUnitState)).toInt()
+                    event(OnVideoPositionUpdated(exoPlayer.currentPosition))
                     delay(100)
                 }
             }
