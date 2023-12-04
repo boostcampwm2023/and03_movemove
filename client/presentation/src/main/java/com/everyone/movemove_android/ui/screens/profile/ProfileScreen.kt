@@ -83,7 +83,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            if (state.videosUploaded.video.isNullOrEmpty()) {
+            if (state.videosUploaded.videos.isNullOrEmpty()) {
                 item {
                     Box(
                         modifier = Modifier
@@ -98,7 +98,7 @@ fun ProfileScreen(
                     }
                 }
             } else {
-                items(state.videosUploaded.video!!.chunked(3)) { rowItems ->
+                items(state.videosUploaded.videos!!.chunked(3)) { rowItems ->
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
