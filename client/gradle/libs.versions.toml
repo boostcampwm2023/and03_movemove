@@ -90,6 +90,7 @@ google-services = { group = "com.google.gms", name = "google-services", version.
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebase-auth" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 google-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "google-play-services-auth" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx", version = "21.3.0" }
 
 # ktor
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
@@ -106,7 +107,7 @@ android = ["core-ktx", "lifecycle-runtime-ktx", "material", "lifecycle-extension
 compose = ["activity-compose", "compose-lifecycle", "compose-ui", "compose-ui-graphics", "compose-ui-tooling-preview", "compose-material", "compose-material3", "compose-hilt-navigation", "compose-navigation", "paging-compose"]
 common = ["hilt"]
 media3 = ["media3-common", "media3-exoplayer", "media3-ui", "media3-exoplayer-hls"]
-google = ["google-services", "firebase-auth", "firebase-bom", "google-auth"]
+google = ["google-services", "firebase-auth", "firebase-bom", "google-auth", "firebase-analytics"]
 ktor = ["ktor-client-core", "ktor-client-cio", "ktor-negotiation", "ktor-gson", "ktor-logging"]
 datastore = ["datastore", "datastore-core"]
 
@@ -118,3 +119,4 @@ kotlin-lang = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin-lang"
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version = "1.9.0-1.0.12" }
 parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin-lang" }
+google-services = {id = "com.google.gms.google-services", version = "4.4.0" }
