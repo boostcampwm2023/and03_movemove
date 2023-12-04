@@ -16,6 +16,10 @@ object RemoteConstants {
     const val USERS = "users"
     const val PROFILE = "profile"
     const val LOGIN = "login"
+    const val UPLOADED = "uploaded"
+    const val LAST_ID = "lastId"
+    const val LAST_RATED_AT = "lastRatedAt"
+
 
     // BODY
     const val VIDEO_EXTENSION = "videoExtension"

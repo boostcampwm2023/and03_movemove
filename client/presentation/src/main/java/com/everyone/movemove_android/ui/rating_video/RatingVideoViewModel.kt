@@ -1,14 +1,16 @@
-package com.everyone.movemove_android.ui.screens.profile
+package com.everyone.movemove_android.ui.rating_video
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.everyone.domain.model.Videos
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetProfileUseCase
 import com.everyone.domain.usecase.GetUsersVideosUploadedUseCase
 import com.everyone.movemove_android.di.IoDispatcher
-import com.everyone.movemove_android.ui.screens.profile.ProfileContract.*
-import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Effect.NavigateToMy
-import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event.OnClickedMenu
+import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Effect
+import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Effect.*
+import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Event
+import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,19 +26,19 @@ import kotlinx.coroutines.plus
 import javax.inject.Inject
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor(
+class RatingVideoViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val getProfileUseCase: GetProfileUseCase,
     private val getUsersVideosUploadedUseCase: GetUsersVideosUploadedUseCase
-) : ViewModel(), ProfileContract {
+) : ViewModel(), RatingVideoContract {
     private val _state = MutableStateFlow(State())
     override val state = _state.asStateFlow()
 
     private val _effect = MutableSharedFlow<Effect>()
     override val effect: SharedFlow<Effect> = _effect.asSharedFlow()
     override fun event(event: Event) = when (event) {
-        is OnClickedMenu -> onClickedMenu()
-
+        is Event.OnClickedBack -> onClickedBack()
+        is Event.OnClickedVideo -> onClickedVideo(event.videosLit, event.page)
     }
 
     init {
@@ -88,9 +90,20 @@ class ProfileViewModel @Inject constructor(
         }.launchIn(viewModelScope + ioDispatcher)
     }
 
-    private fun onClickedMenu() {
+    private fun onClickedBack() {
         viewModelScope.launch {
-            _effect.emit(NavigateToMy)
+            _effect.emit(OnClickedBack)
+        }
+    }
+
+    private fun onClickedVideo(videosList: List<Videos>, page: Int) {
+        viewModelScope.launch {
+            _effect.emit(
+                OnClickedVideo(
+                    videosList = videosList,
+                    page = page
+                )
+            )
         }
     }
 
