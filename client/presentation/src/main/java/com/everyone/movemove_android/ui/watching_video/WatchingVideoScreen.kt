@@ -5,6 +5,7 @@ import android.net.Uri
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,9 +16,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -409,10 +412,16 @@ fun MoveMoveFooterContents(videos: Videos) {
                         .width(24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    AsyncImage(
-                        model = uploader.profileImageUrl,
+                    uploader.profileImageUrl?.let {
+                        AsyncImage(
+                            model = uploader.profileImageUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                        )
+                    } ?: Image(
+                        painter = painterResource(id = R.drawable.img_basic_profile),
                         contentDescription = null,
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.Crop
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
