@@ -37,4 +37,7 @@ dependencies {
 
     // ksp
     ksp(libs.ksp.hilt)
+
+    // test
+    testImplementation(libs.kotest)
 }

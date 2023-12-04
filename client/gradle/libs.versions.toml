@@ -101,6 +101,9 @@ ktor-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = 
 # splash
 splash = { group = "androidx.core", name = "core-splashscreen", version = "1.0.1" }
 
+# kotest
+kotest = { group = "io.kotest", name = "kotest-runner-junit5", version = "5.0.3" }
+
 [bundles]
 android = ["core-ktx", "lifecycle-runtime-ktx", "material", "lifecycle-extensions", "coil"]
 compose = ["activity-compose", "compose-lifecycle", "compose-ui", "compose-ui-graphics", "compose-ui-tooling-preview", "compose-material", "compose-material3", "compose-hilt-navigation", "compose-navigation", "paging-compose"]
