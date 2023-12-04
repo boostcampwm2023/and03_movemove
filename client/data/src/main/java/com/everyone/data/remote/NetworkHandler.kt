@@ -112,8 +112,8 @@ class NetworkHandler @Inject constructor(private val userInfoManager: UserInfoMa
                     emit(responseBody)
                 } else {
                     val requestDeferredCall: suspend () -> Unit = {
-                        request()?.let { newRequest ->
-                            emit(newRequest)
+                        request()?.let { newResponse ->
+                            emit(newResponse)
                         } ?: throw Exception(UNCONNECTED_EXCEPTION)
                     }
 
