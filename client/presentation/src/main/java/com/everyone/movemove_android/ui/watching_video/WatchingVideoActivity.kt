@@ -14,9 +14,6 @@ class WatchingVideoActivity : BaseActivity() {
     override fun InitComposeUi() {
         WatchingVideoScreen(
             viewModel = viewModel,
-            onBack = ::navigateUp
         )
     }
-
-    private fun navigateUp() = finish()
 }
