@@ -39,16 +39,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WatchingVideoViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val getVideosRandomUseCase: GetVideosRandomUseCase,
     private val putVideosRatingUseCase: PutVideosRatingUseCase,
     private val putVideosViewsUseCase: PutVideosViewsUseCase
 ) : ViewModel(), WatchingVideoContract {
-
-    val videosList = savedStateHandle.get<VideosList>(EXTRA_KEY_VIDEOS_TREND)
-    val page = savedStateHandle.get<Int>(EXTRA_KEY_VIDEOS_PAGE)
-
 
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -70,6 +66,19 @@ class WatchingVideoViewModel @Inject constructor(
 
             is ChangedVideoTab -> changedVideoTab(videoTab = event.videoTab)
             is PutVideosViews -> putVideosViews(videoId = event.videoId)
+        }
+    }
+
+    init {
+        getSavedState()
+    }
+
+    private fun getSavedState() {
+        _state.update {
+            it.copy(
+                videosList = savedStateHandle.get<VideosList>(WatchingVideoActivity.EXTRA_KEY_VIDEOS_LIST),
+                page = savedStateHandle.get<Int>(WatchingVideoActivity.EXTRA_KEY_VIDEOS_PAGE)
+            )
         }
     }
 
