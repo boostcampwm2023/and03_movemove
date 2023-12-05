@@ -172,7 +172,7 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                 }
 
                 is PauseVideo -> {
-                    exoPlayer.stop()
+                    exoPlayer.pause()
                 }
             }
         }
