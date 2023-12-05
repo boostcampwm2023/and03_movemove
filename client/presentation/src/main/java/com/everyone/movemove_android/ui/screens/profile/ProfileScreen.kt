@@ -1,5 +1,6 @@
 package com.everyone.movemove_android.ui.screens.profile
 
+import android.content.Intent
 import com.everyone.movemove_android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -36,6 +38,7 @@ import com.everyone.domain.model.Profile
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.my.MyActivity
 import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event
 import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event.*
 import com.everyone.movemove_android.ui.theme.BorderInDark
@@ -45,16 +48,19 @@ import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun ProfileScreen(
-    navigateToMy: () -> Unit,
+    navigateToActivity: (intent: Intent) -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
 
     val (state, event, effect) = use(viewModel)
 
     LaunchedEffect(effect) {
         effect.collectLatest { effect ->
             when (effect) {
-                is ProfileContract.Effect.NavigateToMy -> navigateToMy()
+                is ProfileContract.Effect.NavigateToMy -> {
+                    navigateToActivity(MyActivity.newIntent(context = context))
+                }
             }
         }
     }

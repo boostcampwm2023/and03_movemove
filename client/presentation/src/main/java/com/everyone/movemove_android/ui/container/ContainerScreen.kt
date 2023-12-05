@@ -52,10 +52,7 @@ import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoActivity
 
 @Composable
-fun MainScreen(
-    navigateToActivity: (intent: Intent) -> Unit,
-    navigateToMy: () -> Unit
-) {
+fun MainScreen(navigateToActivity: (intent: Intent) -> Unit) {
     val navController = rememberNavController()
     val navigator = rememberNavigator(navController = navController)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -86,7 +83,7 @@ fun MainScreen(
         ) {
             navScreen(Destination.HOME.route) { HomeScreen(navigateToActivity = navigateToActivity) }
             navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
-            navScreen(Destination.PROFILE.route) { ProfileScreen(navigateToMy = navigateToMy) }
+            navScreen(Destination.PROFILE.route) { ProfileScreen(navigateToActivity = navigateToActivity) }
         }
     }
 }
