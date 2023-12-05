@@ -1,5 +1,6 @@
 package com.everyone.movemove_android.ui.rating_video
 
+import android.content.Intent
 import com.everyone.movemove_android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,11 +25,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.everyone.domain.model.Videos
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
@@ -37,14 +38,16 @@ import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Event.*
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoActivity
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun RatingVideoScreen(
     viewModel: RatingVideoViewModel,
-    navigateToWatchingVideo: (List<Videos>, Int) -> Unit,
+    navigateToWatchingVideo: (intent: Intent) -> Unit,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
 
     val (state, event, effect) = use(viewModel)
 
@@ -53,8 +56,11 @@ fun RatingVideoScreen(
             when (effect) {
                 is Effect.OnClickedBack -> onBack()
                 is Effect.OnClickedVideo -> navigateToWatchingVideo(
-                    effect.videosList,
-                    effect.page
+                    WatchingVideoActivity.newIntent(
+                        context = context,
+                        videosList = effect.videosList,
+                        page = effect.page
+                    )
                 )
             }
         }

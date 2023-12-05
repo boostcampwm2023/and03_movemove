@@ -3,6 +3,7 @@ package com.everyone.movemove_android.ui.rating_video
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.everyone.domain.model.Videos
+import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetProfileUseCase
 import com.everyone.domain.usecase.GetUsersVideosRatedUseCase
@@ -98,7 +99,7 @@ class RatingVideoViewModel @Inject constructor(
         }
     }
 
-    private fun onClickedVideo(videosList: List<Videos>, page: Int) {
+    private fun onClickedVideo(videosList: VideosList, page: Int) {
         viewModelScope.launch {
             _effect.emit(
                 OnClickedVideo(
