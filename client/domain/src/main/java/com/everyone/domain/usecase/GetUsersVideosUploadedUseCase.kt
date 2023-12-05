@@ -1,6 +1,6 @@
 package com.everyone.domain.usecase
 
-import com.everyone.domain.model.VideosUploaded
+import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
@@ -11,7 +11,7 @@ class GetUsersVideosUploadedUseCase @Inject constructor(private val repository: 
         limit: String,
         userId: String,
         lastId: String
-    ): Flow<DataState<VideosUploaded>> {
+    ): Flow<DataState<VideosList>> {
         return repository.getUsersVideosUploaded(
             limit = limit,
             userId = userId,

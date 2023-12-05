@@ -2,7 +2,7 @@ package com.everyone.movemove_android.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.everyone.domain.model.VideosTrend
+import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetAdsUseCase
 import com.everyone.domain.usecase.GetVideosTopRatedUseCase
@@ -39,7 +39,7 @@ class HomeViewModel @Inject constructor(
     override val effect: SharedFlow<Effect> = _effect.asSharedFlow()
 
     override fun event(event: Event) = when (event) {
-        is Event.OnClickedVideo -> onClickedVideo(event.videosTrend, event.page)
+        is Event.OnClickedVideo -> onClickedVideo(event.videosList, event.page)
     }
 
     init {
@@ -49,9 +49,9 @@ class HomeViewModel @Inject constructor(
         geVideosTopRated(category = Category.OLD_SCHOOL)
     }
 
-    private fun onClickedVideo(videosTrend: VideosTrend, page: Int) {
+    private fun onClickedVideo(videosList: VideosList, page: Int) {
         viewModelScope.launch {
-            _effect.emit(Effect.OnClickedVideo(videosTrend, page))
+            _effect.emit(Effect.OnClickedVideo(videosList, page))
         }
     }
 

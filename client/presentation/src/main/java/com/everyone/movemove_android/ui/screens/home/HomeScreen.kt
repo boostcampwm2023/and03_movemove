@@ -41,7 +41,7 @@ import coil.compose.AsyncImage
 import com.everyone.domain.model.Ads
 import com.everyone.domain.model.Advertisements
 import com.everyone.domain.model.Videos
-import com.everyone.domain.model.VideosTrend
+import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
@@ -71,7 +71,7 @@ fun HomeScreen(
                 is OnClickedVideo -> navigateToActivity(
                     WatchingVideoActivity.newIntent(
                         context = context,
-                        videosTrend = null,
+                        videosList = null,
                         page = null
                     )
                 )
@@ -100,7 +100,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
             MoveMoveVideos(
                 event = event,
-                videosTrend = state.videosTrend
+                videosList = state.videosTrend
             )
 
             Spacer(modifier = Modifier.height(36.dp))
@@ -113,7 +113,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
             MoveMoveVideos(
                 event = event,
-                videosTrend = state.videosTopRatedChallenge
+                videosList = state.videosTopRatedChallenge
             )
 
             Spacer(modifier = Modifier.height(36.dp))
@@ -126,7 +126,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(24.dp))
             MoveMoveVideos(
                 event = event,
-                videosTrend = state.videosTopRatedOldSchool
+                videosList = state.videosTopRatedOldSchool
             )
         }
     }
@@ -263,9 +263,9 @@ fun StyledColorText(
 @Composable
 fun MoveMoveVideos(
     event: (HomeContract.Event) -> Unit,
-    videosTrend: VideosTrend,
+    videosList: VideosList,
 ) {
-    videosTrend.videos?.let { videos ->
+    videosList.videos?.let { videos ->
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -281,7 +281,7 @@ fun MoveMoveVideos(
                     modifier = Modifier.clickableWithoutRipple {
                         event(
                             HomeContract.Event.OnClickedVideo(
-                                videosTrend = videosTrend,
+                                videosList = videosList,
                                 page = it
                             )
                         )

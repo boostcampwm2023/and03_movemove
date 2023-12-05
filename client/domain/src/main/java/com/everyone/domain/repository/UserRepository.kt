@@ -3,6 +3,7 @@ package com.everyone.domain.repository
 import com.everyone.domain.model.Profile
 import com.everyone.domain.model.ProfileImageUploadUrl
 import com.everyone.domain.model.UserInfo
+import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.VideosRated
 import com.everyone.domain.model.VideosUploaded
 import com.everyone.domain.model.base.DataState
@@ -46,7 +47,7 @@ interface UserRepository {
         userId: String,
         limit: String,
         lastId: String
-    ): Flow<DataState<VideosUploaded>>
+    ): Flow<DataState<VideosList>>
 
     fun getUsersVideosRated(
         userId: String,

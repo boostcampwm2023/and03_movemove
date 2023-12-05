@@ -4,6 +4,6 @@ import com.everyone.domain.model.base.BaseModel
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class VideosTrend(
+data class VideosList(
     val videos: List<Videos>?
 ) : BaseModel
