@@ -1,11 +1,8 @@
 package com.everyone.movemove_android.ui.profile
 
 import com.everyone.domain.model.Profile
-import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosList
-import com.everyone.domain.model.VideosUploaded
 import com.everyone.movemove_android.base.BaseContract
-import com.everyone.movemove_android.ui.rating_video.RatingVideoContract
 
 interface ProfileContract :
     BaseContract<ProfileContract.State, ProfileContract.Event, ProfileContract.Effect> {

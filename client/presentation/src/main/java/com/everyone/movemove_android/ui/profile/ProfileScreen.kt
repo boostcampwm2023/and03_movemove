@@ -34,7 +34,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.everyone.domain.model.Profile
 import com.everyone.movemove_android.base.use

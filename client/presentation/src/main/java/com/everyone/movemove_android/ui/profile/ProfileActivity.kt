@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
-import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.base.BaseActivity
 import dagger.hilt.android.AndroidEntryPoint
 

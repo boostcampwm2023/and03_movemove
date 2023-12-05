@@ -1,6 +1,5 @@
 package com.everyone.movemove_android.ui.profile
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,12 +10,10 @@ import com.everyone.domain.usecase.GetStoredUUIDUseCase
 import com.everyone.domain.usecase.GetUsersVideosUploadedUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
-import com.everyone.movemove_android.ui.screens.home.HomeContract
 import com.everyone.movemove_android.ui.profile.ProfileContract.*
 import com.everyone.movemove_android.ui.profile.ProfileContract.Effect.*
 import com.everyone.movemove_android.ui.profile.ProfileContract.Event.OnClickedMenu
 import com.everyone.movemove_android.ui.profile.ProfileContract.Event.OnClickedVideo
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -54,12 +51,10 @@ class ProfileViewModel @Inject constructor(
 
     init {
         val uuid = savedStateHandle.get<String?>(ProfileActivity.EXTRA_KEY_UUID)
-        Log.d("ttt", uuid.toString())
         uuid?.let {
             getProfile(uuid = it)
             getUsersVideosUploaded(uuid = it)
         } ?: run {
-            Log.d("ttt", uuid.toString())
             getStoredUUID()
         }
     }
