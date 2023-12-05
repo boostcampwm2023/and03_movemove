@@ -70,4 +70,5 @@
     <string name="error_video_trimming">영상을 편집할 수 없습니다\n올바른 파일인지 확인해 주세요</string>
     <string name="error_no_video">영상 파일이 추가되지 않았습니다\n다시 시도해 주세요</string>
     <string name="error_getting_thumbnail">썸네일을 가져 올 수 없습니다\n올바른 파일인지 확인해 주세요</string>
+    <string name="error_uploading_video">비디오 업로드에 실패하였습니다\n잠시 후 다시 시도해 주세요</string>
 </resources>

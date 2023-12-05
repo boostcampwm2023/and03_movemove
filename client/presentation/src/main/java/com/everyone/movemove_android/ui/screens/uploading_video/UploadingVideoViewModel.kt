@@ -469,7 +469,7 @@ class UploadingVideoViewModel @Inject constructor(
                             file = thumbnailFile
                         ),
                         transform = { videoResult, thumbnailResult ->
-                            videoResult == 200 && thumbnailResult == 200
+                            videoResult == SUCCESS && thumbnailResult == SUCCESS
                         }
                     ).onEach { isSuccess ->
                         when (isSuccess) {
@@ -478,7 +478,7 @@ class UploadingVideoViewModel @Inject constructor(
                             }
 
                             false -> {
-                                // todo : 업로드 예외 처리
+                                showErrorDialog(R.string.error_uploading_video)
                             }
                         }
                     }.collect()
@@ -504,7 +504,7 @@ class UploadingVideoViewModel @Inject constructor(
                 }
 
                 is DataState.Failure -> {
-                    // todo : 인코딩 예외 처리
+                    showErrorDialog(R.string.error_uploading_video)
                 }
             }
         }.collect()
@@ -529,5 +529,6 @@ class UploadingVideoViewModel @Inject constructor(
         const val THUMBNAIL_COUNT = 15
         private const val MP4 = "mp4"
         private const val WEBP = "webp"
+        private const val SUCCESS = 200
     }
 }
