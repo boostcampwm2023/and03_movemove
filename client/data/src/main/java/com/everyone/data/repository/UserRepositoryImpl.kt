@@ -7,7 +7,6 @@ import com.everyone.data.local.UserInfoManager.Companion.KEY_UUID
 import com.everyone.data.remote.NetworkHandler
 import com.everyone.data.remote.RemoteConstants.ACCESS_TOKEN
 import com.everyone.data.remote.RemoteConstants.AUTH
-import com.everyone.data.remote.RemoteConstants.LAST_ID
 import com.everyone.data.remote.RemoteConstants.LIMIT
 import com.everyone.data.remote.RemoteConstants.LOGIN
 import com.everyone.data.remote.RemoteConstants.NICKNAME
@@ -31,14 +30,11 @@ import com.everyone.data.remote.model.VideosListResponse
 import com.everyone.data.remote.model.VideosListResponse.Companion.toDomainModel
 import com.everyone.data.remote.model.VideosRatedResponse
 import com.everyone.data.remote.model.VideosRatedResponse.Companion.toDomainModel
-import com.everyone.data.remote.model.VideosUploadedResponse
-import com.everyone.data.remote.model.VideosUploadedResponse.Companion.toDomainModel
 import com.everyone.domain.model.Profile
 import com.everyone.domain.model.ProfileImageUploadUrl
 import com.everyone.domain.model.UserInfo
 import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.VideosRated
-import com.everyone.domain.model.VideosUploaded
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.repository.UserRepository
 import io.ktor.http.HttpMethod
@@ -156,12 +152,11 @@ class UserRepositoryImpl @Inject constructor(
     ): Flow<DataState<VideosList>> = flow {
         networkHandler.request<VideosListResponse>(
             method = HttpMethod.Get,
-            isAccessTokenNeeded = false,
-            url = { path(USERS, userId, VIDEOS, UPLOADED) },
-            content = {
-                append(LIMIT, limit)
-                append(LAST_ID, lastId)
-            }
+            url = {
+                path(USERS, userId, VIDEOS, UPLOADED)
+                parameters.append(LIMIT, limit)
+            },
+            content = null
         ).collect { response ->
             response.data?.let {
                 emit(DataState.Success(it.toDomainModel()))
