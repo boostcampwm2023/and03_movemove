@@ -10,6 +10,7 @@ import com.everyone.domain.usecase.GetProfileUseCase
 import com.everyone.domain.usecase.GetUsersVideosRatedUseCase
 import com.everyone.domain.usecase.GetUsersVideosUploadedUseCase
 import com.everyone.movemove_android.di.IoDispatcher
+import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.profile.ProfileActivity
 import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Effect
 import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Effect.*
@@ -27,12 +28,14 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class RatingVideoViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
     private val getUsersVideosRatedUseCase: GetUsersVideosRatedUseCase
 ) : ViewModel(), RatingVideoContract {
     private val _state = MutableStateFlow(State())
@@ -52,27 +55,30 @@ class RatingVideoViewModel @Inject constructor(
     }
 
     private fun getUsersVideosUploaded(uuid: String) {
-        loading(isLoading = true)
-        getUsersVideosRatedUseCase(
-            limit = LIMIT,
-            userId = uuid,
-            lastRatedAt = ""
-        ).onEach { result ->
-            when (result) {
-                is DataState.Success -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            videosRated = result.data
-                        )
+        viewModelScope.launch {
+
+            loading(isLoading = true)
+            getUsersVideosRatedUseCase(
+                limit = LIMIT,
+                userId = uuid,
+                lastRatedAt = ""
+            ).onEach { result ->
+                when (result) {
+                    is DataState.Success -> {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                videosRated = result.data
+                            )
+                        }
+                    }
+
+                    is DataState.Failure -> {
+                        loading(isLoading = false)
                     }
                 }
-
-                is DataState.Failure -> {
-                    loading(isLoading = false)
-                }
-            }
-        }.launchIn(viewModelScope + ioDispatcher)
+            }.launchIn(viewModelScope + ioDispatcher)
+        }
     }
 
     private fun onClickedBack() {
@@ -92,9 +98,11 @@ class RatingVideoViewModel @Inject constructor(
         }
     }
 
-    private fun loading(isLoading: Boolean) {
-        _state.update {
-            it.copy(isLoading = isLoading)
+    private suspend fun loading(isLoading: Boolean) {
+        withContext(mainImmediateDispatcher) {
+            _state.update {
+                it.copy(isLoading = isLoading)
+            }
         }
     }
 
