@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Arrangement.SpaceBetween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -67,6 +68,61 @@ fun LoadingDialog() {
             modifier = Modifier.size(48.dp),
             color = Point
         )
+    }
+}
+
+@Composable
+fun ErrorDialog(
+    text: String,
+    onDismissRequest: () -> Unit
+) {
+    DefaultDialog(
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        ),
+        onDismissRequest = { onDismissRequest() }
+    ) {
+        Column(
+            modifier = Modifier
+                .clip(shape = RoundedCornerShape(12.dp))
+                .width(300.dp)
+                .height(200.dp)
+                .background(color = MaterialTheme.colorScheme.surface),
+            verticalArrangement = SpaceBetween,
+            horizontalAlignment = CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .background(color = MaterialTheme.colorScheme.background)
+            ) {
+                StyledText(
+                    modifier = Modifier.align(Center),
+                    text = stringResource(id = R.string.notice),
+                    style = Typography.bodyLarge
+                )
+            }
+
+            StyledText(
+                text = text,
+                style = Typography.bodyMedium
+            )
+
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .clickableWithoutRipple { onDismissRequest() }
+            ) {
+                StyledText(
+                    modifier = Modifier.align(Center),
+                    text = stringResource(id = R.string.confirm),
+                    style = Typography.bodyLarge,
+                    color = Point
+                )
+            }
+        }
     }
 }
 

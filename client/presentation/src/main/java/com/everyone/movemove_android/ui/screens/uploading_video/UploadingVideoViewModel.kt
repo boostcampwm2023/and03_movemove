@@ -13,6 +13,7 @@ import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetVideoUploadUrlUseCase
 import com.everyone.domain.usecase.PostVideoInfoUseCase
 import com.everyone.domain.usecase.PutFileUseCase
+import com.everyone.movemove_android.R
 import com.everyone.movemove_android.di.DefaultDispatcher
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
@@ -31,6 +32,7 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickThumbnail
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickUpload
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnErrorDialogDismissed
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDrag
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDraggingFinished
@@ -142,6 +144,8 @@ class UploadingVideoViewModel @Inject constructor(
         is OnSelectThumbnailDialogDismissed -> onSelectThumbnailDialogDismissed()
 
         is OnClickUpload -> onClickUpload()
+
+        is OnErrorDialogDismissed -> onErrorDialogDismissed()
     }
 
     private fun onClickAddVideo() {
@@ -270,10 +274,12 @@ class UploadingVideoViewModel @Inject constructor(
             val tempList = mutableListOf<ImageBitmap>()
             val mediaMetadataRetriever = MediaMetadataRetriever().apply {
                 state.value.videoUri?.let { videoUri ->
-                    getVideoFilePath(context, videoUri)?.let { path ->
-                        videoFilePath = path
-                        setDataSource(path)
-                    }
+                    getVideoFilePath(
+                        context = context,
+                        videoUri = videoUri,
+                        onSuccess = { videoFilePath -> setDataSource(videoFilePath) },
+                        onFailure = { showErrorDialog(R.string.error_get_video_file_path) }
+                    )
                 }
             }
 
@@ -486,6 +492,21 @@ class UploadingVideoViewModel @Inject constructor(
                 }
             }
         }.collect()
+    }
+
+    private fun showErrorDialog(textResourceId: Int) {
+        _state.update {
+            it.copy(
+                isErrorDialogShowing = true,
+                errorDialogTextResourceId = textResourceId
+            )
+        }
+    }
+
+    private fun onErrorDialogDismissed() {
+        _state.update {
+            it.copy(isErrorDialogShowing = false)
+        }
     }
 
     companion object {

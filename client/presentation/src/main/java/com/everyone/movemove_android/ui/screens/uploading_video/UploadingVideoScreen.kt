@@ -68,6 +68,7 @@ import com.everyone.domain.model.UploadCategory.NEW_SCHOOL
 import com.everyone.domain.model.UploadCategory.OLD_SCHOOL
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
+import com.everyone.movemove_android.ui.ErrorDialog
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
@@ -87,6 +88,7 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickThumbnail
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickUpload
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnErrorDialogDismissed
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDrag
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDraggingFinished
@@ -217,6 +219,13 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
 
         if (state.isLoading) {
             LoadingDialog()
+        }
+
+        if (state.isErrorDialogShowing) {
+            ErrorDialog(
+                text = stringResource(id = state.errorDialogTextResourceId),
+                onDismissRequest = { event(OnErrorDialogDismissed)}
+            )
         }
 
         if (state.isSelectThumbnailDialogShowing) {

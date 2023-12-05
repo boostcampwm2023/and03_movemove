@@ -3,6 +3,7 @@ package com.everyone.movemove_android.ui.screens.uploading_video
 import android.net.Uri
 import androidx.compose.ui.graphics.ImageBitmap
 import com.everyone.domain.model.UploadCategory
+import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.BaseContract
 import java.io.File
 
@@ -32,7 +33,9 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         val category: UploadCategory? = null,
         val isSelectThumbnailDialogShowing: Boolean = false,
         val selectedThumbnail: ImageBitmap? = null,
-        val stagedVideoFile: File? = null
+        val stagedVideoFile: File? = null,
+        val isErrorDialogShowing: Boolean = false,
+        val errorDialogTextResourceId: Int = 0
     )
 
     sealed interface Event {
@@ -91,6 +94,8 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         data object OnSelectThumbnailDialogDismissed : Event
 
         data object OnClickUpload : Event
+
+        data object OnErrorDialogDismissed : Event
     }
 
     sealed interface Effect {

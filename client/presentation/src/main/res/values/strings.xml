@@ -9,6 +9,7 @@
     <string name="k_pop">K-POP</string>
     <string name="top_bar_profile_title">프로필</string>
     <string name="complete">완료</string>
+    <string name="confirm">확인</string>
 
     <!--    navigation-->
     <string name="navigation_home">홈</string>
@@ -62,4 +63,7 @@
     <!--    rating_video-->
     <string name="rating_video_title">내가 점수를 준 영상 모아보기</string>
 
+    <!--    dialog-->
+    <string name="notice">알림</string>
+    <string name="error_get_video_file_path">영상을 가져 올 수 없습니다.</string>
 </resources>
