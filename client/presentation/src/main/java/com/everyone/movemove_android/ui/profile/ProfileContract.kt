@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.screens.profile
+package com.everyone.movemove_android.ui.profile
 
 import com.everyone.domain.model.Profile
 import com.everyone.domain.model.Videos
@@ -11,7 +11,8 @@ interface ProfileContract :
     BaseContract<ProfileContract.State, ProfileContract.Event, ProfileContract.Effect> {
     data class State(
         val isLoading: Boolean = false,
-        val profile: Profile = Profile(),
+        val uuid: String? = null,
+        val profile: Profile? = null,
         val videosUploaded: VideosList = VideosList(null)
     )
 

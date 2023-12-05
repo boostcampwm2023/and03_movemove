@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.screens.profile
+package com.everyone.movemove_android.ui.profile
 
 import android.content.Intent
 import androidx.compose.foundation.Image
@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,10 +41,10 @@ import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.my.MyActivity
-import com.everyone.movemove_android.ui.screens.profile.ProfileContract.*
-import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Effect.*
-import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event.*
-import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event.OnClickedVideo
+import com.everyone.movemove_android.ui.profile.ProfileContract.*
+import com.everyone.movemove_android.ui.profile.ProfileContract.Effect.*
+import com.everyone.movemove_android.ui.profile.ProfileContract.Event.*
+import com.everyone.movemove_android.ui.profile.ProfileContract.Event.OnClickedVideo
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
@@ -53,7 +54,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun ProfileScreen(
     navigateToActivity: (intent: Intent) -> Unit,
-    viewModel: ProfileViewModel = hiltViewModel()
+    viewModel: ProfileViewModel
 ) {
     val context = LocalContext.current
 
@@ -79,77 +80,92 @@ fun ProfileScreen(
         }
     }
 
-    Column(Modifier.fillMaxSize()) {
-        MoveMoveTopBar(event = event)
+    Scaffold { innerPadding ->
+        if (state.isLoading) {
+            LoadingDialog()
+        } else {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                MoveMoveTopBar(event = event)
 
-        Spacer(
-            modifier = Modifier
-                .height(1.dp)
-                .fillMaxWidth()
-                .background(color = BorderInDark)
-        )
-
-        LazyColumn {
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-                MoveMoveProfile(profile = state.profile)
-                Spacer(modifier = Modifier.height(24.dp))
                 Spacer(
                     modifier = Modifier
-                        .height(3.dp)
+                        .height(1.dp)
                         .fillMaxWidth()
                         .background(color = BorderInDark)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
 
-            if (state.videosUploaded.videos.isNullOrEmpty()) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(250.dp),
-                    ) {
-                        StyledText(
-                            modifier = Modifier.align(Alignment.Center),
-                            text = stringResource(R.string.empty_video_title),
-                            style = MaterialTheme.typography.titleMedium,
+                LazyColumn {
+                    item {
+                        state.profile?.let { profile ->
+                            Spacer(modifier = Modifier.height(24.dp))
+                            MoveMoveProfile(profile = profile)
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
+
+                        Spacer(
+                            modifier = Modifier
+                                .height(3.dp)
+                                .fillMaxWidth()
+                                .background(color = BorderInDark)
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
-                }
-            } else {
-                items(state.videosUploaded.videos!!.chunked(3)) { rowItems ->
-                    val chunkIndex = state.videosUploaded.videos!!.indexOfFirst { it in rowItems }
 
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 8.dp,
-                                end = 8.dp,
-                            ),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        for (i in 0 until 3) {
-                            Box(modifier = Modifier.weight(1f)) {
-                                if (i < rowItems.size) {
-                                    MoveMoveGridImageItem(
-                                        modifier = Modifier.clickableWithoutRipple {
-                                            event(OnClickedVideo(state.videosUploaded, (chunkIndex * 3) + i))
-                                        },
-                                        model = rowItems[i].video!!.thumbnailImageUrl!!,
-                                    )
-                                }
+                    if (state.videosUploaded.videos.isNullOrEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(250.dp),
+                            ) {
+                                StyledText(
+                                    modifier = Modifier.align(Alignment.Center),
+                                    text = stringResource(R.string.empty_video_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
                             }
                         }
+                    } else {
+                        items(state.videosUploaded.videos!!.chunked(3)) { rowItems ->
+                            val chunkIndex =
+                                state.videosUploaded.videos!!.indexOfFirst { it in rowItems }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        start = 8.dp,
+                                        end = 8.dp,
+                                    ),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                for (i in 0 until 3) {
+                                    Box(modifier = Modifier.weight(1f)) {
+                                        if (i < rowItems.size) {
+                                            MoveMoveGridImageItem(
+                                                modifier = Modifier.clickableWithoutRipple {
+                                                    event(
+                                                        OnClickedVideo(
+                                                            state.videosUploaded,
+                                                            (chunkIndex * 3) + i
+                                                        )
+                                                    )
+                                                },
+                                                model = rowItems[i].video!!.thumbnailImageUrl!!,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(0.5.dp))
+                        }
                     }
-                    Spacer(modifier = Modifier.height(0.5.dp))
                 }
             }
-        }
-
-        if (state.isLoading) {
-            LoadingDialog()
         }
     }
 }
