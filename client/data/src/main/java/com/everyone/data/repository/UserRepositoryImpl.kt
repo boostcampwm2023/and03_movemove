@@ -27,6 +27,8 @@ import com.everyone.data.remote.model.ProfileResponse
 import com.everyone.data.remote.model.ProfileResponse.Companion.toDomainModel
 import com.everyone.data.remote.model.UserInfoResponse
 import com.everyone.data.remote.model.UserInfoResponse.Companion.toDomainModel
+import com.everyone.data.remote.model.VideosListResponse
+import com.everyone.data.remote.model.VideosListResponse.Companion.toDomainModel
 import com.everyone.data.remote.model.VideosRatedResponse
 import com.everyone.data.remote.model.VideosRatedResponse.Companion.toDomainModel
 import com.everyone.data.remote.model.VideosUploadedResponse
@@ -34,6 +36,7 @@ import com.everyone.data.remote.model.VideosUploadedResponse.Companion.toDomainM
 import com.everyone.domain.model.Profile
 import com.everyone.domain.model.ProfileImageUploadUrl
 import com.everyone.domain.model.UserInfo
+import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.VideosRated
 import com.everyone.domain.model.VideosUploaded
 import com.everyone.domain.model.base.DataState
@@ -150,9 +153,9 @@ class UserRepositoryImpl @Inject constructor(
         userId: String,
         limit: String,
         lastId: String
-    ): Flow<DataState<VideosUploaded>> = flow {
-        networkHandler.request<VideosUploadedResponse>(
-            method = HttpMethod.Post,
+    ): Flow<DataState<VideosList>> = flow {
+        networkHandler.request<VideosListResponse>(
+            method = HttpMethod.Get,
             isAccessTokenNeeded = false,
             url = { path(USERS, userId, VIDEOS, UPLOADED) },
             content = {

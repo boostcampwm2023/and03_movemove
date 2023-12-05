@@ -1,6 +1,7 @@
 package com.everyone.movemove_android.ui.screens.profile
 
 import android.content.Intent
+import androidx.compose.foundation.Image
 import com.everyone.movemove_android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -118,7 +119,7 @@ fun ProfileScreen(
                             Box(modifier = Modifier.weight(1f)) {
                                 if (i < rowItems.size) {
                                     MoveMoveGridImageItem(
-                                        model = rowItems[i].thumbnailImageUrl!!,
+                                        model = rowItems[i].video!!.thumbnailImageUrl!!,
                                     )
                                 }
                             }
@@ -172,10 +173,17 @@ fun MoveMoveProfile(profile: Profile) {
             modifier = Modifier.size(70.dp),
             shape = CircleShape,
         ) {
-            AsyncImage(
-                model = profile.profileImageUrl,
-                contentDescription = null,
+            profile.profileImageUrl?.let {
+                AsyncImage(
+                    modifier = Modifier.clip(CircleShape),
+                    model = profile.profileImageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop
+                )
+            } ?: Image(
                 modifier = Modifier.clip(CircleShape),
+                painter = painterResource(id = R.drawable.img_basic_profile),
+                contentDescription = null,
                 contentScale = ContentScale.Crop
             )
         }
