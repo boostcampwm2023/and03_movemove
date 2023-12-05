@@ -1,5 +1,6 @@
 package com.everyone.movemove_android.ui.screens.home
 
+import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -47,6 +49,7 @@ import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.home.HomeContract.Effect.OnClickedVideo
 import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoActivity
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -56,15 +59,22 @@ import kotlinx.coroutines.withContext
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    navigateToWatchingVideo: (VideosTrend?, Int?) -> Unit
+    navigateToActivity: (intent: Intent) -> Unit
 ) {
+    val context = LocalContext.current
 
     val (state, event, effect) = use(viewModel)
 
     LaunchedEffect(effect) {
         effect.collectLatest { effect ->
             when (effect) {
-                is OnClickedVideo -> navigateToWatchingVideo(effect.videosTrend, effect.page)
+                is OnClickedVideo -> navigateToActivity(
+                    WatchingVideoActivity.newIntent(
+                        context = context,
+                        videosTrend = null,
+                        page = null
+                    )
+                )
             }
         }
     }
