@@ -14,6 +14,7 @@ import com.everyone.data.remote.RemoteConstants.NICKNAME
 import com.everyone.data.remote.RemoteConstants.PRESIGNED_URL
 import com.everyone.data.remote.RemoteConstants.PROFILE
 import com.everyone.data.remote.RemoteConstants.PROFILE_EXTENSION
+import com.everyone.data.remote.RemoteConstants.PROFILE_IMAGE_EXTENSION
 import com.everyone.data.remote.RemoteConstants.SIGN_UP
 import com.everyone.data.remote.RemoteConstants.STATUS_MESSAGE
 import com.everyone.data.remote.RemoteConstants.UPLOADED
@@ -61,7 +62,7 @@ class UserRepositoryImpl @Inject constructor(
             content = {
                 append(ACCESS_TOKEN, accessToken)
                 append(UUID, uuid)
-                append(PROFILE_EXTENSION, profileImageExtension)
+                append(PROFILE_IMAGE_EXTENSION, profileImageExtension)
                 append(NICKNAME, nickname)
                 append(STATUS_MESSAGE, statusMessage)
             }
