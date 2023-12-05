@@ -338,7 +338,7 @@ class UploadingVideoViewModel @Inject constructor(
     private fun onClickSelectThumbnail() {
         if (::videoFilePath.isInitialized) {
             _state.update {
-                it.copy(isLoading = true)
+                it.copy(isVideoTrimming = true)
             }
 
             viewModelScope.launch(ioDispatcher) {
@@ -346,7 +346,7 @@ class UploadingVideoViewModel @Inject constructor(
             }.invokeOnCompletion {
                 _state.update {
                     it.copy(
-                        isLoading = false,
+                        isVideoTrimming = false,
                         isSelectThumbnailDialogShowing = true
                     )
                 }

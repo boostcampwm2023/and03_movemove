@@ -25,6 +25,7 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         val lowerBoundPosition: Float = 0f,
         val isUpperBoundDragging: Boolean = false,
         val upperBoundPosition: Float = 0f,
+        val isVideoTrimming: Boolean = false,
         val thumbnailList: List<ImageBitmap> = emptyList(),
         val title: String = "",
         val description: String = "",

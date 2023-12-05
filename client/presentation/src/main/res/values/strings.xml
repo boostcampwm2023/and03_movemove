@@ -66,4 +66,5 @@
     <!--    dialog-->
     <string name="notice">알림</string>
     <string name="error_get_video_file_path">영상을 가져 올 수 없습니다.</string>
+    <string name="video_trimming">영상을 편집하고 있습니다</string>
 </resources>

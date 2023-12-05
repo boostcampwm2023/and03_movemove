@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement.SpaceBetween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -68,6 +69,30 @@ fun LoadingDialog() {
             modifier = Modifier.size(48.dp),
             color = Point
         )
+    }
+}
+
+@Composable
+fun LoadingDialogWithText(text: String) {
+    DefaultDialog(
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        )
+    ) {
+        Column(horizontalAlignment = CenterHorizontally) {
+            StyledText(
+                text = text,
+                style = Typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = Point
+            )
+        }
     }
 }
 

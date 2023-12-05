@@ -70,6 +70,7 @@ import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.ErrorDialog
 import com.everyone.movemove_android.ui.LoadingDialog
+import com.everyone.movemove_android.ui.LoadingDialogWithText
 import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.SelectThumbnailDialog
@@ -219,6 +220,10 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
 
         if (state.isLoading) {
             LoadingDialog()
+        }
+        
+        if (state.isVideoTrimming) {
+            LoadingDialogWithText(text = stringResource(id = R.string.video_trimming))
         }
 
         if (state.isErrorDialogShowing) {
