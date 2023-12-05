@@ -2,15 +2,18 @@ package com.everyone.movemove_android.ui.screens.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetProfileUseCase
 import com.everyone.domain.usecase.GetStoredUUIDUseCase
 import com.everyone.domain.usecase.GetUsersVideosUploadedUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
+import com.everyone.movemove_android.ui.screens.home.HomeContract
 import com.everyone.movemove_android.ui.screens.profile.ProfileContract.*
-import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Effect.NavigateToMy
+import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Effect.*
 import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event.OnClickedMenu
+import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event.OnClickedVideo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -42,6 +45,7 @@ class ProfileViewModel @Inject constructor(
 
     override fun event(event: Event) = when (event) {
         is OnClickedMenu -> onClickedMenu()
+        is OnClickedVideo -> onClickedVideo(event.videosList, event.page)
     }
 
     init {
@@ -113,6 +117,12 @@ class ProfileViewModel @Inject constructor(
     private fun onClickedMenu() {
         viewModelScope.launch {
             _effect.emit(NavigateToMy)
+        }
+    }
+
+    private fun onClickedVideo(videosList: VideosList, page: Int) {
+        viewModelScope.launch {
+            _effect.emit(NavigateToWatchingVideo(videosList, page))
         }
     }
 
