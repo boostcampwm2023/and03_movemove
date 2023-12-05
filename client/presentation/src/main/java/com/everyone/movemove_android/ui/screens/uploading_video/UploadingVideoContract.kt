@@ -98,6 +98,8 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         data object OnErrorDialogDismissed : Event
 
         data object OnExit : Event
+
+        data object OnStopped : Event
     }
 
     sealed interface Effect {
@@ -106,5 +108,7 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         data class SeekToStart(val position: Long) : Effect
 
         data object Finish : Effect
+
+        data object PauseVideo : Effect
     }
 }

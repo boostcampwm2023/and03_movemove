@@ -53,6 +53,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -77,6 +78,7 @@ import com.everyone.movemove_android.ui.SelectThumbnailDialog
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.Finish
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.PauseVideo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.SeekToStart
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnBottomSheetHide
@@ -97,6 +99,7 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDraggingStarted
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnSelectThumbnailDialogDismissed
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnStopped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTimelineWidthMeasured
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTitleTyped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnUpperBoundDrag
@@ -111,6 +114,7 @@ import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.EditorTimelineDim
 import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.theme.Typography
+import com.everyone.movemove_android.ui.util.LifecycleCallbackEvent
 import com.everyone.movemove_android.ui.util.addFocusCleaner
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import com.everyone.movemove_android.ui.util.pxToDp
@@ -166,9 +170,18 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                 is Finish -> {
 
                 }
+
+                is PauseVideo -> {
+                    exoPlayer.stop()
+                }
             }
         }
     }
+
+    LifecycleCallbackEvent(
+        lifecycleEvent = Lifecycle.Event.ON_STOP,
+        onEvent = { event(OnStopped) }
+    )
 
     LaunchedEffect(state.videoUri) {
         state.videoUri?.let { videoUri ->
@@ -222,7 +235,7 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
         if (state.isLoading) {
             LoadingDialog()
         }
-        
+
         if (state.isVideoTrimming) {
             LoadingDialogWithText(text = stringResource(id = R.string.loading_video_trimming))
         }
@@ -230,7 +243,7 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
         if (state.isErrorDialogShowing) {
             ErrorDialog(
                 text = stringResource(id = state.errorDialogTextResourceId),
-                onDismissRequest = { event(OnErrorDialogDismissed)}
+                onDismissRequest = { event(OnErrorDialogDismissed) }
             )
         }
 
@@ -442,7 +455,8 @@ private fun EditorTimeline(
                     .fillMaxSize()
                     .padding(horizontal = boundWidthDp)
                     .onGloballyPositioned {
-                        if (state.timelineWidth == 0) event(OnTimelineWidthMeasured(it.size.width)) }
+                        if (state.timelineWidth == 0) event(OnTimelineWidthMeasured(it.size.width))
+                    }
             ) {
                 if (state.thumbnailList.isNotEmpty()) {
                     state.thumbnailList.forEach { thumbnail ->

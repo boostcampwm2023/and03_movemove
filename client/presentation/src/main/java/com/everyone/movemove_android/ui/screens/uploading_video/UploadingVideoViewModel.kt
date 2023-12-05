@@ -20,6 +20,7 @@ import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.Finish
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.PauseVideo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.SeekToStart
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnBottomSheetHide
@@ -40,6 +41,7 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDraggingStarted
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnSelectThumbnailDialogDismissed
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnStopped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTimelineWidthMeasured
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTitleTyped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnUpperBoundDrag
@@ -149,6 +151,8 @@ class UploadingVideoViewModel @Inject constructor(
         is OnErrorDialogDismissed -> onErrorDialogDismissed()
 
         is OnExit -> onExit()
+
+        is OnStopped -> onStopped()
     }
 
     private fun onClickAddVideo() {
@@ -546,6 +550,16 @@ class UploadingVideoViewModel @Inject constructor(
 
     private fun onExit() {
         removeTrimmedVideo()
+    }
+
+    private fun onStopped() {
+        _state.update {
+            it.copy(isPlaying = false)
+        }
+
+        viewModelScope.launch {
+            _effect.emit(PauseVideo)
+        }
     }
 
     companion object {
