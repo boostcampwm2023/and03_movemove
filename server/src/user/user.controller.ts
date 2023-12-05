@@ -16,9 +16,9 @@ import { TokenExpiredException } from 'src/exceptions/token-expired.exception';
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { UserNotFoundException } from 'src/exceptions/user-not-found.exception';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
+import { VideoListResponseDto } from 'src/video/dto/video-list-response.dto';
 import { UserService } from './user.service';
 import { ProfileDto } from './dto/profile.dto';
-import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { UserUploadedVideoQueryDto } from './dto/uploaded-video-request.dto';
 import { UserRatedVideoQueryDto } from './dto/rated-video-request.dto';
 import { RatedVideoResponseDto } from './dto/rated-video-response.dto';
@@ -56,12 +56,12 @@ export class UserController {
    * 특정 유저가 업로드 한 비디오 정보 반환
    */
   @Get(':userId/videos/uploaded')
-  @ApiSuccessResponse(200, '비디오 반환 성공', UploadedVideoResponseDto)
+  @ApiSuccessResponse(200, '비디오 반환 성공', VideoListResponseDto)
   @ApiFailResponse('조회 실패', [UserNotFoundException])
   getUploadedVideos(
     @Param('userId') userId: string,
     @Query() query: UserUploadedVideoQueryDto,
-  ): Promise<UploadedVideoResponseDto> {
+  ) {
     return this.userService.getUploadedVideos(
       userId,
       query.limit,
