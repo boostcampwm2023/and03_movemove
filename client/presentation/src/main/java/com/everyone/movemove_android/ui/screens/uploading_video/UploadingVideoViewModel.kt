@@ -277,7 +277,10 @@ class UploadingVideoViewModel @Inject constructor(
                     getVideoFilePath(
                         context = context,
                         videoUri = videoUri,
-                        onSuccess = { videoFilePath -> setDataSource(videoFilePath) },
+                        onSuccess = { videoFilePath ->
+                            this@UploadingVideoViewModel.videoFilePath = videoFilePath
+                            setDataSource(videoFilePath)
+                        },
                         onFailure = { showErrorDialog(R.string.error_get_video_file_path) }
                     )
                 }
@@ -286,7 +289,7 @@ class UploadingVideoViewModel @Inject constructor(
             withContext(defaultDispatcher) {
                 repeat(THUMBNAIL_COUNT) {
                     mediaMetadataRetriever.getFrameAtTime(
-                        ((state.value.videoDuration / THUMBNAIL_COUNT) * it + 1) * 1000L,
+                        ((state.value.videoDuration / THUMBNAIL_COUNT) * (it + 1)) * 1000L,
                         MediaMetadataRetriever.OPTION_CLOSEST
                     )?.let { bitmap ->
                         tempList.add(bitmap.asImageBitmap())
@@ -335,14 +338,17 @@ class UploadingVideoViewModel @Inject constructor(
     private fun onClickSelectThumbnail() {
         if (::videoFilePath.isInitialized) {
             _state.update {
-                it.copy(isLoading = it.isLoading)
+                it.copy(isLoading = true)
             }
 
             viewModelScope.launch(ioDispatcher) {
                 trimVideo()
             }.invokeOnCompletion {
                 _state.update {
-                    it.copy(isSelectThumbnailDialogShowing = true)
+                    it.copy(
+                        isLoading = false,
+                        isSelectThumbnailDialogShowing = true
+                    )
                 }
             }
         } else {
