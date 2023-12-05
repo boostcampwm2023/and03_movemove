@@ -10,6 +10,7 @@ import com.everyone.domain.usecase.GetVideosRandomUseCase
 import com.everyone.domain.usecase.PutVideosRatingUseCase
 import com.everyone.domain.usecase.PutVideosViewsUseCase
 import com.everyone.movemove_android.di.IoDispatcher
+import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnClickedCategory
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnCategorySelected
@@ -35,12 +36,14 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class WatchingVideoViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
     private val getVideosRandomUseCase: GetVideosRandomUseCase,
     private val putVideosRatingUseCase: PutVideosRatingUseCase,
     private val putVideosViewsUseCase: PutVideosViewsUseCase
@@ -120,7 +123,7 @@ class WatchingVideoViewModel @Inject constructor(
                         loading(isLoading = false)
                     }
                 }
-            }.launchIn(viewModelScope)
+            }.launchIn(viewModelScope + ioDispatcher)
         }
     }
 
@@ -145,7 +148,7 @@ class WatchingVideoViewModel @Inject constructor(
                     is DataState.Success -> {}
                     is DataState.Failure -> {}
                 }
-            }.launchIn(viewModelScope)
+            }.launchIn(viewModelScope + ioDispatcher)
         }
     }
 
@@ -172,9 +175,11 @@ class WatchingVideoViewModel @Inject constructor(
         }
     }
 
-    private fun loading(isLoading: Boolean) {
-        _state.update {
-            it.copy(isLoading = isLoading)
+    private suspend fun loading(isLoading: Boolean) {
+        withContext(mainImmediateDispatcher) {
+            _state.update {
+                it.copy(isLoading = isLoading)
+            }
         }
     }
 

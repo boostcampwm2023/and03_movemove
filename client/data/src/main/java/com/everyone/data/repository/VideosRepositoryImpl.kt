@@ -102,7 +102,7 @@ class VideosRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getVideosRandom(
+    override fun getVideosRandom(
         limit: String,
         category: String,
         seed: String
@@ -126,7 +126,7 @@ class VideosRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun putVideosRating(
+    override fun putVideosRating(
         id: String,
         rating: String,
         reason: String
