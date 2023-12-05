@@ -352,7 +352,7 @@ class UploadingVideoViewModel @Inject constructor(
                 }
             }
         } else {
-            // todo: Not Initialized
+            showErrorDialog(R.string.error_no_video)
         }
     }
 
@@ -370,7 +370,7 @@ class UploadingVideoViewModel @Inject constructor(
                     }
                 },
                 onFailure = {
-                    // todo : 예외 처리
+                    showErrorDialog(R.string.error_video_trimming)
                 }
             )
         }
