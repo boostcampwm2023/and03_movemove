@@ -7,6 +7,7 @@ import com.everyone.data.local.UserInfoManager.Companion.KEY_UUID
 import com.everyone.data.remote.NetworkHandler
 import com.everyone.data.remote.RemoteConstants.ACCESS_TOKEN
 import com.everyone.data.remote.RemoteConstants.AUTH
+import com.everyone.data.remote.RemoteConstants.LAST_RATED_AT
 import com.everyone.data.remote.RemoteConstants.LIMIT
 import com.everyone.data.remote.RemoteConstants.LOGIN
 import com.everyone.data.remote.RemoteConstants.NICKNAME
@@ -14,6 +15,7 @@ import com.everyone.data.remote.RemoteConstants.PRESIGNED_URL
 import com.everyone.data.remote.RemoteConstants.PROFILE
 import com.everyone.data.remote.RemoteConstants.PROFILE_EXTENSION
 import com.everyone.data.remote.RemoteConstants.PROFILE_IMAGE_EXTENSION
+import com.everyone.data.remote.RemoteConstants.RATED
 import com.everyone.data.remote.RemoteConstants.SIGN_UP
 import com.everyone.data.remote.RemoteConstants.STATUS_MESSAGE
 import com.everyone.data.remote.RemoteConstants.UPLOADED
@@ -114,11 +116,13 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun storeRefreshToken(refreshToken: String): Flow<Boolean> = userInfoManager.store(KEY_REFRESH_TOKEN, refreshToken)
+    override fun storeRefreshToken(refreshToken: String): Flow<Boolean> =
+        userInfoManager.store(KEY_REFRESH_TOKEN, refreshToken)
 
     override fun storeUUID(uuid: String): Flow<Boolean> = userInfoManager.store(KEY_UUID, uuid)
 
-    override fun storeSignedPlatform(signedPlatform: String): Flow<Boolean> = userInfoManager.store(KEY_SIGNED_PLATFORM, signedPlatform)
+    override fun storeSignedPlatform(signedPlatform: String): Flow<Boolean> =
+        userInfoManager.store(KEY_SIGNED_PLATFORM, signedPlatform)
 
     override fun setAccessToken(accessToken: String) {
         networkHandler.setAccessToken(accessToken)
@@ -172,13 +176,12 @@ class UserRepositoryImpl @Inject constructor(
         lastRatedAt: String
     ): Flow<DataState<VideosRated>> = flow {
         networkHandler.request<VideosRatedResponse>(
-            method = HttpMethod.Post,
-            isAccessTokenNeeded = false,
-            url = { path(USERS, userId, VIDEOS, UPLOADED) },
-            content = {
-                append(LIMIT, limit)
-                append(lastRatedAt, lastRatedAt)
-            }
+            method = HttpMethod.Get,
+            url = {
+                path(USERS, userId, VIDEOS, RATED)
+                parameters.append(LIMIT, limit)
+            },
+            content = null
         ).collect { response ->
             response.data?.let {
                 emit(DataState.Success(it.toDomainModel()))
