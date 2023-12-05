@@ -3,7 +3,6 @@ package com.everyone.movemove_android.ui.screens.uploading_video
 import android.net.Uri
 import androidx.compose.ui.graphics.ImageBitmap
 import com.everyone.domain.model.UploadCategory
-import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.BaseContract
 import java.io.File
 
@@ -97,6 +96,8 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         data object OnClickUpload : Event
 
         data object OnErrorDialogDismissed : Event
+
+        data object OnExit : Event
     }
 
     sealed interface Effect {

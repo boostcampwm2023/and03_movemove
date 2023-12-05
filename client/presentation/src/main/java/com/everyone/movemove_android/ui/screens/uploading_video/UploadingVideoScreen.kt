@@ -90,6 +90,7 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickUpload
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnErrorDialogDismissed
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnExit
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDrag
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDraggingFinished
@@ -249,6 +250,12 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
 
         BackHandler(enabled = state.isBottomSheetShowing) {
             event(OnBottomSheetHide)
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            event(OnExit)
         }
     }
 }
@@ -434,7 +441,8 @@ private fun EditorTimeline(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = boundWidthDp)
-                    .onGloballyPositioned { if (state.timelineWidth == 0) event(OnTimelineWidthMeasured(it.size.width)) }
+                    .onGloballyPositioned {
+                        if (state.timelineWidth == 0) event(OnTimelineWidthMeasured(it.size.width)) }
             ) {
                 if (state.thumbnailList.isNotEmpty()) {
                     state.thumbnailList.forEach { thumbnail ->

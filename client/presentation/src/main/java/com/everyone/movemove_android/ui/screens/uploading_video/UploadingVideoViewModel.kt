@@ -33,6 +33,7 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickUpload
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnErrorDialogDismissed
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnExit
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDrag
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDraggingFinished
@@ -146,6 +147,8 @@ class UploadingVideoViewModel @Inject constructor(
         is OnClickUpload -> onClickUpload()
 
         is OnErrorDialogDismissed -> onErrorDialogDismissed()
+
+        is OnExit -> onExit()
     }
 
     private fun onClickAddVideo() {
@@ -352,7 +355,11 @@ class UploadingVideoViewModel @Inject constructor(
             }
 
             viewModelScope.launch(ioDispatcher) {
-                trimVideo()
+                state.value.stagedVideoFile?.let {
+
+                } ?: run {
+                    trimVideo()
+                }
             }.invokeOnCompletion {
                 _state.update {
                     it.copy(
@@ -475,6 +482,7 @@ class UploadingVideoViewModel @Inject constructor(
                         when (isSuccess) {
                             true -> {
                                 sendVideoInfo(videoId)
+                                removeTrimmedVideo()
                             }
 
                             false -> {
@@ -510,6 +518,17 @@ class UploadingVideoViewModel @Inject constructor(
         }.collect()
     }
 
+    private fun removeTrimmedVideo() {
+        val stagedVideoFile = state.value.stagedVideoFile
+        if (stagedVideoFile != null) {
+            viewModelScope.launch(ioDispatcher) {
+                runCatching {
+                    stagedVideoFile.delete()
+                }
+            }
+        }
+    }
+
     private fun showErrorDialog(textResourceId: Int) {
         _state.update {
             it.copy(
@@ -523,6 +542,10 @@ class UploadingVideoViewModel @Inject constructor(
         _state.update {
             it.copy(isErrorDialogShowing = false)
         }
+    }
+
+    private fun onExit() {
+        removeTrimmedVideo()
     }
 
     companion object {
