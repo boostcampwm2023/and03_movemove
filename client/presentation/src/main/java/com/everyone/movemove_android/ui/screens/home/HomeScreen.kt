@@ -322,7 +322,7 @@ fun MoveMoveVideo(
                 modifier = Modifier.fillMaxSize(),
                 model = video.thumbnailImageUrl,
                 contentDescription = null,
-                contentScale = ContentScale.FillWidth,
+                contentScale = ContentScale.Crop,
             )
         }
     }
