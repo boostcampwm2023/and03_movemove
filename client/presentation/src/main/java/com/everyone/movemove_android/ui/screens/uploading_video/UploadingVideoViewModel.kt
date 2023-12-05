@@ -556,6 +556,7 @@ class UploadingVideoViewModel @Inject constructor(
     }
 
     private fun onExit() {
+        _state.update { State() }
         removeTrimmedVideo()
     }
 

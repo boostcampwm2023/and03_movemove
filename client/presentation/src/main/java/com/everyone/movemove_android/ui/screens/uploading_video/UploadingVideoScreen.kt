@@ -258,9 +258,7 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
             )
         }
 
-        BackHandler(enabled = state.videoUri != null) {
-
-        }
+        BackHandler(enabled = state.videoUri != null) {}
 
         BackHandler(enabled = state.isBottomSheetShowing) {
             event(OnBottomSheetHide)
