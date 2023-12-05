@@ -1,19 +1,15 @@
 package com.everyone.movemove_android.ui.watching_video
 
-import android.content.Context
-import android.content.Intent
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.everyone.domain.model.Videos
-import com.everyone.domain.model.VideosTrend
+import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetVideosRandomUseCase
 import com.everyone.domain.usecase.PutVideosRatingUseCase
 import com.everyone.domain.usecase.PutVideosViewsUseCase
 import com.everyone.movemove_android.di.IoDispatcher
-import com.everyone.movemove_android.ui.container.ContainerActivity
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnClickedCategory
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnCategorySelected
@@ -50,7 +46,7 @@ class WatchingVideoViewModel @Inject constructor(
     private val putVideosViewsUseCase: PutVideosViewsUseCase
 ) : ViewModel(), WatchingVideoContract {
 
-    val videosTrend = savedStateHandle.get<VideosTrend>(EXTRA_KEY_VIDEOS_TREND)
+    val videosList = savedStateHandle.get<VideosList>(EXTRA_KEY_VIDEOS_TREND)
     val page = savedStateHandle.get<Int>(EXTRA_KEY_VIDEOS_PAGE)
 
 

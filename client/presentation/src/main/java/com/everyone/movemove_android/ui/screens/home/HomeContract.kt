@@ -1,7 +1,7 @@
 package com.everyone.movemove_android.ui.screens.home
 
 import com.everyone.domain.model.Advertisements
-import com.everyone.domain.model.VideosTrend
+import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.base.BaseContract
 
 interface HomeContract :
@@ -9,21 +9,21 @@ interface HomeContract :
     data class State(
         val isLoading: Boolean = false,
         val advertisements: Advertisements = Advertisements(null),
-        val videosTrend: VideosTrend = VideosTrend(null),
-        val videosTopRatedOldSchool: VideosTrend = VideosTrend(null),
-        val videosTopRatedChallenge: VideosTrend = VideosTrend(null)
+        val videosTrend: VideosList = VideosList(null),
+        val videosTopRatedOldSchool: VideosList = VideosList(null),
+        val videosTopRatedChallenge: VideosList = VideosList(null)
     )
 
     sealed interface Event {
         data class OnClickedVideo(
-            val videosTrend: VideosTrend,
+            val videosList: VideosList,
             val page: Int
         ) : Event
     }
 
     sealed interface Effect {
         data class OnClickedVideo(
-            val videosTrend: VideosTrend,
+            val videosList: VideosList,
             val page: Int
         ) : Effect
     }

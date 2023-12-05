@@ -36,14 +36,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.everyone.domain.model.Videos
-import com.everyone.domain.model.VideosTrend
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.home.HomeScreen
 import com.everyone.movemove_android.ui.screens.profile.ProfileScreen
 import com.everyone.movemove_android.ui.container.navigation.Destination
 import com.everyone.movemove_android.ui.container.navigation.Navigator
-import com.everyone.movemove_android.ui.image_cropper.ImageCropperActivity
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoScreen
 import com.everyone.movemove_android.ui.theme.BackgroundInDark
 import com.everyone.movemove_android.ui.theme.BorderInDark
@@ -138,7 +135,7 @@ fun MoveMoveNavigationBar(
                                 navigateToActivity(
                                     WatchingVideoActivity.newIntent(
                                         context = context,
-                                        videosTrend = null,
+                                        videosList = null,
                                         page = null
                                     )
                                 )
