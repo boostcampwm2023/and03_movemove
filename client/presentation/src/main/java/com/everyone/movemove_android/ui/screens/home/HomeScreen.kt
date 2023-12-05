@@ -1,5 +1,6 @@
 package com.everyone.movemove_android.ui.screens.home
 
+import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -44,22 +46,38 @@ import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.container.navigation.Destination
-import com.everyone.movemove_android.ui.container.navigation.Navigator
+import com.everyone.movemove_android.ui.screens.home.HomeContract.Effect.OnClickedVideo
 import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoActivity
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    navigateToWatchingVideo: (VideosTrend?, Int?) -> Unit
+    navigateToActivity: (intent: Intent) -> Unit
 ) {
+    val context = LocalContext.current
 
     val (state, event, effect) = use(viewModel)
+
+    LaunchedEffect(effect) {
+        effect.collectLatest { effect ->
+            when (effect) {
+                is OnClickedVideo -> navigateToActivity(
+                    WatchingVideoActivity.newIntent(
+                        context = context,
+                        videosTrend = null,
+                        page = null
+                    )
+                )
+            }
+        }
+    }
 
     if (state.isLoading) {
         LoadingDialog()
@@ -81,7 +99,7 @@ fun HomeScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             MoveMoveVideos(
-                navigateToWatchingVideo = navigateToWatchingVideo,
+                event = event,
                 videosTrend = state.videosTrend
             )
 
@@ -94,7 +112,7 @@ fun HomeScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             MoveMoveVideos(
-                navigateToWatchingVideo = navigateToWatchingVideo,
+                event = event,
                 videosTrend = state.videosTopRatedChallenge
             )
 
@@ -107,7 +125,7 @@ fun HomeScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             MoveMoveVideos(
-                navigateToWatchingVideo = navigateToWatchingVideo,
+                event = event,
                 videosTrend = state.videosTopRatedOldSchool
             )
         }
@@ -189,7 +207,7 @@ fun MultiServiceAdsItem(
             modifier = modifier.fillMaxSize(),
             model = serviceAdsItem.url,
             contentDescription = null,
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.FillBounds,
         )
     }
 }
@@ -244,7 +262,7 @@ fun StyledColorText(
 
 @Composable
 fun MoveMoveVideos(
-    navigateToWatchingVideo: (VideosTrend?, Int?) -> Unit,
+    event: (HomeContract.Event) -> Unit,
     videosTrend: VideosTrend,
 ) {
     videosTrend.videos?.let { videos ->
@@ -261,7 +279,12 @@ fun MoveMoveVideos(
             items(videos.size) {
                 MoveMoveVideo(
                     modifier = Modifier.clickableWithoutRipple {
-                        navigateToWatchingVideo(videosTrend, it)
+                        event(
+                            HomeContract.Event.OnClickedVideo(
+                                videosTrend = videosTrend,
+                                page = it
+                            )
+                        )
                     },
                     videos = videos[it],
                 )
@@ -299,7 +322,7 @@ fun MoveMoveVideo(
                 modifier = Modifier.fillMaxSize(),
                 model = video.thumbnailImageUrl,
                 contentDescription = null,
-                contentScale = ContentScale.FillWidth,
+                contentScale = ContentScale.Crop,
             )
         }
     }

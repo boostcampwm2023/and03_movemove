@@ -6,8 +6,8 @@ import com.everyone.domain.repository.VideosRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class GetVideosTrendUseCase @Inject constructor(private val mainRepository: VideosRepository) {
-    suspend operator fun invoke(limit: String): Flow<DataState<VideosTrend>> {
-        return mainRepository.getVideosTrend(limit = limit)
+class GetVideosTrendUseCase @Inject constructor(private val repository: VideosRepository) {
+    operator fun invoke(limit: String): Flow<DataState<VideosTrend>> {
+        return repository.getVideosTrend(limit = limit)
     }
 }

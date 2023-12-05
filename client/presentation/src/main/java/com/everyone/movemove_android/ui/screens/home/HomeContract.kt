@@ -14,7 +14,17 @@ interface HomeContract :
         val videosTopRatedChallenge: VideosTrend = VideosTrend(null)
     )
 
-    sealed interface Event {}
+    sealed interface Event {
+        data class OnClickedVideo(
+            val videosTrend: VideosTrend,
+            val page: Int
+        ) : Event
+    }
 
-    sealed interface Effect {}
+    sealed interface Effect {
+        data class OnClickedVideo(
+            val videosTrend: VideosTrend,
+            val page: Int
+        ) : Effect
+    }
 }

@@ -164,7 +164,7 @@ class VideosRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun getVideosTopRated(category: String): Flow<DataState<VideosTrend>> {
+    override fun getVideosTopRated(category: String): Flow<DataState<VideosTrend>> {
         return flow {
             networkHandler.request<VideosTrendResponse>(
                 method = HttpMethod.Get,
@@ -182,7 +182,7 @@ class VideosRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getVideosTrend(limit: String): Flow<DataState<VideosTrend>> {
+    override fun getVideosTrend(limit: String): Flow<DataState<VideosTrend>> {
         return flow {
             networkHandler.request<VideosTrendResponse>(
                 method = HttpMethod.Get,

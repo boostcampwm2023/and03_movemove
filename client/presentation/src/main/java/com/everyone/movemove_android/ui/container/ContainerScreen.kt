@@ -1,5 +1,6 @@
 package com.everyone.movemove_android.ui.container
 
+import android.content.Intent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.background
@@ -23,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -41,15 +43,17 @@ import com.everyone.movemove_android.ui.screens.home.HomeScreen
 import com.everyone.movemove_android.ui.screens.profile.ProfileScreen
 import com.everyone.movemove_android.ui.container.navigation.Destination
 import com.everyone.movemove_android.ui.container.navigation.Navigator
+import com.everyone.movemove_android.ui.image_cropper.ImageCropperActivity
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoScreen
 import com.everyone.movemove_android.ui.theme.BackgroundInDark
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.InActiveInDark
 import com.everyone.movemove_android.ui.theme.Point
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoActivity
 
 @Composable
 fun MainScreen(
-    navigateToWatchingVideo: (VideosTrend?, Int?) -> Unit,
+    navigateToActivity: (intent: Intent) -> Unit,
     navigateToMy: () -> Unit
 ) {
     val navController = rememberNavController()
@@ -70,7 +74,7 @@ fun MainScreen(
                 MoveMoveNavigationBar(
                     currentDestination = currentDestination,
                     onNavigate = { navigator.navigateTo(it) },
-                    navigateToWatchingVideo = navigateToWatchingVideo
+                    navigateToActivity = navigateToActivity
                 )
             }
 
@@ -80,7 +84,7 @@ fun MainScreen(
             startDestination = Destination.HOME.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            navScreen(Destination.HOME.route) { HomeScreen(navigateToWatchingVideo = navigateToWatchingVideo) }
+            navScreen(Destination.HOME.route) { HomeScreen(navigateToActivity = navigateToActivity) }
             navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
             navScreen(Destination.PROFILE.route) { ProfileScreen(navigateToMy = navigateToMy) }
         }
@@ -91,8 +95,9 @@ fun MainScreen(
 fun MoveMoveNavigationBar(
     currentDestination: NavDestination?,
     onNavigate: (Destination) -> Unit,
-    navigateToWatchingVideo: (VideosTrend?, Int?) -> Unit
+    navigateToActivity: (intent: Intent) -> Unit
 ) {
+    val context = LocalContext.current
 
     Column {
         Spacer(
@@ -133,7 +138,13 @@ fun MoveMoveNavigationBar(
                         selected = false,
                         onClick = {
                             if (destination == Destination.WATCHING_VIDEO) {
-                                navigateToWatchingVideo(null, null)
+                                navigateToActivity(
+                                    WatchingVideoActivity.newIntent(
+                                        context = context,
+                                        videosTrend = null,
+                                        page = null
+                                    )
+                                )
                             } else {
                                 onNavigate(destination)
                             }

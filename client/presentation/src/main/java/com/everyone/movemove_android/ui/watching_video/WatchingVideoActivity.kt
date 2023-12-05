@@ -31,8 +31,8 @@ class WatchingVideoActivity : BaseActivity() {
 
         fun newIntent(
             context: Context,
-            videosTrend: VideosTrend,
-            page: Int
+            videosTrend: VideosTrend?,
+            page: Int?
         ): Intent = Intent(context, WatchingVideoActivity::class.java).apply {
             putExtra(EXTRA_KEY_VIDEOS_TREND, videosTrend)
             putExtra(EXTRA_KEY_VIDEOS_PAGE, page)
