@@ -163,7 +163,12 @@ class UploadingVideoViewModel @Inject constructor(
 
     private fun onGetUri(uri: Uri) {
         _state.update {
-            it.copy(videoUri = uri)
+            State(
+                videoUri = uri,
+                title = it.title,
+                description = it.description,
+                category = it.category
+            )
         }
 
         checkUploadEnable()
