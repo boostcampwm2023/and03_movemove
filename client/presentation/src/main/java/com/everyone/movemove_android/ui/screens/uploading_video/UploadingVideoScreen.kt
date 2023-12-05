@@ -223,7 +223,7 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
         }
         
         if (state.isVideoTrimming) {
-            LoadingDialogWithText(text = stringResource(id = R.string.video_trimming))
+            LoadingDialogWithText(text = stringResource(id = R.string.loading_video_trimming))
         }
 
         if (state.isErrorDialogShowing) {

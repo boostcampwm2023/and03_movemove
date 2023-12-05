@@ -271,7 +271,6 @@ class UploadingVideoViewModel @Inject constructor(
 
     private fun getThumbnailList() {
         viewModelScope.launch(ioDispatcher) {
-            val tempList = mutableListOf<ImageBitmap>()
             val mediaMetadataRetriever = MediaMetadataRetriever().apply {
                 state.value.videoUri?.let { videoUri ->
                     getVideoFilePath(
@@ -287,19 +286,30 @@ class UploadingVideoViewModel @Inject constructor(
             }
 
             withContext(defaultDispatcher) {
-                repeat(THUMBNAIL_COUNT) {
-                    mediaMetadataRetriever.getFrameAtTime(
-                        ((state.value.videoDuration / THUMBNAIL_COUNT) * (it + 1)) * 1000L,
-                        MediaMetadataRetriever.OPTION_CLOSEST
-                    )?.let { bitmap ->
-                        tempList.add(bitmap.asImageBitmap())
+                runCatching {
+                    val tempList = mutableListOf<ImageBitmap>()
+                    repeat(THUMBNAIL_COUNT) {
+                        mediaMetadataRetriever.getFrameAtTime(
+                            ((state.value.videoDuration / THUMBNAIL_COUNT) * (it + 1)) * 1000L,
+                            MediaMetadataRetriever.OPTION_CLOSEST
+                        )?.let { bitmap ->
+                            tempList.add(bitmap.asImageBitmap())
+                        }
                     }
-                }
-            }
 
-            withContext(mainImmediateDispatcher) {
-                _state.update {
-                    it.copy(thumbnailList = tempList)
+                    tempList
+                }.onSuccess { tempList ->
+                    withContext(mainImmediateDispatcher) {
+                        if (tempList.isNotEmpty()) {
+                            _state.update {
+                                it.copy(thumbnailList = tempList)
+                            }
+                        } else {
+                            showErrorDialog(R.string.error_getting_thumbnail)
+                        }
+                    }
+                }.onFailure {
+                    showErrorDialog(R.string.error_getting_thumbnail)
                 }
             }
 
