@@ -207,7 +207,7 @@ fun MultiServiceAdsItem(
             modifier = modifier.fillMaxSize(),
             model = serviceAdsItem.url,
             contentDescription = null,
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.FillBounds,
         )
     }
 }
