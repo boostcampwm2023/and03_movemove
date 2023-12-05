@@ -40,11 +40,14 @@ import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.my.MyActivity
-import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event
+import com.everyone.movemove_android.ui.screens.profile.ProfileContract.*
+import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Effect.*
 import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event.*
+import com.everyone.movemove_android.ui.screens.profile.ProfileContract.Event.OnClickedVideo
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoActivity
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -59,8 +62,18 @@ fun ProfileScreen(
     LaunchedEffect(effect) {
         effect.collectLatest { effect ->
             when (effect) {
-                is ProfileContract.Effect.NavigateToMy -> {
+                is NavigateToMy -> {
                     navigateToActivity(MyActivity.newIntent(context = context))
+                }
+
+                is NavigateToWatchingVideo -> {
+                    navigateToActivity(
+                        WatchingVideoActivity.newIntent(
+                            context = context,
+                            videosList = effect.videosList,
+                            page = effect.page
+                        )
+                    )
                 }
             }
         }
@@ -106,19 +119,24 @@ fun ProfileScreen(
                 }
             } else {
                 items(state.videosUploaded.videos!!.chunked(3)) { rowItems ->
+                    val chunkIndex = state.videosUploaded.videos!!.indexOfFirst { it in rowItems }
+
                     Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(
                                 start = 8.dp,
                                 end = 8.dp,
-                            )
+                            ),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         for (i in 0 until 3) {
                             Box(modifier = Modifier.weight(1f)) {
                                 if (i < rowItems.size) {
                                     MoveMoveGridImageItem(
+                                        modifier = Modifier.clickableWithoutRipple {
+                                            event(OnClickedVideo(state.videosUploaded, (chunkIndex * 3) + i))
+                                        },
                                         model = rowItems[i].video!!.thumbnailImageUrl!!,
                                     )
                                 }
