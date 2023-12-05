@@ -140,6 +140,7 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                 override fun onTracksChanged(tracks: Tracks) {
                     super.onTracksChanged(tracks)
                     event(OnVideoReady(duration))
+                    play()
                 }
             })
         }
@@ -258,7 +259,7 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
         }
 
         BackHandler(enabled = state.videoUri != null) {
-            // todo: show dialog
+
         }
 
         BackHandler(enabled = state.isBottomSheetShowing) {
@@ -556,10 +557,12 @@ private fun EditorTimeline(
                     .background(color = Point)
             )
 
-            LaunchedEffect(Unit) {
-                while (true) {
-                    event(OnVideoPositionUpdated(exoPlayer.currentPosition))
-                    delay(100)
+            LaunchedEffect(state.isPlaying) {
+                if (state.isPlaying) {
+                    while (true) {
+                        event(OnVideoPositionUpdated(exoPlayer.currentPosition))
+                        delay(100)
+                    }
                 }
             }
         }

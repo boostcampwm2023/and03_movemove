@@ -270,13 +270,15 @@ class UploadingVideoViewModel @Inject constructor(
     }
 
     private fun onVideoPositionUpdated(videoPosition: Long) {
-        _state.update {
-            it.copy(indicatorPosition = (it.timelineUnitWidth * (videoPosition / it.videoLengthUnit)).toInt())
-        }
+        if (state.value.videoLengthUnit != 0L) {
+            _state.update {
+                it.copy(indicatorPosition = (it.timelineUnitWidth * (videoPosition / it.videoLengthUnit)).toInt())
+            }
 
-        if (videoPosition < state.value.videoStartTime || videoPosition > state.value.videoEndTime) {
-            viewModelScope.launch {
-                _effect.emit(SeekToStart(state.value.videoStartTime))
+            if (videoPosition < state.value.videoStartTime || videoPosition > state.value.videoEndTime) {
+                viewModelScope.launch {
+                    _effect.emit(SeekToStart(state.value.videoStartTime))
+                }
             }
         }
     }
