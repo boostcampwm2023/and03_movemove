@@ -1,4 +1,4 @@
-package com.everyone.movemove_android.ui.screens.watching_video
+package com.everyone.movemove_android.ui.watching_video
 
 import com.everyone.domain.model.Videos
 import com.everyone.movemove_android.base.BaseContract
@@ -43,7 +43,7 @@ interface WatchingVideoContract :
         CHALLENGE("챌린지"),
         OLD_SCHOOL("올드스쿨"),
         NEW_SCHOOL("뉴스쿨"),
-        K_POP("K-POP")
+        K_POP("Kpop")
     }
 
     enum class VideoTab {
