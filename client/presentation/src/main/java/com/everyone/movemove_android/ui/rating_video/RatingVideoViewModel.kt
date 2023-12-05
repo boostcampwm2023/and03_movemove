@@ -3,15 +3,11 @@ package com.everyone.movemove_android.ui.rating_video
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.base.DataState
-import com.everyone.domain.usecase.GetProfileUseCase
 import com.everyone.domain.usecase.GetUsersVideosRatedUseCase
-import com.everyone.domain.usecase.GetUsersVideosUploadedUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
-import com.everyone.movemove_android.ui.profile.ProfileActivity
 import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Effect
 import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Effect.*
 import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Event
