@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -148,7 +149,7 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
                 }
 
                 StyledText(
-                    modifier = Modifier.align(alignment = Alignment.Center),
+                    modifier = Modifier.align(alignment = Center),
                     text = stringResource(id = sign_up),
                     style = Typography.labelLarge
                 )
@@ -179,22 +180,21 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
                     )
                 }
 
-                IconButton(
+                Box(
                     modifier = Modifier
-                        .align(alignment = Alignment.BottomEnd)
-                        .size(30.dp)
                         .padding(
                             bottom = 6.dp,
                             end = 6.dp
-                        ),
-                    onClick = {},
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = ProfileAddGray,
-                        contentColor = Color.White
-                    )
+                        )
+                        .clip(CircleShape)
+                        .align(alignment = Alignment.BottomEnd)
+                        .size(24.dp)
+                        .background(color = ProfileAddGray)
                 ) {
                     Icon(
+                        modifier = Modifier.align(Center),
                         painter = painterResource(id = ic_profile_add),
+                        tint = Color.White,
                         contentDescription = null
                     )
                 }
