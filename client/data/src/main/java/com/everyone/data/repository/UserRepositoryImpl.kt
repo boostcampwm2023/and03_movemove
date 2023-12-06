@@ -14,6 +14,7 @@ import com.everyone.data.remote.RemoteConstants.NICKNAME
 import com.everyone.data.remote.RemoteConstants.PRESIGNED_URL
 import com.everyone.data.remote.RemoteConstants.PROFILE
 import com.everyone.data.remote.RemoteConstants.PROFILE_EXTENSION
+import com.everyone.data.remote.RemoteConstants.PROFILE_IMAGE_EXTENSION
 import com.everyone.data.remote.RemoteConstants.SIGN_UP
 import com.everyone.data.remote.RemoteConstants.STATUS_MESSAGE
 import com.everyone.data.remote.RemoteConstants.UPLOADED
@@ -154,6 +155,28 @@ class UserRepositoryImpl @Inject constructor(
             content = {
                 append(LIMIT, limit)
                 append(LAST_ID, lastId)
+            }
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
+            }
+        }
+    }
+
+    override fun patchUserProfile(
+        nickname: String,
+        statusMessage: String,
+        profileImageExtension: String
+    ): Flow<DataState<Profile>> = flow {
+        networkHandler.request<ProfileResponse>(
+            method = HttpMethod.Patch,
+            url = { path(USERS, PROFILE) },
+            content = {
+                append(NICKNAME, nickname)
+                append(STATUS_MESSAGE, statusMessage)
+                append(PROFILE_IMAGE_EXTENSION, profileImageExtension)
             }
         ).collect { response ->
             response.data?.let {

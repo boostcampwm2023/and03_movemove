@@ -46,4 +46,10 @@ interface UserRepository {
         limit: String,
         lastId: String
     ): Flow<DataState<VideosUploaded>>
+
+    fun patchUserProfile(
+        nickname: String,
+        statusMessage: String,
+        profileImageExtension: String
+    ): Flow<DataState<Profile>>
 }

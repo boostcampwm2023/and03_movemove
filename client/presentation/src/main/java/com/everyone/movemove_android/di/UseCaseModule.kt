@@ -7,6 +7,7 @@ import com.everyone.domain.usecase.GetStoredSignedPlatformUseCase
 import com.everyone.domain.usecase.GetStoredUUIDUseCase
 import com.everyone.domain.usecase.GetVideoUploadUrlUseCase
 import com.everyone.domain.usecase.LoginUseCase
+import com.everyone.domain.usecase.PatchUserProfileUseCase
 import com.everyone.domain.usecase.PostVideoInfoUseCase
 import com.everyone.domain.usecase.PutFileUseCase
 import com.everyone.domain.usecase.SetAccessTokenUseCase
@@ -61,6 +62,10 @@ object UseCaseModule {
     @Provides
     @ViewModelScoped
     fun provideSignedPlatformUseCase(repository: UserRepository): StoreSignedPlatformUseCase = StoreSignedPlatformUseCase(repository)
+
+    @Provides
+    @ViewModelScoped
+    fun providePatchUserProfileUseCase(repository: UserRepository): PatchUserProfileUseCase = PatchUserProfileUseCase(repository)
 
     /*
     비디오

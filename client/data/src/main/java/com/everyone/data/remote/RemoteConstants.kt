@@ -24,6 +24,7 @@ object RemoteConstants {
     const val VIDEO_EXTENSION = "videoExtension"
     const val THUMBNAIL_EXTENSION = "thumbnailExtension"
     const val PROFILE_EXTENSION = "profileExtension"
+    const val PROFILE_IMAGE_EXTENSION = "profileImageExtension"
     const val UUID = "uuid"
     const val ACCESS_TOKEN = "accessToken"
     const val NICKNAME = "nickname"
