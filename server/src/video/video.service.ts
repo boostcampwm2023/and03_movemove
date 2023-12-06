@@ -4,7 +4,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { requestEncoding } from 'src/ncpAPI/requestEncoding';
 import { User } from 'src/user/schemas/user.schema';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
@@ -18,6 +17,7 @@ import { checkUpload } from 'src/ncpAPI/listObjects';
 import { VideoUploadRequiredException } from 'src/exceptions/video-upload-required-exception copy';
 import { ThumbnailUploadRequiredException } from 'src/exceptions/thumbnail-upload-required-exception copy 2';
 import { BadRequestFormatException } from 'src/exceptions/bad-request-format.exception';
+import { EncodingActionFailException } from 'src/exceptions/encoding-action-fail.exception';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -170,7 +170,11 @@ export class VideoService {
       throw new ThumbnailUploadRequiredException();
     }
 
-    await requestEncoding(process.env.INPUT_BUCKET, [videoName]);
+    await this.requestEncodingAPI(
+      process.env.INPUT_BUCKET,
+      process.env.OUTPUT_BUCKET,
+      videoName,
+    );
 
     const uploader = await this.UserModel.findOne({ uuid }, { _id: 1 });
 
@@ -186,6 +190,29 @@ export class VideoService {
     });
     await newVideo.save();
     return { videoId, ...videoDto };
+  }
+
+  async requestEncodingAPI(
+    inputBucket: string,
+    outputBucket: string,
+    objectName: string,
+  ) {
+    const videoUrl = await createPresignedUrl(inputBucket, objectName, 'GET');
+    const accessKey = process.env.ACCESS_KEY;
+    const secretKey = process.env.SECRET_KEY;
+    const data = {
+      videoUrl,
+      object_name: objectName,
+      outputBucket,
+      accessKey,
+      secretKey,
+    };
+    console.log(data);
+    try {
+      await axios.post(process.env.ENCODING_API_URL, data);
+    } catch (error) {
+      throw new EncodingActionFailException();
+    }
   }
 
   async deleteEncodedVideo(videoId: string) {

@@ -12,7 +12,6 @@ import {
   Query,
 } from '@nestjs/common';
 import {
-  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiOkResponse,
   ApiProduces,
@@ -70,7 +69,7 @@ export class VideoController {
   }
 
   /**
-   * 비디오 업로드
+   * 비디오 인코딩
    */
   @UseInterceptors(
     FileFieldsInterceptor([
