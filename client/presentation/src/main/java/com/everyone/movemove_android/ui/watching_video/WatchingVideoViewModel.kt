@@ -11,6 +11,7 @@ import com.everyone.domain.usecase.PutVideosRatingUseCase
 import com.everyone.domain.usecase.PutVideosViewsUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
+import com.everyone.movemove_android.ui.profile.ProfileContract
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnClickedCategory
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnCategorySelected
@@ -69,6 +70,7 @@ class WatchingVideoViewModel @Inject constructor(
 
             is ChangedVideoTab -> changedVideoTab(videoTab = event.videoTab)
             is PutVideosViews -> putVideosViews(videoId = event.videoId)
+            is Event.OnClickedProfile -> onClickedProfile(uuid = event.uuid)
         }
     }
 
@@ -172,6 +174,12 @@ class WatchingVideoViewModel @Inject constructor(
             it.copy(
                 videoTab = videoTab
             )
+        }
+    }
+
+    private fun onClickedProfile(uuid: String) {
+        viewModelScope.launch {
+            _effect.emit(Effect.NavigateToProfile(uuid = uuid))
         }
     }
 

@@ -1,6 +1,7 @@
 package com.everyone.movemove_android.ui.watching_video
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.net.Uri
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
@@ -65,6 +66,7 @@ import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.profile.ProfileActivity
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.*
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.*
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.VideoTab.BOTTOM_TAB
@@ -75,17 +77,36 @@ import com.everyone.movemove_android.ui.theme.FooterMiddleBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterTopBackgroundInDark
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
+import kotlinx.coroutines.flow.collectLatest
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WatchingVideoScreen(
     viewModel: WatchingVideoViewModel,
+    navigateToActivity: (intent: Intent) -> Unit,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
 ) {
+    val context = LocalContext.current
+
     var initialPage by remember { mutableIntStateOf(0) }
 
     val (state, event, effect) = use(viewModel)
+
+    LaunchedEffect(effect) {
+        effect.collectLatest { effect ->
+            when (effect) {
+                is Effect.NavigateToProfile -> {
+                    navigateToActivity(
+                        ProfileActivity.newIntent(
+                            context = context,
+                            uuid = effect.uuid
+                        )
+                    )
+                }
+            }
+        }
+    }
 
     LaunchedEffect(state.videosList) {
         if (state.videosList != null) {
@@ -147,7 +168,10 @@ fun WatchingVideoScreen(
                                         event = event
                                     )
                                 }
-                                MoveMoveFooter(videos = videosItem[page])
+                                MoveMoveFooter(
+                                    videos = videosItem[page],
+                                    event = event
+                                )
                                 Divider()
                             }
                         }
@@ -367,7 +391,10 @@ fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
 }
 
 @Composable
-fun MoveMoveFooter(videos: Videos) {
+fun MoveMoveFooter(
+    event: (Event) -> Unit,
+    videos: Videos,
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -387,18 +414,25 @@ fun MoveMoveFooter(videos: Videos) {
                 bottom = 18.dp
             ),
     ) {
-        MoveMoveFooterContents(videos = videos)
+        MoveMoveFooterContents(
+            event = event,
+            videos = videos
+        )
     }
 }
 
 @Composable
-fun MoveMoveFooterContents(videos: Videos) {
+fun MoveMoveFooterContents(
+    event: (Event) -> Unit,
+    videos: Videos
+) {
     Column(
         verticalArrangement = Arrangement.Center
     ) {
 
         videos.uploader?.let { uploader ->
             Row(
+                modifier = Modifier.clickableWithoutRipple { event(OnClickedProfile(uploader.uuid!!)) },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
             ) {

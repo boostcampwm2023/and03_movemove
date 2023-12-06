@@ -17,8 +17,11 @@ class WatchingVideoActivity : BaseActivity() {
     override fun InitComposeUi() {
         WatchingVideoScreen(
             viewModel = viewModel,
+            navigateToActivity = ::launchActivity
         )
     }
+
+    private fun launchActivity(intent: Intent) = startActivity(intent)
 
     companion object {
         const val EXTRA_KEY_VIDEOS_LIST = "EXTRA_KEY_VIDEOS_LIST"
