@@ -2,13 +2,16 @@ package com.everyone.movemove_android.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetAdsUseCase
 import com.everyone.domain.usecase.GetVideosTopRatedUseCase
 import com.everyone.domain.usecase.GetVideosTrendUseCase
+import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.ui.screens.home.HomeContract.*
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Category
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -19,10 +22,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val getAdsUseCase: GetAdsUseCase,
     private val getVideosTrendUseCase: GetVideosTrendUseCase,
     private val getVideosTopRatedUseCase: GetVideosTopRatedUseCase
@@ -33,95 +38,96 @@ class HomeViewModel @Inject constructor(
     private val _effect = MutableSharedFlow<Effect>()
     override val effect: SharedFlow<Effect> = _effect.asSharedFlow()
 
-    override fun event(event: Event) {}
+    override fun event(event: Event) = when (event) {
+        is Event.OnClickedVideo -> onClickedVideo(event.videosList, event.page)
+    }
 
     init {
-        // TODO 광고 API 문제가 있어 주석 처리했슴돠
         getAds()
         getVideosTrend()
         geVideosTopRated(category = Category.CHALLENGE)
         geVideosTopRated(category = Category.OLD_SCHOOL)
     }
 
-    private fun getAds() {
+    private fun onClickedVideo(videosList: VideosList, page: Int) {
         viewModelScope.launch {
-            loading(isLoading = true)
-            getAdsUseCase().onEach { result ->
-                when (result) {
-                    is DataState.Success -> {
-                        _state.update {
-                            it.copy(
-                                isLoading = false,
-                                advertisements = result.data
-                            )
-                        }
-                    }
+            _effect.emit(Effect.OnClickedVideo(videosList, page))
+        }
+    }
 
-                    is DataState.Failure -> {
-                        loading(isLoading = false)
+    private fun getAds() {
+        loading(isLoading = true)
+        getAdsUseCase().onEach { result ->
+            when (result) {
+                is DataState.Success -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            advertisements = result.data
+                        )
                     }
                 }
-            }.launchIn(viewModelScope)
-        }
+
+                is DataState.Failure -> {
+                    loading(isLoading = false)
+                }
+            }
+        }.launchIn(viewModelScope + ioDispatcher)
     }
 
     private fun getVideosTrend() {
-        viewModelScope.launch {
-            loading(isLoading = true)
-            getVideosTrendUseCase(limit = LIMIT).onEach { result ->
-                when (result) {
-                    is DataState.Success -> {
-                        _state.update {
-                            it.copy(
-                                isLoading = false,
-                                videosTrend = result.data
-                            )
-                        }
-                    }
-
-                    is DataState.Failure -> {
-                        loading(isLoading = false)
+        loading(isLoading = true)
+        getVideosTrendUseCase(limit = LIMIT).onEach { result ->
+            when (result) {
+                is DataState.Success -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            videosTrend = result.data
+                        )
                     }
                 }
-            }.launchIn(viewModelScope)
-        }
+
+                is DataState.Failure -> {
+                    loading(isLoading = false)
+                }
+            }
+        }.launchIn(viewModelScope + ioDispatcher)
     }
 
     private fun geVideosTopRated(category: Category) {
-        viewModelScope.launch {
-            loading(isLoading = true)
-            getVideosTopRatedUseCase(category = category.displayName).onEach { result ->
-                when (result) {
-                    is DataState.Success -> {
-                        when (category) {
-                            Category.CHALLENGE -> {
-                                _state.update {
-                                    it.copy(
-                                        isLoading = false,
-                                        videosTopRatedChallenge = result.data
-                                    )
-                                }
+        loading(isLoading = true)
+        getVideosTopRatedUseCase(category = category.displayName).onEach { result ->
+            when (result) {
+                is DataState.Success -> {
+                    when (category) {
+                        Category.CHALLENGE -> {
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    videosTopRatedChallenge = result.data
+                                )
                             }
-
-                            Category.OLD_SCHOOL -> {
-                                _state.update {
-                                    it.copy(
-                                        isLoading = false,
-                                        videosTopRatedOldSchool = result.data
-                                    )
-                                }
-                            }
-
-                            else -> {}
                         }
-                    }
 
-                    is DataState.Failure -> {
-                        loading(isLoading = false)
+                        Category.OLD_SCHOOL -> {
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    videosTopRatedOldSchool = result.data
+                                )
+                            }
+                        }
+
+                        else -> {}
                     }
                 }
-            }.launchIn(viewModelScope)
-        }
+
+                is DataState.Failure -> {
+                    loading(isLoading = false)
+                }
+            }
+        }.launchIn(viewModelScope + ioDispatcher)
 
     }
 

@@ -40,6 +40,9 @@ google-play-services-auth = "20.5.0"
 # ktor
 ktor = "2.3.6"
 
+# MockK
+mockK = "1.13.8"
+
 [libraries]
 # default
 android-gradle-plugin = { group = "com.android", name = "application", version.ref = "android-gradle-plugin" }
@@ -101,6 +104,13 @@ ktor-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = 
 
 # splash
 splash = { group = "androidx.core", name = "core-splashscreen", version = "1.0.1" }
+
+# kotest
+kotest = { group = "io.kotest", name = "kotest-runner-junit5", version = "5.0.3" }
+
+# mockK
+mockK = { group = "io.mockk", name = "mockk", version.ref = "mockK" }
+mockK-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockK" }
 
 [bundles]
 android = ["core-ktx", "lifecycle-runtime-ktx", "material", "lifecycle-extensions", "coil"]

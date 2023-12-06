@@ -10,8 +10,10 @@ import dagger.hilt.android.AndroidEntryPoint
 class ContainerActivity : BaseActivity() {
     @Composable
     override fun InitComposeUi() {
-        MainScreen()
+        MainScreen(navigateToActivity = ::launchActivity)
     }
+
+    private fun launchActivity(intent: Intent) = startActivity(intent)
 
     companion object {
         fun newIntent(context: Context): Intent = Intent(context, ContainerActivity::class.java)

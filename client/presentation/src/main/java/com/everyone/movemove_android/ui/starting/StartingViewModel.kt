@@ -51,7 +51,7 @@ class StartingViewModel @Inject constructor(
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
 
-    private val _effect = MutableSharedFlow<Effect>()
+    private val _effect = MutableSharedFlow<Effect>(replay = 1)
     override val effect: SharedFlow<Effect> = _effect.asSharedFlow()
 
     override fun event(event: Event) = when (event) {
@@ -122,10 +122,12 @@ class StartingViewModel @Inject constructor(
                     }
 
                     is DataState.Failure -> {
-                        GoToSignUpScreen(
-                            accessToken = accessToken,
-                            uuid = uuid,
-                            platform = platform,
+                        _effect.emit(
+                            GoToSignUpScreen(
+                                accessToken = accessToken,
+                                uuid = uuid,
+                                platform = platform,
+                            )
                         )
                     }
                 }

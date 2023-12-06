@@ -45,4 +45,8 @@ dependencies {
 
     // datastore
     implementation(libs.bundles.datastore)
+
+    // test
+    testImplementation(libs.kotest)
+    testImplementation(libs.mockK)
 }

@@ -23,12 +23,12 @@ import com.everyone.data.remote.model.VideoUploadUrlResponse
 import com.everyone.data.remote.model.VideoUploadUrlResponse.Companion.toDomainModel
 import com.everyone.data.remote.model.VideosRandomResponse
 import com.everyone.data.remote.model.VideosRandomResponse.Companion.toDomainModel
-import com.everyone.data.remote.model.VideosTrendResponse
-import com.everyone.data.remote.model.VideosTrendResponse.Companion.toDomainModel
+import com.everyone.data.remote.model.VideosListResponse
+import com.everyone.data.remote.model.VideosListResponse.Companion.toDomainModel
 import com.everyone.domain.model.CreatedVideo
 import com.everyone.domain.model.VideoUploadUrl
 import com.everyone.domain.model.VideosRandom
-import com.everyone.domain.model.VideosTrend
+import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.model.base.NetworkError
 import com.everyone.domain.repository.VideosRepository
@@ -102,7 +102,7 @@ class VideosRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getVideosRandom(
+    override fun getVideosRandom(
         limit: String,
         category: String,
         seed: String
@@ -126,7 +126,7 @@ class VideosRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun putVideosRating(
+    override fun putVideosRating(
         id: String,
         rating: String,
         reason: String
@@ -164,9 +164,9 @@ class VideosRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun getVideosTopRated(category: String): Flow<DataState<VideosTrend>> {
+    override fun getVideosTopRated(category: String): Flow<DataState<VideosList>> {
         return flow {
-            networkHandler.request<VideosTrendResponse>(
+            networkHandler.request<VideosListResponse>(
                 method = HttpMethod.Get,
                 url = {
                     path(VIDEOS, TOP_RATED)
@@ -182,9 +182,9 @@ class VideosRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getVideosTrend(limit: String): Flow<DataState<VideosTrend>> {
+    override fun getVideosTrend(limit: String): Flow<DataState<VideosList>> {
         return flow {
-            networkHandler.request<VideosTrendResponse>(
+            networkHandler.request<VideosListResponse>(
                 method = HttpMethod.Get,
                 url = {
                     path(VIDEOS, TREND)

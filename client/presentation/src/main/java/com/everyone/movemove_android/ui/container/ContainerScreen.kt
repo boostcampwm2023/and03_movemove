@@ -1,5 +1,6 @@
 package com.everyone.movemove_android.ui.container
 
+import android.content.Intent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.background
@@ -23,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -34,21 +36,20 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.everyone.domain.model.Videos
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.home.HomeScreen
-import com.everyone.movemove_android.ui.screens.profile.ProfileScreen
 import com.everyone.movemove_android.ui.container.navigation.Destination
 import com.everyone.movemove_android.ui.container.navigation.Navigator
+import com.everyone.movemove_android.ui.profile.ProfileActivity
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoScreen
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoScreen
 import com.everyone.movemove_android.ui.theme.BackgroundInDark
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.InActiveInDark
 import com.everyone.movemove_android.ui.theme.Point
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoActivity
 
 @Composable
-fun MainScreen() {
+fun MainScreen(navigateToActivity: (intent: Intent) -> Unit) {
     val navController = rememberNavController()
     val navigator = rememberNavigator(navController = navController)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -67,6 +68,7 @@ fun MainScreen() {
                 MoveMoveNavigationBar(
                     currentDestination = currentDestination,
                     onNavigate = { navigator.navigateTo(it) },
+                    navigateToActivity = navigateToActivity
                 )
             }
 
@@ -76,17 +78,8 @@ fun MainScreen() {
             startDestination = Destination.HOME.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            navScreen(Destination.HOME.route) { HomeScreen(navigator = navigator) }
-            navScreen(Destination.WATCHING_VIDEO.route) {
-                val videosInfo = remember {
-                    val videosInfo = navController.previousBackStackEntry?.savedStateHandle?.get<Pair<List<Videos>, Int>>("videosInfo")
-                    navController.previousBackStackEntry?.savedStateHandle?.remove<Pair<List<Videos>, Int>>("videosInfo")
-                    videosInfo
-                }
-                WatchingVideoScreen(videosInfo = videosInfo)
-            }
+            navScreen(Destination.HOME.route) { HomeScreen(navigateToActivity = navigateToActivity) }
             navScreen(Destination.UPLOADING_VIDEO.route) { UploadingVideoScreen() }
-            navScreen(Destination.PROFILE.route) { ProfileScreen() }
         }
     }
 }
@@ -94,8 +87,10 @@ fun MainScreen() {
 @Composable
 fun MoveMoveNavigationBar(
     currentDestination: NavDestination?,
-    onNavigate: (Destination) -> Unit
+    onNavigate: (Destination) -> Unit,
+    navigateToActivity: (intent: Intent) -> Unit
 ) {
+    val context = LocalContext.current
 
     Column {
         Spacer(
@@ -134,7 +129,30 @@ fun MoveMoveNavigationBar(
                             )
                         },
                         selected = false,
-                        onClick = { onNavigate(destination) },
+                        onClick = {
+                            when (destination) {
+                                Destination.WATCHING_VIDEO -> {
+                                    navigateToActivity(
+                                        WatchingVideoActivity.newIntent(
+                                            context = context,
+                                            videosList = null,
+                                            page = null
+                                        )
+                                    )
+                                }
+
+                                Destination.PROFILE -> {
+                                    navigateToActivity(
+                                        ProfileActivity.newIntent(
+                                            context = context,
+                                            uuid = null
+                                        )
+                                    )
+                                }
+
+                                else -> onNavigate(destination)
+                            }
+                        },
                         interactionSource = MutableInteractionSource()
                     )
                 }

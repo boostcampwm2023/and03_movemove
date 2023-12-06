@@ -1,12 +1,10 @@
 package com.everyone.domain.model
 
 import com.everyone.domain.model.base.BaseModel
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Uploader(
+data class Rater(
     val uuid: String?,
     val nickname: String?,
-    val statusMessage: String?,
-    val profileImageUrl: String?
 ) : BaseModel

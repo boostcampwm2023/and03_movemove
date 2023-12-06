@@ -1,5 +1,6 @@
 package com.everyone.movemove_android.ui.screens.home
 
+import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -39,27 +41,43 @@ import coil.compose.AsyncImage
 import com.everyone.domain.model.Ads
 import com.everyone.domain.model.Advertisements
 import com.everyone.domain.model.Videos
-import com.everyone.domain.model.VideosTrend
+import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.container.navigation.Destination
-import com.everyone.movemove_android.ui.container.navigation.Navigator
+import com.everyone.movemove_android.ui.screens.home.HomeContract.Effect.OnClickedVideo
 import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoActivity
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    navigator: Navigator
+    navigateToActivity: (intent: Intent) -> Unit
 ) {
+    val context = LocalContext.current
 
     val (state, event, effect) = use(viewModel)
+
+    LaunchedEffect(effect) {
+        effect.collectLatest { effect ->
+            when (effect) {
+                is OnClickedVideo -> navigateToActivity(
+                    WatchingVideoActivity.newIntent(
+                        context = context,
+                        videosList = effect.videosList,
+                        page = effect.page
+                    )
+                )
+            }
+        }
+    }
 
     if (state.isLoading) {
         LoadingDialog()
@@ -81,8 +99,8 @@ fun HomeScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             MoveMoveVideos(
-                navigator = navigator,
-                videosTrend = state.videosTrend
+                event = event,
+                videosList = state.videosTrend
             )
 
             Spacer(modifier = Modifier.height(36.dp))
@@ -94,8 +112,8 @@ fun HomeScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             MoveMoveVideos(
-                navigator = navigator,
-                videosTrend = state.videosTopRatedChallenge
+                event = event,
+                videosList = state.videosTopRatedChallenge
             )
 
             Spacer(modifier = Modifier.height(36.dp))
@@ -107,8 +125,8 @@ fun HomeScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             MoveMoveVideos(
-                navigator = navigator,
-                videosTrend = state.videosTopRatedOldSchool
+                event = event,
+                videosList = state.videosTopRatedOldSchool
             )
         }
     }
@@ -189,7 +207,7 @@ fun MultiServiceAdsItem(
             modifier = modifier.fillMaxSize(),
             model = serviceAdsItem.url,
             contentDescription = null,
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.FillBounds,
         )
     }
 }
@@ -244,10 +262,10 @@ fun StyledColorText(
 
 @Composable
 fun MoveMoveVideos(
-    navigator: Navigator,
-    videosTrend: VideosTrend,
+    event: (HomeContract.Event) -> Unit,
+    videosList: VideosList,
 ) {
-    videosTrend.videos?.let { videos ->
+    videosList.videos?.let { videos ->
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -261,11 +279,12 @@ fun MoveMoveVideos(
             items(videos.size) {
                 MoveMoveVideo(
                     modifier = Modifier.clickableWithoutRipple {
-                        navigator.navigateToArgument(
-                            key = "videosInfo",
-                            value = Pair(videos, it)
+                        event(
+                            HomeContract.Event.OnClickedVideo(
+                                videosList = videosList,
+                                page = it
+                            )
                         )
-                        navigator.navigateTo(Destination.WATCHING_VIDEO)
                     },
                     videos = videos[it],
                 )
@@ -303,7 +322,7 @@ fun MoveMoveVideo(
                 modifier = Modifier.fillMaxSize(),
                 model = video.thumbnailImageUrl,
                 contentDescription = null,
-                contentScale = ContentScale.FillWidth,
+                contentScale = ContentScale.Crop,
             )
         }
     }
