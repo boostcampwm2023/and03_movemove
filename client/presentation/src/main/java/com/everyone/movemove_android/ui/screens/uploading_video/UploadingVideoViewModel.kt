@@ -13,12 +13,15 @@ import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetVideoUploadUrlUseCase
 import com.everyone.domain.usecase.PostVideoInfoUseCase
 import com.everyone.domain.usecase.PutFileUseCase
+import com.everyone.movemove_android.R
 import com.everyone.movemove_android.di.DefaultDispatcher
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.Finish
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.PauseVideo
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.SeekToStart
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnBottomSheetHide
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnCategorySelected
@@ -30,10 +33,21 @@ import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoCo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickThumbnail
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnClickUpload
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnDescriptionTyped
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnErrorDialogDismissed
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnExit
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnGetUri
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDrag
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDraggingFinished
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnLowerBoundDraggingStarted
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnPlayAndPauseTimeOut
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnSelectThumbnailDialogDismissed
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnStopped
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTimelineWidthMeasured
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnTitleTyped
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnUpperBoundDrag
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnUpperBoundDraggingFinished
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnUpperBoundDraggingStarted
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnVideoPositionUpdated
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.OnVideoReady
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoEndTime
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Event.SetVideoStartTime
@@ -90,9 +104,31 @@ class UploadingVideoViewModel @Inject constructor(
 
         is OnVideoReady -> onVideoReady(event.duration)
 
-        is SetVideoStartTime -> setVideoStartTime(event.time)
+        is OnTimelineWidthMeasured -> onTimelineWidthMeasured(event.timelineWidth)
 
-        is SetVideoEndTime -> setVideoEndTime(event.time)
+        is OnLowerBoundDraggingStarted -> onLowerBoundDraggingStarted()
+
+        is OnLowerBoundDraggingFinished -> onLowerBoundDraggingFinished()
+
+        is OnLowerBoundDrag -> onLowerBoundDrag(
+            offset = event.offset,
+            boundWidthPx = event.boundWidthPx
+        )
+
+        is OnUpperBoundDraggingStarted -> onUpperBoundDraggingStarted()
+
+        is OnUpperBoundDraggingFinished -> onUpperBoundDraggingFinished()
+
+        is OnUpperBoundDrag -> onUpperBoundDrag(
+            offset = event.offset,
+            boundWidthPx = event.boundWidthPx
+        )
+
+        is OnVideoPositionUpdated -> onVideoPositionUpdated(event.videoPosition)
+
+        is SetVideoStartTime -> setVideoStartTime()
+
+        is SetVideoEndTime -> setVideoEndTime()
 
         is OnTitleTyped -> onTitleTyped(event.title)
 
@@ -111,6 +147,12 @@ class UploadingVideoViewModel @Inject constructor(
         is OnSelectThumbnailDialogDismissed -> onSelectThumbnailDialogDismissed()
 
         is OnClickUpload -> onClickUpload()
+
+        is OnErrorDialogDismissed -> onErrorDialogDismissed()
+
+        is OnExit -> onExit()
+
+        is OnStopped -> onStopped()
     }
 
     private fun onClickAddVideo() {
@@ -121,7 +163,12 @@ class UploadingVideoViewModel @Inject constructor(
 
     private fun onGetUri(uri: Uri) {
         _state.update {
-            it.copy(videoInfo = it.videoInfo.copy(uri = uri))
+            State(
+                videoUri = uri,
+                title = it.title,
+                description = it.description,
+                category = it.category
+            )
         }
 
         checkUploadEnable()
@@ -149,57 +196,150 @@ class UploadingVideoViewModel @Inject constructor(
         _state.update {
             it.copy(
                 isVideoReady = true,
-                isPlaying = true, videoInfo = it.videoInfo.copy(duration = duration)
+                isPlaying = true,
+                videoDuration = duration,
+                videoEndTime = duration,
+                videoLengthUnit = duration / 1000L
             )
         }
 
         getThumbnailList()
     }
 
-    private fun getThumbnailList() {
-        with(state.value.videoInfo) {
-            viewModelScope.launch(ioDispatcher) {
-                val tempList = mutableListOf<ImageBitmap>()
-                val mediaMetadataRetriever = MediaMetadataRetriever().apply {
-                    uri?.let {
-                        getVideoFilePath(context, uri)?.let { path ->
-                            videoFilePath = path
-                            setDataSource(path)
-                        }
-                    }
-                }
+    private fun onTimelineWidthMeasured(width: Int) {
+        _state.update {
+            it.copy(
+                timelineWidth = width,
+                timelineUnitWidth = width / 1000L
+            )
+        }
+    }
 
-                withContext(defaultDispatcher) {
+    private fun onLowerBoundDraggingStarted() {
+        _state.update {
+            it.copy(isLowerBoundDragging = true)
+        }
+    }
+
+    private fun onLowerBoundDraggingFinished() {
+        _state.update {
+            it.copy(isLowerBoundDragging = false)
+        }
+    }
+
+    private fun onLowerBoundDrag(
+        offset: Float,
+        boundWidthPx: Float
+    ) {
+        val sum = state.value.lowerBoundPosition + offset
+        val timelineWidth = state.value.timelineWidth
+        val upperBoundPosition = state.value.upperBoundPosition
+
+        if (sum >= 0 && sum < timelineWidth + upperBoundPosition - (boundWidthPx * 3)) {
+            _state.update {
+                it.copy(lowerBoundPosition = sum)
+            }
+        }
+    }
+
+    private fun onUpperBoundDraggingStarted() {
+        _state.update {
+            it.copy(isUpperBoundDragging = true)
+        }
+    }
+
+    private fun onUpperBoundDraggingFinished() {
+        _state.update {
+            it.copy(isUpperBoundDragging = false)
+        }
+    }
+
+    private fun onUpperBoundDrag(
+        offset: Float,
+        boundWidthPx: Float
+    ) {
+        val sum = state.value.upperBoundPosition + offset
+        val timelineWidth = state.value.timelineWidth
+        val lowerBoundPosition = state.value.lowerBoundPosition
+
+        if (sum <= 0 && sum > lowerBoundPosition - timelineWidth + (boundWidthPx * 3)) {
+            _state.update {
+                it.copy(upperBoundPosition = sum)
+            }
+        }
+    }
+
+    private fun onVideoPositionUpdated(videoPosition: Long) {
+        if (state.value.videoLengthUnit != 0L) {
+            _state.update {
+                it.copy(indicatorPosition = (it.timelineUnitWidth * (videoPosition / it.videoLengthUnit)).toInt())
+            }
+
+            if (videoPosition < state.value.videoStartTime || videoPosition > state.value.videoEndTime) {
+                viewModelScope.launch {
+                    _effect.emit(SeekToStart(state.value.videoStartTime))
+                }
+            }
+        }
+    }
+
+    private fun getThumbnailList() {
+        viewModelScope.launch(ioDispatcher) {
+            val mediaMetadataRetriever = MediaMetadataRetriever().apply {
+                state.value.videoUri?.let { videoUri ->
+                    getVideoFilePath(
+                        context = context,
+                        videoUri = videoUri,
+                        onSuccess = { videoFilePath ->
+                            this@UploadingVideoViewModel.videoFilePath = videoFilePath
+                            setDataSource(videoFilePath)
+                        },
+                        onFailure = { showErrorDialog(R.string.error_get_video_file_path) }
+                    )
+                }
+            }
+
+            withContext(defaultDispatcher) {
+                runCatching {
+                    val tempList = mutableListOf<ImageBitmap>()
                     repeat(THUMBNAIL_COUNT) {
                         mediaMetadataRetriever.getFrameAtTime(
-                            ((state.value.videoInfo.duration / THUMBNAIL_COUNT) * it + 1) * 1000L,
+                            ((state.value.videoDuration / THUMBNAIL_COUNT) * (it + 1)) * 1000L,
                             MediaMetadataRetriever.OPTION_CLOSEST
                         )?.let { bitmap ->
                             tempList.add(bitmap.asImageBitmap())
                         }
                     }
-                }
 
-                withContext(mainImmediateDispatcher) {
-                    _state.update {
-                        it.copy(thumbnailList = tempList)
+                    tempList
+                }.onSuccess { tempList ->
+                    withContext(mainImmediateDispatcher) {
+                        if (tempList.isNotEmpty()) {
+                            _state.update {
+                                it.copy(thumbnailList = tempList)
+                            }
+                        } else {
+                            showErrorDialog(R.string.error_getting_thumbnail)
+                        }
                     }
+                }.onFailure {
+                    showErrorDialog(R.string.error_getting_thumbnail)
                 }
-
-                mediaMetadataRetriever.release()
             }
+
+            mediaMetadataRetriever.release()
         }
     }
 
-    private fun setVideoStartTime(time: Long) {
+    private fun setVideoStartTime() {
         _state.update {
-            it.copy(videoStartTime = time)
+            it.copy(videoStartTime = it.videoLengthUnit * (it.lowerBoundPosition / it.timelineUnitWidth).toLong())
         }
     }
 
-    private fun setVideoEndTime(time: Long) {
+    private fun setVideoEndTime() {
         _state.update {
-            it.copy(videoEndTime = time)
+            it.copy(videoEndTime = it.videoLengthUnit * ((it.timelineWidth + it.upperBoundPosition) / it.timelineUnitWidth).toLong())
         }
     }
 
@@ -222,18 +362,25 @@ class UploadingVideoViewModel @Inject constructor(
     private fun onClickSelectThumbnail() {
         if (::videoFilePath.isInitialized) {
             _state.update {
-                it.copy(isLoading = it.isLoading)
+                it.copy(isVideoTrimming = true)
             }
 
             viewModelScope.launch(ioDispatcher) {
-                trimVideo()
+                state.value.stagedVideoFile?.let {
+
+                } ?: run {
+                    trimVideo()
+                }
             }.invokeOnCompletion {
                 _state.update {
-                    it.copy(isSelectThumbnailDialogShowing = true)
+                    it.copy(
+                        isVideoTrimming = false,
+                        isSelectThumbnailDialogShowing = true
+                    )
                 }
             }
         } else {
-            // todo: Not Initialized
+            showErrorDialog(R.string.error_no_video)
         }
     }
 
@@ -251,7 +398,7 @@ class UploadingVideoViewModel @Inject constructor(
                     }
                 },
                 onFailure = {
-                    // todo : 예외 처리
+                    showErrorDialog(R.string.error_video_trimming)
                 }
             )
         }
@@ -284,7 +431,7 @@ class UploadingVideoViewModel @Inject constructor(
         with(state.value) {
             _state.update {
                 it.copy(
-                    isUploadEnabled = videoInfo.uri != null &&
+                    isUploadEnabled = videoUri != null &&
                             title.isNotEmpty() &&
                             description.isNotEmpty() &&
                             category != null
@@ -340,16 +487,17 @@ class UploadingVideoViewModel @Inject constructor(
                             file = thumbnailFile
                         ),
                         transform = { videoResult, thumbnailResult ->
-                            videoResult == 200 && thumbnailResult == 200
+                            videoResult == SUCCESS && thumbnailResult == SUCCESS
                         }
                     ).onEach { isSuccess ->
                         when (isSuccess) {
                             true -> {
                                 sendVideoInfo(videoId)
+                                removeTrimmedVideo()
                             }
 
                             false -> {
-                                // todo : 업로드 예외 처리
+                                showErrorDialog(R.string.error_uploading_video)
                             }
                         }
                     }.collect()
@@ -375,15 +523,57 @@ class UploadingVideoViewModel @Inject constructor(
                 }
 
                 is DataState.Failure -> {
-                    // todo : 인코딩 예외 처리
+                    showErrorDialog(R.string.error_uploading_video)
                 }
             }
         }.collect()
+    }
+
+    private fun removeTrimmedVideo() {
+        val stagedVideoFile = state.value.stagedVideoFile
+        if (stagedVideoFile != null) {
+            viewModelScope.launch(ioDispatcher) {
+                runCatching {
+                    stagedVideoFile.delete()
+                }
+            }
+        }
+    }
+
+    private fun showErrorDialog(textResourceId: Int) {
+        _state.update {
+            it.copy(
+                isErrorDialogShowing = true,
+                errorDialogTextResourceId = textResourceId
+            )
+        }
+    }
+
+    private fun onErrorDialogDismissed() {
+        _state.update {
+            it.copy(isErrorDialogShowing = false)
+        }
+    }
+
+    private fun onExit() {
+        _state.update { State() }
+        removeTrimmedVideo()
+    }
+
+    private fun onStopped() {
+        _state.update {
+            it.copy(isPlaying = false)
+        }
+
+        viewModelScope.launch {
+            _effect.emit(PauseVideo)
+        }
     }
 
     companion object {
         const val THUMBNAIL_COUNT = 15
         private const val MP4 = "mp4"
         private const val WEBP = "webp"
+        private const val SUCCESS = 200
     }
 }
