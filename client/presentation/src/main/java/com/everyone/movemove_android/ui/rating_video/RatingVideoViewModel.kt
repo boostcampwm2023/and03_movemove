@@ -1,13 +1,13 @@
 package com.everyone.movemove_android.ui.rating_video
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.everyone.domain.model.Videos
+import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.base.DataState
-import com.everyone.domain.usecase.GetProfileUseCase
 import com.everyone.domain.usecase.GetUsersVideosRatedUseCase
-import com.everyone.domain.usecase.GetUsersVideosUploadedUseCase
 import com.everyone.movemove_android.di.IoDispatcher
+import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Effect
 import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Effect.*
 import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Event
@@ -24,12 +24,14 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class RatingVideoViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
-    private val getProfileUseCase: GetProfileUseCase,
+    @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
     private val getUsersVideosRatedUseCase: GetUsersVideosRatedUseCase
 ) : ViewModel(), RatingVideoContract {
     private val _state = MutableStateFlow(State())
@@ -37,59 +39,42 @@ class RatingVideoViewModel @Inject constructor(
 
     private val _effect = MutableSharedFlow<Effect>()
     override val effect: SharedFlow<Effect> = _effect.asSharedFlow()
+
     override fun event(event: Event) = when (event) {
         is Event.OnClickedBack -> onClickedBack()
         is Event.OnClickedVideo -> onClickedVideo(event.videosLit, event.page)
     }
 
     init {
-        getProfile()
-        getUsersVideosUploaded()
+        val uuid = requireNotNull(savedStateHandle.get<String>(RatingVideoActivity.EXTRA_KEY_UUID))
+        getUsersVideosUploaded(uuid = uuid)
     }
 
-    private fun getProfile() {
-        loading(isLoading = true)
-        getProfileUseCase("550e8400-e13b-45d5-a826-446655440011").onEach { result ->
-            when (result) {
-                is DataState.Success -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            profile = result.data
-                        )
+    private fun getUsersVideosUploaded(uuid: String) {
+        viewModelScope.launch {
+
+            loading(isLoading = true)
+            getUsersVideosRatedUseCase(
+                limit = LIMIT,
+                userId = uuid,
+                lastRatedAt = ""
+            ).onEach { result ->
+                when (result) {
+                    is DataState.Success -> {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                videosRated = result.data
+                            )
+                        }
+                    }
+
+                    is DataState.Failure -> {
+                        loading(isLoading = false)
                     }
                 }
-
-                is DataState.Failure -> {
-                    loading(isLoading = false)
-                }
-            }
-        }.launchIn(viewModelScope + ioDispatcher)
-    }
-
-    private fun getUsersVideosUploaded() {
-        // TODO 제가 코드를 이상하게 작성해서 내가 점수 준 비디오 모아보기 리팩토링 이슈에서 해결할게요~
-        loading(isLoading = true)
-        getUsersVideosRatedUseCase(
-            limit = "10",
-            userId = "550e8400-e13b-45d5-a826-446655440011",
-            lastRatedAt = ""
-        ).onEach { result ->
-            when (result) {
-                is DataState.Success -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-//                            videosUploaded = result.data
-                        )
-                    }
-                }
-
-                is DataState.Failure -> {
-                    loading(isLoading = false)
-                }
-            }
-        }.launchIn(viewModelScope + ioDispatcher)
+            }.launchIn(viewModelScope + ioDispatcher)
+        }
     }
 
     private fun onClickedBack() {
@@ -98,7 +83,7 @@ class RatingVideoViewModel @Inject constructor(
         }
     }
 
-    private fun onClickedVideo(videosList: List<Videos>, page: Int) {
+    private fun onClickedVideo(videosList: VideosList, page: Int) {
         viewModelScope.launch {
             _effect.emit(
                 OnClickedVideo(
@@ -109,9 +94,15 @@ class RatingVideoViewModel @Inject constructor(
         }
     }
 
-    private fun loading(isLoading: Boolean) {
-        _state.update {
-            it.copy(isLoading = isLoading)
+    private suspend fun loading(isLoading: Boolean) {
+        withContext(mainImmediateDispatcher) {
+            _state.update {
+                it.copy(isLoading = isLoading)
+            }
         }
+    }
+
+    companion object {
+        const val LIMIT = "50"
     }
 }
