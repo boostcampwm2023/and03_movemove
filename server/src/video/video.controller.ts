@@ -34,6 +34,7 @@ import { VideoConflictException } from 'src/exceptions/video-conflict.exception'
 import { ThumbnailUploadRequiredException } from 'src/exceptions/thumbnail-upload-required-exception copy 2';
 import { VideoUploadRequiredException } from 'src/exceptions/video-upload-required-exception copy';
 import { BadRequestFormatException } from 'src/exceptions/bad-request-format.exception';
+import { EncodingActionFailException } from 'src/exceptions/encoding-action-fail.exception';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -85,6 +86,7 @@ export class VideoController {
     VideoUploadRequiredException,
     ThumbnailUploadRequiredException,
   ])
+  @ApiFailResponse('인코딩 실패', [EncodingActionFailException])
   uploadVideo(
     @Body() videoDto: VideoDto,
     @RequestUser() user: User,
