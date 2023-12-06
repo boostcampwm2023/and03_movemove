@@ -43,6 +43,7 @@ import com.everyone.movemove_android.R.string.nickname
 import com.everyone.movemove_android.R.string.one_line_introduce
 import com.everyone.movemove_android.R.string.sign_up
 import com.everyone.movemove_android.base.use
+import com.everyone.movemove_android.ui.ErrorDialog
 import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.StyledText
@@ -54,6 +55,7 @@ import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.LaunchImag
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.LaunchImagePicker
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnClickSelectImage
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnClickSignUp
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnErrorDialogDismissed
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnGetCroppedImage
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnIntroduceTyped
@@ -249,6 +251,13 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
             buttonText = stringResource(id = complete),
             isEnabled = state.isSignUpEnabled,
             onClick = { event(OnClickSignUp) }
+        )
+    }
+
+    if (state.isErrorDialogShowing) {
+        ErrorDialog(
+            text = stringResource(id = state.errorDialogTextResourceId),
+            onDismissRequest = { event(OnErrorDialogDismissed) }
         )
     }
 }

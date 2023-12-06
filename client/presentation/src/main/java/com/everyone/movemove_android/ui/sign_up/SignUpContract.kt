@@ -11,6 +11,8 @@ interface SignUpContract : BaseContract<SignUpContract.State, SignUpContract.Eve
         val profileImage: ImageBitmap? = null,
         val nickname: String = "",
         val introduce: String = "",
+        val isErrorDialogShowing: Boolean = false,
+        val errorDialogTextResourceId: Int = 0
     )
 
     sealed interface Event {
@@ -25,6 +27,8 @@ interface SignUpContract : BaseContract<SignUpContract.State, SignUpContract.Eve
         data class OnGetCroppedImage(val imageBitmap: ImageBitmap) : Event
 
         data object OnClickSignUp : Event
+
+        data object OnErrorDialogDismissed : Event
     }
 
     sealed interface Effect {
