@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetProfileUseCase
+import com.everyone.domain.usecase.GetStoredUUIDUseCase
 import com.everyone.domain.usecase.PatchUserProfileUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Effect
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -38,7 +40,8 @@ import javax.inject.Inject
 class EditProfileViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val getProfileUseCase: GetProfileUseCase,
-    private val patchUserProfileUseCase: PatchUserProfileUseCase
+    private val patchUserProfileUseCase: PatchUserProfileUseCase,
+    private val getStoredUUIDUseCase: GetStoredUUIDUseCase
 ) : ViewModel(), EditProfileContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -48,7 +51,6 @@ class EditProfileViewModel @Inject constructor(
 
     init {
         getProfile()
-
     }
 
     override fun event(event: Event) = when (event) {
@@ -67,23 +69,28 @@ class EditProfileViewModel @Inject constructor(
 
     private fun getProfile() {
         loading(isLoading = true)
-        getProfileUseCase("550e8400-e13b-45d5-a826-446655440011").onEach { result ->
-            when (result) {
-                is DataState.Success -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            nickname = result.data.nickname.orEmpty(),
-                            introduce = result.data.nickname.orEmpty()
-                        )
+
+        viewModelScope.launch(ioDispatcher) {
+            getStoredUUIDUseCase().first()?.let { uuid ->
+                getProfileUseCase(uuid).onEach { result ->
+                    when (result) {
+                        is DataState.Success -> {
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    nickname = result.data.nickname.orEmpty(),
+                                    introduce = result.data.statusMessage.orEmpty()
+                                )
+                            }
+                        }
+
+                        is DataState.Failure -> {
+                            loading(isLoading = false)
+                        }
                     }
                 }
-
-                is DataState.Failure -> {
-                    loading(isLoading = false)
-                }
             }
-        }.launchIn(viewModelScope + ioDispatcher)
+        }
     }
 
     private fun onNicknameTyped(nickname: String) {
