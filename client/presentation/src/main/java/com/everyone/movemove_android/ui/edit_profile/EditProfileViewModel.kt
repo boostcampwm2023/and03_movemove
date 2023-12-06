@@ -86,15 +86,6 @@ class EditProfileViewModel @Inject constructor(
         }.launchIn(viewModelScope + ioDispatcher)
     }
 
-    private fun setNickname(nickname: String?) {
-        nickname?.let {
-            _state.update {
-                it.copy(nickname = nickname)
-            }
-        }
-    }
-
-
     private fun onNicknameTyped(nickname: String) {
         _state.update {
             it.copy(nickname = nickname)
