@@ -133,7 +133,6 @@ fun WatchingVideoScreen(
                     }
                 }
 
-                val context = LocalContext.current
                 val exoPlayerPair = remember {
                     Triple(
                         ExoPlayer.Builder(context).build(),

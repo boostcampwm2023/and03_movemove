@@ -3,7 +3,6 @@ package com.everyone.movemove_android.ui.watching_video
 import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.base.BaseContract
-import com.everyone.movemove_android.ui.profile.ProfileContract
 
 interface WatchingVideoContract :
     BaseContract<WatchingVideoContract.State, WatchingVideoContract.Event, WatchingVideoContract.Effect> {
