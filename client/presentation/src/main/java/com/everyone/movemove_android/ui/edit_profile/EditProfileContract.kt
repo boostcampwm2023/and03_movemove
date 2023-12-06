@@ -2,9 +2,7 @@ package com.everyone.movemove_android.ui.edit_profile
 
 import android.net.Uri
 import androidx.compose.ui.graphics.ImageBitmap
-import com.everyone.domain.model.Profile
 import com.everyone.movemove_android.base.BaseContract
-import com.everyone.movemove_android.ui.sign_up.SignUpContract
 
 interface EditProfileContract : BaseContract<EditProfileContract.State, EditProfileContract.Event, EditProfileContract.Effect> {
     data class State(
@@ -28,6 +26,8 @@ interface EditProfileContract : BaseContract<EditProfileContract.State, EditProf
         data class OnGetCroppedImage(val imageBitmap: ImageBitmap) : Event
 
         data object OnClickEditProfile : Event
+
+        data object OnClickBackButton : Event
     }
 
     sealed interface Effect {
@@ -35,5 +35,6 @@ interface EditProfileContract : BaseContract<EditProfileContract.State, EditProf
 
         data class LaunchImageCropper(val uri: Uri) : Effect
 
+        data object CloseEditProfileScreen : Effect
     }
 }

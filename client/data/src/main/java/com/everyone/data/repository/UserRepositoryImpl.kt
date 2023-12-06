@@ -112,6 +112,23 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getPresignedUrlProfile(profileExtension: String): Flow<DataState<ProfileImageUploadUrl>> = flow {
+        networkHandler.request<ProfileImageUploadUrlResponse>(
+            method = HttpMethod.Get,
+            isAccessTokenNeeded = true,
+            url = {
+                path(PRESIGNED_URL, PROFILE)
+                parameters.append(PROFILE_EXTENSION, profileExtension)
+            }
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
+            }
+        }
+    }
+
     override fun storeRefreshToken(refreshToken: String): Flow<Boolean> = userInfoManager.store(KEY_REFRESH_TOKEN, refreshToken)
 
     override fun storeUUID(uuid: String): Flow<Boolean> = userInfoManager.store(KEY_UUID, uuid)

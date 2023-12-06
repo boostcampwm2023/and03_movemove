@@ -2,6 +2,7 @@ package com.everyone.movemove_android.di
 
 import com.everyone.domain.repository.UserRepository
 import com.everyone.domain.repository.VideosRepository
+import com.everyone.domain.usecase.GetPresignedUrlProfileUseCase
 import com.everyone.domain.usecase.GetProfileImageUploadUrlUseCase
 import com.everyone.domain.usecase.GetStoredSignedPlatformUseCase
 import com.everyone.domain.usecase.GetStoredUUIDUseCase
@@ -46,6 +47,10 @@ object UseCaseModule {
     @Provides
     @ViewModelScoped
     fun provideGetProfileImageUploadUrlUseCase(repository: UserRepository): GetProfileImageUploadUrlUseCase = GetProfileImageUploadUrlUseCase(repository)
+
+    @Provides
+    @ViewModelScoped
+    fun provideGetPresignedUrlProfileUseCase(repository: UserRepository): GetPresignedUrlProfileUseCase = GetPresignedUrlProfileUseCase(repository)
 
     @Provides
     @ViewModelScoped

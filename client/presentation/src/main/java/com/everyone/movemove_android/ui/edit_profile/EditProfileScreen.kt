@@ -1,6 +1,7 @@
 package com.everyone.movemove_android.ui.edit_profile
 
 import android.app.Activity.RESULT_OK
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,16 +19,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -40,8 +39,10 @@ import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Effect.CloseEditProfileScreen
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Effect.LaunchImageCropper
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Effect.LaunchImagePicker
+import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnClickBackButton
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnClickEditProfile
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnClickSelectImage
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnGetCroppedImage
@@ -94,6 +95,12 @@ fun EditProfileScreen(viewModel: EditProfileViewModel = hiltViewModel()) {
                         )
                     )
                 }
+
+                is CloseEditProfileScreen -> {
+                    if (context is ComponentActivity) {
+                        context.finish()
+                    }
+                }
             }
         }
     }
@@ -115,20 +122,15 @@ fun EditProfileScreen(viewModel: EditProfileViewModel = hiltViewModel()) {
                     .fillMaxWidth()
                     .height(52.dp)
             ) {
-
-                IconButton(
-                    modifier = Modifier.align(alignment = Alignment.CenterStart),
-                    onClick = {},
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_left_arrow),
-                        contentDescription = null
-                    )
-                }
+                Icon(
+                    modifier = Modifier
+                        .padding(start = 16.dp)
+                        .align(CenterStart)
+                        .clickableWithoutRipple { event(OnClickBackButton) },
+                    painter = painterResource(id = R.drawable.ic_left_arrow),
+                    tint = Color.White,
+                    contentDescription = null
+                )
 
                 StyledText(
                     modifier = Modifier.align(alignment = Alignment.Center),
@@ -157,10 +159,11 @@ fun EditProfileScreen(viewModel: EditProfileViewModel = hiltViewModel()) {
                 } ?: run {
                     state.profileImageUrl?.let {
                         AsyncImage(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape),
                             model = state.profileImageUrl,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop
+                            contentDescription = null
                         )
                     } ?: run {
                         Image(

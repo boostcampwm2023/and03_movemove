@@ -5,14 +5,18 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.everyone.domain.model.base.DataState
+import com.everyone.domain.usecase.GetPresignedUrlProfileUseCase
 import com.everyone.domain.usecase.GetProfileUseCase
 import com.everyone.domain.usecase.GetStoredUUIDUseCase
 import com.everyone.domain.usecase.PatchUserProfileUseCase
+import com.everyone.domain.usecase.PutFileUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Effect
+import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Effect.CloseEditProfileScreen
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Effect.LaunchImageCropper
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Effect.LaunchImagePicker
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event
+import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnClickBackButton
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnClickEditProfile
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnClickSelectImage
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnGetCroppedImage
@@ -20,6 +24,7 @@ import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.O
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnIntroduceTyped
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnNicknameTyped
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.State
+import com.everyone.movemove_android.ui.util.toWebpFile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -42,7 +47,9 @@ class EditProfileViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val getProfileUseCase: GetProfileUseCase,
     private val patchUserProfileUseCase: PatchUserProfileUseCase,
-    private val getStoredUUIDUseCase: GetStoredUUIDUseCase
+    private val getStoredUUIDUseCase: GetStoredUUIDUseCase,
+    private val getPresignedUrlProfileUseCase: GetPresignedUrlProfileUseCase,
+    private val putFileUseCase: PutFileUseCase
 ) : ViewModel(), EditProfileContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -66,6 +73,8 @@ class EditProfileViewModel @Inject constructor(
         is OnIntroduceTyped -> onIntroduceTyped(event.introduce)
 
         is OnNicknameTyped -> onNicknameTyped(event.nickname)
+
+        is OnClickBackButton -> onClickBackButton()
     }
 
     private fun getProfile() {
@@ -84,6 +93,8 @@ class EditProfileViewModel @Inject constructor(
                                     profileImageUrl = result.data.profileImageUrl
                                 )
                             }
+
+                            checkEditProfileEnabled()
                         }
 
                         is DataState.Failure -> {
@@ -100,7 +111,7 @@ class EditProfileViewModel @Inject constructor(
             it.copy(nickname = nickname)
         }
 
-        checkSignUpEnabled()
+        checkEditProfileEnabled()
     }
 
     private fun onIntroduceTyped(introduce: String) {
@@ -108,7 +119,7 @@ class EditProfileViewModel @Inject constructor(
             it.copy(introduce = introduce)
         }
 
-        checkSignUpEnabled()
+        checkEditProfileEnabled()
     }
 
     private fun onClickSelectImage() {
@@ -128,41 +139,79 @@ class EditProfileViewModel @Inject constructor(
             it.copy(profileImage = imageBitmap)
         }
 
-        checkSignUpEnabled()
+        checkEditProfileEnabled()
     }
 
-    private fun checkSignUpEnabled() {
+    private fun checkEditProfileEnabled() {
         with(state.value) {
             _state.update {
                 it.copy(
                     isEditProfileEnabled = nickname.isNotEmpty() &&
                             introduce.isNotEmpty() &&
-                            profileImage != null
+                            (profileImage != null || profileImageUrl != null)
                 )
             }
         }
     }
 
     private fun onClickEditProfile() {
-        viewModelScope.launch(ioDispatcher) {
-            getStoredUUIDUseCase().first()?.let { uuid ->
-                patchUserProfileUseCase(
-                    nickname = state.value.nickname,
-                    statusMessage = state.value.introduce,
-                    profileImageExtension = WEBP
-                ).onEach { result ->
-                    when (result) {
-                        is DataState.Success -> {
-
-                        }
-
-                        is DataState.Failure -> {
-
+        if (state.value.profileImage == null) {
+            postEditProfile()
+        } else {
+            getPresignedUrlProfileUseCase(profileExtension = WEBP).onEach { result ->
+                when (result) {
+                    is DataState.Success -> {
+                        result.data.presignedUrl?.let {
+                            uploadProfileImage(it)
+                        } ?: run {
+                            // todo 예외 처리
                         }
                     }
-                }.launchIn(viewModelScope + ioDispatcher)
+
+                    is DataState.Failure -> {
+                        // todo 예외 처리
+                    }
+                }
+            }.launchIn(viewModelScope + ioDispatcher)
+        }
+    }
+
+    private suspend fun uploadProfileImage(profileImageUploadUrl: String) {
+        state.value.profileImage?.let { profileImageBitmap ->
+            if (state.value.nickname.isNotEmpty() &&
+                state.value.introduce.isNotEmpty() &&
+                state.value.profileImage != null
+            ) {
+                putFileUseCase(
+                    requestUrl = profileImageUploadUrl,
+                    file = profileImageBitmap.toWebpFile(isCompressNeeded = false)
+                ).onEach { statusCode ->
+                    if (statusCode == PUT_FILE_SUCCESS) {
+                        postEditProfile()
+                    } else {
+                        // todo 예외 처리
+                    }
+                }.collect()
             }
         }
+    }
+
+    private fun postEditProfile() {
+        patchUserProfileUseCase(
+            nickname = state.value.nickname,
+            statusMessage = state.value.introduce,
+            profileImageExtension = WEBP
+        ).onEach { result ->
+            when (result) {
+                is DataState.Success -> {
+                    _effect.emit(CloseEditProfileScreen)
+                }
+
+                is DataState.Failure -> {
+                    // todo 예외 처리
+                }
+            }
+        }.launchIn(viewModelScope + ioDispatcher)
     }
 
     private fun loading(isLoading: Boolean) {
@@ -171,7 +220,14 @@ class EditProfileViewModel @Inject constructor(
         }
     }
 
+    private fun onClickBackButton() {
+        viewModelScope.launch {
+            _effect.emit(CloseEditProfileScreen)
+        }
+    }
+
     companion object {
         private const val WEBP = "webp"
+        private const val PUT_FILE_SUCCESS = 200
     }
 }

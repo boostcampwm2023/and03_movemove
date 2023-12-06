@@ -28,6 +28,8 @@ interface UserRepository {
         accessToken: String
     ): Flow<DataState<ProfileImageUploadUrl>>
 
+    fun getPresignedUrlProfile(profileExtension: String): Flow<DataState<ProfileImageUploadUrl>>
+
     fun storeRefreshToken(uuid: String): Flow<Boolean>
 
     fun storeUUID(uuid: String): Flow<Boolean>
