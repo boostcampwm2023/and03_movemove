@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -79,7 +80,8 @@ class EditProfileViewModel @Inject constructor(
                                 it.copy(
                                     isLoading = false,
                                     nickname = result.data.nickname.orEmpty(),
-                                    introduce = result.data.statusMessage.orEmpty()
+                                    introduce = result.data.statusMessage.orEmpty(),
+                                    profileImageUrl = result.data.profileImageUrl
                                 )
                             }
                         }
@@ -88,7 +90,7 @@ class EditProfileViewModel @Inject constructor(
                             loading(isLoading = false)
                         }
                     }
-                }
+                }.collect()
             }
         }
     }
@@ -142,21 +144,25 @@ class EditProfileViewModel @Inject constructor(
     }
 
     private fun onClickEditProfile() {
-        patchUserProfileUseCase(
-            nickname = state.value.nickname,
-            statusMessage = state.value.introduce,
-            profileImageExtension = WEBP
-        ).onEach { result ->
-            when (result) {
-                is DataState.Success -> {
+        viewModelScope.launch(ioDispatcher) {
+            getStoredUUIDUseCase().first()?.let { uuid ->
+                patchUserProfileUseCase(
+                    nickname = state.value.nickname,
+                    statusMessage = state.value.introduce,
+                    profileImageExtension = WEBP
+                ).onEach { result ->
+                    when (result) {
+                        is DataState.Success -> {
 
-                }
+                        }
 
-                is DataState.Failure -> {
+                        is DataState.Failure -> {
 
-                }
+                        }
+                    }
+                }.launchIn(viewModelScope + ioDispatcher)
             }
-        }.launchIn(viewModelScope + ioDispatcher)
+        }
     }
 
     private fun loading(isLoading: Boolean) {

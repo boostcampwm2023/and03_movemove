@@ -13,6 +13,7 @@ interface EditProfileContract : BaseContract<EditProfileContract.State, EditProf
         val profileImage: ImageBitmap? = null,
         val nickname: String = "",
         val introduce: String = "",
+        val profileImageUrl: String? = null,
     )
 
     sealed interface Event {

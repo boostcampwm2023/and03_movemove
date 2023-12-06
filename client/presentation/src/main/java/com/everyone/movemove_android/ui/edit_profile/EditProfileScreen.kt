@@ -27,12 +27,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.MoveMoveTextField
@@ -40,6 +42,7 @@ import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Effect.LaunchImageCropper
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Effect.LaunchImagePicker
+import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnClickEditProfile
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnClickSelectImage
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnGetCroppedImage
 import com.everyone.movemove_android.ui.edit_profile.EditProfileContract.Event.OnGetUri
@@ -152,11 +155,20 @@ fun EditProfileScreen(viewModel: EditProfileViewModel = hiltViewModel()) {
                         contentDescription = null
                     )
                 } ?: run {
-                    Image(
-                        modifier = Modifier.fillMaxSize(),
-                        painter = painterResource(id = R.drawable.img_basic_profile),
-                        contentDescription = null
-                    )
+                    state.profileImageUrl?.let {
+                        AsyncImage(
+                            modifier = Modifier.fillMaxSize(),
+                            model = state.profileImageUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop
+                        )
+                    } ?: run {
+                        Image(
+                            modifier = Modifier.fillMaxSize(),
+                            painter = painterResource(id = R.drawable.img_basic_profile),
+                            contentDescription = null
+                        )
+                    }
                 }
 
                 Box(
@@ -228,7 +240,7 @@ fun EditProfileScreen(viewModel: EditProfileViewModel = hiltViewModel()) {
                 .align(Alignment.CenterHorizontally),
             buttonText = stringResource(id = R.string.complete),
             isEnabled = state.isEditProfileEnabled,
-            onClick = { }
+            onClick = { event(OnClickEditProfile) }
         )
 
     }
