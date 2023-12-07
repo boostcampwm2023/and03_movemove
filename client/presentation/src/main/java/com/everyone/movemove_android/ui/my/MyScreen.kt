@@ -36,7 +36,12 @@ import com.everyone.movemove_android.R.string.edit_profile
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.edit_profile.EditProfileActivity
 import com.everyone.movemove_android.ui.my.MyContract.Effect.CloseMyScreen
+import com.everyone.movemove_android.ui.my.MyContract.Effect.GoToEditProfileScreen
+import com.everyone.movemove_android.ui.my.MyContract.Effect.GoToRatingVideoScreen
+import com.everyone.movemove_android.ui.my.MyContract.Event.OnClickEditProfile
+import com.everyone.movemove_android.ui.my.MyContract.Event.OnClickRatingVideo
 import com.everyone.movemove_android.ui.my.MyContract.Event.OnNullProfileNickname
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
@@ -54,6 +59,15 @@ fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
                     if (context is ComponentActivity) {
                         context.finish()
                     }
+                }
+
+                is GoToEditProfileScreen -> {
+                    context.startActivity(EditProfileActivity.newIntent(context))
+                }
+
+                is GoToRatingVideoScreen -> {
+                    // TODO 주석제거
+//                    context.startActivity(RatingVideoActivity.newIntent(context))
                 }
             }
         }
@@ -108,7 +122,7 @@ fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .clickableWithoutRipple { },
+                    .clickableWithoutRipple { event(OnClickEditProfile) },
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -126,31 +140,6 @@ fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
                 )
             }
 
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .clickableWithoutRipple { },
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_my_video),
-                    contentDescription = null,
-                    tint = Color.Gray
-                )
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                StyledText(
-                    text = stringResource(R.string.my_video),
-                    style = Typography.bodyLarge
-                )
-            }
-
             Spacer(modifier = Modifier.height(14.dp))
 
             Row(
@@ -158,7 +147,7 @@ fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
                     .fillMaxWidth()
                     .height(48.dp)
                     .padding(start = 4.dp)
-                    .clickableWithoutRipple { },
+                    .clickableWithoutRipple { event(OnClickRatingVideo) },
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
