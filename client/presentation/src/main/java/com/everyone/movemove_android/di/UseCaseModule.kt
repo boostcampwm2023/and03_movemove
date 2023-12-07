@@ -3,6 +3,7 @@ package com.everyone.movemove_android.di
 import com.everyone.domain.repository.AdsRepository
 import com.everyone.domain.repository.UserRepository
 import com.everyone.domain.repository.VideosRepository
+import com.everyone.domain.usecase.GetPresignedUrlProfileUseCase
 import com.everyone.domain.usecase.GetAdsUseCase
 import com.everyone.domain.usecase.GetProfileImageUploadUrlUseCase
 import com.everyone.domain.usecase.GetStoredSignedPlatformUseCase
@@ -11,6 +12,7 @@ import com.everyone.domain.usecase.GetVideoUploadUrlUseCase
 import com.everyone.domain.usecase.GetVideosTopRatedUseCase
 import com.everyone.domain.usecase.GetVideosTrendUseCase
 import com.everyone.domain.usecase.LoginUseCase
+import com.everyone.domain.usecase.PatchUserProfileUseCase
 import com.everyone.domain.usecase.PostVideoInfoUseCase
 import com.everyone.domain.usecase.PutFileUseCase
 import com.everyone.domain.usecase.SetAccessTokenUseCase
@@ -52,6 +54,10 @@ object UseCaseModule {
 
     @Provides
     @ViewModelScoped
+    fun provideGetPresignedUrlProfileUseCase(repository: UserRepository): GetPresignedUrlProfileUseCase = GetPresignedUrlProfileUseCase(repository)
+
+    @Provides
+    @ViewModelScoped
     fun provideSetAccessTokenUseCase(repository: UserRepository): SetAccessTokenUseCase = SetAccessTokenUseCase(repository)
 
     @Provides
@@ -65,6 +71,10 @@ object UseCaseModule {
     @Provides
     @ViewModelScoped
     fun provideSignedPlatformUseCase(repository: UserRepository): StoreSignedPlatformUseCase = StoreSignedPlatformUseCase(repository)
+
+    @Provides
+    @ViewModelScoped
+    fun providePatchUserProfileUseCase(repository: UserRepository): PatchUserProfileUseCase = PatchUserProfileUseCase(repository)
 
     /*
     비디오

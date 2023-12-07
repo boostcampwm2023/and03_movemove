@@ -116,8 +116,24 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun storeRefreshToken(refreshToken: String): Flow<Boolean> =
-        userInfoManager.store(KEY_REFRESH_TOKEN, refreshToken)
+    override fun getPresignedUrlProfile(profileExtension: String): Flow<DataState<ProfileImageUploadUrl>> = flow {
+        networkHandler.request<ProfileImageUploadUrlResponse>(
+            method = HttpMethod.Get,
+            url = {
+                path(PRESIGNED_URL, PROFILE)
+                parameters.append(PROFILE_EXTENSION, profileExtension)
+            }
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
+            }
+        }
+    }
+
+    override fun storeRefreshToken(refreshToken: String): Flow<Boolean> = userInfoManager.store(KEY_REFRESH_TOKEN, refreshToken)
+
 
     override fun storeUUID(uuid: String): Flow<Boolean> = userInfoManager.store(KEY_UUID, uuid)
 
@@ -182,6 +198,28 @@ class UserRepositoryImpl @Inject constructor(
                 parameters.append(LIMIT, limit)
             },
             content = null
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
+            }
+        }
+    }
+
+    override fun patchUserProfile(
+        nickname: String,
+        statusMessage: String,
+        profileImageExtension: String
+    ): Flow<DataState<Profile>> = flow {
+        networkHandler.request<ProfileResponse>(
+            method = HttpMethod.Patch,
+            url = { path(USERS, PROFILE) },
+            content = {
+                append(NICKNAME, nickname)
+                append(STATUS_MESSAGE, statusMessage)
+                append(PROFILE_IMAGE_EXTENSION, profileImageExtension)
+            }
         ).collect { response ->
             response.data?.let {
                 emit(DataState.Success(it.toDomainModel()))

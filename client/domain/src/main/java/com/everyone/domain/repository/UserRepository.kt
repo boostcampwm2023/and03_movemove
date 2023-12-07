@@ -30,6 +30,8 @@ interface UserRepository {
         accessToken: String
     ): Flow<DataState<ProfileImageUploadUrl>>
 
+    fun getPresignedUrlProfile(profileExtension: String): Flow<DataState<ProfileImageUploadUrl>>
+
     fun storeRefreshToken(uuid: String): Flow<Boolean>
 
     fun storeUUID(uuid: String): Flow<Boolean>
@@ -48,6 +50,12 @@ interface UserRepository {
         limit: String,
         lastId: String
     ): Flow<DataState<VideosList>>
+  
+      fun patchUserProfile(
+        nickname: String,
+        statusMessage: String,
+        profileImageExtension: String
+    ): Flow<DataState<Profile>>
 
     fun getUsersVideosRated(
         userId: String,
