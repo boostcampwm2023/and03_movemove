@@ -88,9 +88,4 @@ export class PresignedUrlController {
   ) {
     return this.presignedUrlService.getImagePresignedUrl(id, query);
   }
-
-  @Get('test/issue/:id')
-  getVideoPresignedUrl(@Param('id') id: string) {
-    return this.presignedUrlService.getVideoPresignedUrl(id);
-  }
 }

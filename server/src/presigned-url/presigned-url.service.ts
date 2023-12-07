@@ -91,13 +91,4 @@ export class PresignedUrlService {
     );
     return { presignedUrl };
   }
-
-  async getVideoPresignedUrl(id: string) {
-    const presignedUrl = await createPresignedUrl(
-      'test3-bucket',
-      id,
-      'GET',
-    );
-    return { presignedUrl };
-  }
 }
