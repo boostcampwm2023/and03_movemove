@@ -115,7 +115,6 @@ class UserRepositoryImpl @Inject constructor(
     override fun getPresignedUrlProfile(profileExtension: String): Flow<DataState<ProfileImageUploadUrl>> = flow {
         networkHandler.request<ProfileImageUploadUrlResponse>(
             method = HttpMethod.Get,
-            isAccessTokenNeeded = true,
             url = {
                 path(PRESIGNED_URL, PROFILE)
                 parameters.append(PROFILE_EXTENSION, profileExtension)
