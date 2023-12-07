@@ -1,5 +1,6 @@
 package com.everyone.movemove_android.ui.my
 
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,10 +26,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import coil.compose.AsyncImage
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.R.drawable.ic_heart
@@ -43,12 +49,16 @@ import com.everyone.movemove_android.ui.my.MyContract.Effect.GoToRatingVideoScre
 import com.everyone.movemove_android.ui.my.MyContract.Event.OnClickEditProfile
 import com.everyone.movemove_android.ui.my.MyContract.Event.OnClickRatingVideo
 import com.everyone.movemove_android.ui.my.MyContract.Event.OnNullProfileNickname
+import com.everyone.movemove_android.ui.my.MyContract.Event.OnResume
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
+fun MyScreen(
+    viewModel: MyViewModel = hiltViewModel(),
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+) {
     val context = LocalContext.current
     val (state, event, effect) = use(viewModel)
 
@@ -70,6 +80,20 @@ fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
 //                    context.startActivity(RatingVideoActivity.newIntent(context))
                 }
             }
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, lifecycleEvent ->
+            if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+                event(OnResume)
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 

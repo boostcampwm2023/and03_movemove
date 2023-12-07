@@ -15,6 +15,8 @@ interface MyContract : BaseContract<MyContract.State, MyContract.Event, MyContra
         data object OnClickEditProfile : Event
 
         data object OnClickRatingVideo : Event
+
+        data object OnResume : Event
     }
 
     sealed interface Effect {
