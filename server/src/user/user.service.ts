@@ -144,7 +144,7 @@ export class UserService {
         const rating = raterCount
           ? (totalRating / raterCount).toFixed(1)
           : null;
-        const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
+        const manifest = `${process.env.MANIFEST_URL_PREFIX}/${videoInfo._id}_master.m3u8`;
         const thumbnailImageUrl = await createPresignedUrl(
           process.env.THUMBNAIL_BUCKET,
           `${videoInfo._id}.${thumbnailExtension}`,

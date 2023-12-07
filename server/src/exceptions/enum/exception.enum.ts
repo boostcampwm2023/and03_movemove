@@ -19,6 +19,7 @@ enum ErrorCode {
   BadVideoFormat = 8000,
   BadThumbnailFormat = 8100,
   BadRequestFormat = 8200,
+  EncodingActionFail = 4280,
 }
 
 const ErrorMessage = {
@@ -41,6 +42,7 @@ const ErrorMessage = {
   [ErrorCode.ThumbnailUploadRequired]: '썸네일을 먼저 업로드 해야합니다.',
   [ErrorCode.VideoUploadRequired]: '비디오를 먼저 업로드 해야합니다.',
   [ErrorCode.BadRequestFormat]: '요청 형식이 잘못됨',
+  [ErrorCode.EncodingActionFail]: '인코딩 액션 실패',
 };
 
 export { ErrorCode, ErrorMessage };

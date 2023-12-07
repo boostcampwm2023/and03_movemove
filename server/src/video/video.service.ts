@@ -4,7 +4,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { requestEncoding } from 'src/ncpAPI/requestEncoding';
 import { User } from 'src/user/schemas/user.schema';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
@@ -14,10 +13,11 @@ import * as _ from 'lodash';
 import { ActionService } from 'src/action/action.service';
 import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
 import { VideoConflictException } from 'src/exceptions/video-conflict.exception';
-import { checkUpload } from 'src/ncpAPI/listObjects';
+import { checkUpload, listObjects } from 'src/ncpAPI/listObjects';
 import { VideoUploadRequiredException } from 'src/exceptions/video-upload-required-exception copy';
 import { ThumbnailUploadRequiredException } from 'src/exceptions/thumbnail-upload-required-exception copy 2';
 import { BadRequestFormatException } from 'src/exceptions/bad-request-format.exception';
+import { EncodingActionFailException } from 'src/exceptions/encoding-action-fail.exception';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -103,28 +103,11 @@ export class VideoService {
     return { videos: videoInfos, seed: viewSeed };
   }
 
-  async getManifest(videoId: string, userId: string, seed: number) {
-    this.actionService.viewVideo(videoId, userId, seed);
-
-    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
-    const manifestURL = `${process.env.MANIFEST_URL_PREFIX}${videoId}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
-    const manifest: string = await axios
-      .get(manifestURL)
-      .then((res) => res.data);
-
-    let index = -1;
-    const modifiedManifest = manifest.replace(/.*\.m3u8$/gm, () => {
-      index += 1;
-      return `${process.env.MANIFEST_URL_PREFIX}${videoId}_${encodingSuffixes[index]}${process.env.SBR_MANIFEST_URL_SUFFIX}`;
-    });
-    return modifiedManifest;
-  }
-
   async getVideoInfo(video: any): Promise<VideoInfoDto> {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
     const rating = raterCount ? (totalRating / raterCount).toFixed(1) : null;
 
-    const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
+    const manifest = `${process.env.MANIFEST_URL_PREFIX}/${videoInfo._id}_master.m3u8`;
 
     const { profileImageExtension, uuid, ...uploaderInfo } =
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
@@ -170,9 +153,14 @@ export class VideoService {
       throw new ThumbnailUploadRequiredException();
     }
 
-    await requestEncoding(process.env.INPUT_BUCKET, [videoName]);
-
-    const uploader = await this.UserModel.findOne({ uuid }, { _id: 1 });
+    const [__, uploader] = await Promise.all([
+      this.requestEncodingAPI(
+        process.env.INPUT_BUCKET,
+        process.env.OUTPUT_BUCKET,
+        videoName,
+      ),
+      this.UserModel.findOne({ uuid }, { _id: 1 }),
+    ]);
 
     const { title, content, category } = videoDto;
     const newVideo = new this.VideoModel({
@@ -188,17 +176,38 @@ export class VideoService {
     return { videoId, ...videoDto };
   }
 
+  async requestEncodingAPI(
+    inputBucket: string,
+    outputBucket: string,
+    objectName: string,
+  ) {
+    const videoUrl = await createPresignedUrl(inputBucket, objectName, 'GET');
+    const accessKey = process.env.ACCESS_KEY;
+    const secretKey = process.env.SECRET_KEY;
+    const data = {
+      videoUrl,
+      object_name: objectName,
+      outputBucket,
+      accessKey,
+      secretKey,
+    };
+    console.log(data);
+    try {
+      await axios.post(process.env.ENCODING_API_URL, data);
+    } catch (error) {
+      throw new EncodingActionFailException();
+    }
+  }
+
   async deleteEncodedVideo(videoId: string) {
-    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
-    const fileNamePrefix = `${process.env.VIDEO_OUTPUT_PATH}/${videoId}`;
-    return Promise.all([
-      ...encodingSuffixes.map((suffix) =>
-        deleteObject(
-          process.env.OUTPUT_BUCKET,
-          `${fileNamePrefix}_${suffix}.mp4`,
-        ),
+    const deleteList = await listObjects(process.env.OUTPUT_BUCKET, {
+      prefix: videoId,
+    });
+    return Promise.all(
+      deleteList.map((fileName: string) =>
+        deleteObject(process.env.OUTPUT_BUCKET, fileName),
       ),
-    ]);
+    );
   }
 
   async deleteVideo(videoId: string, uuid: string) {
