@@ -7,6 +7,7 @@ import com.everyone.domain.usecase.GetStoredSignedPlatformUseCase
 import com.everyone.domain.usecase.GetStoredUUIDUseCase
 import com.everyone.domain.usecase.LoginUseCase
 import com.everyone.domain.usecase.SetAccessTokenUseCase
+import com.everyone.domain.usecase.StoreUUIDUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.UiConstants.KAKAO
@@ -46,7 +47,8 @@ class StartingViewModel @Inject constructor(
     private val getStoredUUIDUseCase: GetStoredUUIDUseCase,
     private val getStoredSignedPlatformUseCase: GetStoredSignedPlatformUseCase,
     private val loginUseCase: LoginUseCase,
-    private val setAccessTokenUseCase: SetAccessTokenUseCase
+    private val setAccessTokenUseCase: SetAccessTokenUseCase,
+    private val storeUUIDUseCase: StoreUUIDUseCase
 ) : ViewModel(), StartingContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -115,7 +117,16 @@ class StartingViewModel @Inject constructor(
                     is DataState.Success -> {
                         result.data.jsonWebToken?.accessToken?.let { accessToken ->
                             setAccessTokenUseCase(accessToken)
-                            _effect.emit(GoToHomeScreen)
+                            result.data.profile?.uuid?.let { uuid ->
+                                val isUUIDStored = storeUUID(uuid)
+                                if (isUUIDStored) {
+                                    _effect.emit(GoToHomeScreen)
+                                } else {
+                                    // todo : 저장 실패 예외 처리
+                                }
+                            } ?: run {
+                                // todo : uuid 없는 경우 예외 처리
+                            }
                         } ?: run {
                             // todo : 액세스 토큰 없는 경우 예외 처리
                         }
@@ -134,6 +145,9 @@ class StartingViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope + ioDispatcher)
     }
+
+    private suspend fun storeUUID(uuid: String): Boolean = storeUUIDUseCase(uuid).first()
+
 
     private suspend fun getUserInfo(): Pair<String, String>? {
         return getStoredUUIDUseCase().zip(getStoredSignedPlatformUseCase()) { uuid, signedPlatform ->

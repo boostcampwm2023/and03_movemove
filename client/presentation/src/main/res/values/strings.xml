@@ -65,10 +65,15 @@
 
     <!--    dialog-->
     <string name="notice">알림</string>
+
+            <!--    uploading_video-->
     <string name="error_get_video_file_path">영상을 가져 올 수 없습니다</string>
     <string name="loading_video_trimming">영상을 편집하고 있습니다</string>
     <string name="error_video_trimming">영상을 편집할 수 없습니다\n올바른 파일인지 확인해 주세요</string>
     <string name="error_no_video">영상 파일이 추가되지 않았습니다\n다시 시도해 주세요</string>
     <string name="error_getting_thumbnail">썸네일을 가져 올 수 없습니다\n올바른 파일인지 확인해 주세요</string>
     <string name="error_uploading_video">비디오 업로드에 실패하였습니다\n잠시 후 다시 시도해 주세요</string>
+            <!--    sign_up-->
+    <string name="error_upload_image_failure">이미지를 업로드할 수 없습니다\n잠시 후 다시 시도해 주세요</string>
+    <string name="error_sign_up">가입에 실패 하였습니다\n잠시 후 다시 시도해 주세요</string>
 </resources>
