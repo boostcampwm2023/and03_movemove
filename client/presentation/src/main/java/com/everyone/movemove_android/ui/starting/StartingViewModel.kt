@@ -7,6 +7,7 @@ import com.everyone.domain.usecase.GetStoredSignedPlatformUseCase
 import com.everyone.domain.usecase.GetStoredUUIDUseCase
 import com.everyone.domain.usecase.LoginUseCase
 import com.everyone.domain.usecase.SetAccessTokenUseCase
+import com.everyone.domain.usecase.StoreSignedPlatformUseCase
 import com.everyone.domain.usecase.StoreUUIDUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
@@ -48,7 +49,8 @@ class StartingViewModel @Inject constructor(
     private val getStoredSignedPlatformUseCase: GetStoredSignedPlatformUseCase,
     private val loginUseCase: LoginUseCase,
     private val setAccessTokenUseCase: SetAccessTokenUseCase,
-    private val storeUUIDUseCase: StoreUUIDUseCase
+    private val storeUUIDUseCase: StoreUUIDUseCase,
+    private val storeSignedPlatformUseCase: StoreSignedPlatformUseCase
 ) : ViewModel(), StartingContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -118,8 +120,11 @@ class StartingViewModel @Inject constructor(
                         result.data.jsonWebToken?.accessToken?.let { accessToken ->
                             setAccessTokenUseCase(accessToken)
                             result.data.profile?.uuid?.let { uuid ->
-                                val isUUIDStored = storeUUID(uuid)
-                                if (isUUIDStored) {
+                                if (storeLoginData(
+                                        uuid = uuid,
+                                        platform = platform
+                                    )
+                                ) {
                                     _effect.emit(GoToHomeScreen)
                                 } else {
                                     // todo : 저장 실패 예외 처리
@@ -146,11 +151,16 @@ class StartingViewModel @Inject constructor(
         }.launchIn(viewModelScope + ioDispatcher)
     }
 
-    private suspend fun storeUUID(uuid: String): Boolean = storeUUIDUseCase(uuid).first()
-
+    private suspend fun storeLoginData(
+        uuid: String,
+        platform: String
+    ): Boolean = storeUUIDUseCase(uuid).zip(storeSignedPlatformUseCase(platform)) { isUUIDStored, isSignedPlatformStored ->
+        isUUIDStored && isSignedPlatformStored
+    }.first()
 
     private suspend fun getUserInfo(): Pair<String, String>? {
         return getStoredUUIDUseCase().zip(getStoredSignedPlatformUseCase()) { uuid, signedPlatform ->
+            println("$uuid $signedPlatform")
             if (uuid != null && signedPlatform != null) Pair(uuid, signedPlatform) else null
         }.first()
     }
