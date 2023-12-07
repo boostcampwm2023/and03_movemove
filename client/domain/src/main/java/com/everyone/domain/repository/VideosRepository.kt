@@ -3,7 +3,7 @@ package com.everyone.domain.repository
 import com.everyone.domain.model.CreatedVideo
 import com.everyone.domain.model.VideoUploadUrl
 import com.everyone.domain.model.VideosRandom
-import com.everyone.domain.model.VideosTrend
+import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.base.DataState
 import kotlinx.coroutines.flow.Flow
 import java.io.File
@@ -28,13 +28,13 @@ interface VideosRepository {
         thumbnailExtension: String
     ): Flow<DataState<CreatedVideo>>
 
-    suspend fun getVideosRandom(
+    fun getVideosRandom(
         limit: String,
         category: String,
         seed: String
     ): Flow<DataState<VideosRandom>>
 
-    suspend fun putVideosRating(
+    fun putVideosRating(
         id: String,
         rating: String,
         reason: String
@@ -45,7 +45,7 @@ interface VideosRepository {
         seed: String,
     ): Flow<DataState<Unit>>
 
-    suspend fun getVideosTopRated(category: String): Flow<DataState<VideosTrend>>
+    fun getVideosTopRated(category: String): Flow<DataState<VideosList>>
 
-    suspend fun getVideosTrend(limit: String): Flow<DataState<VideosTrend>>
+    fun getVideosTrend(limit: String): Flow<DataState<VideosList>>
 }

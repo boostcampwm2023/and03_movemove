@@ -4,6 +4,7 @@ import com.everyone.domain.model.base.BaseModel
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class VideosTrend(
-    val videos: List<Videos>?
+data class Rater(
+    val uuid: String?,
+    val nickname: String?,
 ) : BaseModel

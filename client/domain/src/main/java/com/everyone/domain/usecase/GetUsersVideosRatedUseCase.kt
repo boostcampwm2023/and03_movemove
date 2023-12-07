@@ -1,21 +1,21 @@
 package com.everyone.domain.usecase
 
-import com.everyone.domain.model.VideosList
+import com.everyone.domain.model.VideosRated
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class GetUsersVideosUploadedUseCase @Inject constructor(private val repository: UserRepository) {
+class GetUsersVideosRatedUseCase @Inject constructor(private val repository: UserRepository) {
     operator fun invoke(
         limit: String,
         userId: String,
-        lastId: String
-    ): Flow<DataState<VideosList>> {
-        return repository.getUsersVideosUploaded(
+        lastRatedAt: String
+    ): Flow<DataState<VideosRated>> {
+        return repository.getUsersVideosRated(
             limit = limit,
             userId = userId,
-            lastId = lastId
+            lastRatedAt = lastRatedAt
         )
     }
 }

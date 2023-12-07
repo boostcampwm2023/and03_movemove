@@ -1,10 +1,12 @@
-package com.everyone.movemove_android.ui.screens.watching_video
+package com.everyone.movemove_android.ui.watching_video
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.net.Uri
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
@@ -44,7 +47,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -64,33 +66,52 @@ import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.*
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.Event.*
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.VideoTab.BOTTOM_TAB
-import com.everyone.movemove_android.ui.screens.watching_video.WatchingVideoContract.VideoTab.CATEGORY_TAB
-import com.everyone.movemove_android.ui.screens.watching_video.category.CategoryScreen
+import com.everyone.movemove_android.ui.profile.ProfileActivity
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.*
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.*
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.VideoTab.BOTTOM_TAB
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.VideoTab.CATEGORY_TAB
+import com.everyone.movemove_android.ui.watching_video.category.CategoryScreen
 import com.everyone.movemove_android.ui.theme.FooterBottomBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterMiddleBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterTopBackgroundInDark
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
+import kotlinx.coroutines.flow.collectLatest
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WatchingVideoScreen(
-    videosInfo: Pair<List<Videos>, Int>?,
+    viewModel: WatchingVideoViewModel,
+    navigateToActivity: (intent: Intent) -> Unit,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
-    viewModel: WatchingVideoViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+
     var initialPage by remember { mutableIntStateOf(0) }
 
     val (state, event, effect) = use(viewModel)
 
-    LaunchedEffect(videosInfo) {
-        if (videosInfo != null) {
-            event(SetVideos(videos = videosInfo.first))
-            initialPage = videosInfo.second
+    LaunchedEffect(effect) {
+        effect.collectLatest { effect ->
+            when (effect) {
+                is Effect.NavigateToProfile -> {
+                    navigateToActivity(
+                        ProfileActivity.newIntent(
+                            context = context,
+                            uuid = effect.uuid
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(state.videosList) {
+        if (state.videosList != null) {
+            event(SetVideos(videos = state.videosList.videos!!))
+            initialPage = state.page!!
             event(ChangedVideoTab(CATEGORY_TAB))
         } else {
             if (state.videoTab == CATEGORY_TAB) event(GetRandomVideos)
@@ -98,103 +119,62 @@ fun WatchingVideoScreen(
         }
     }
 
-    if (state.isLoading) {
-        LoadingDialog()
-    } else {
-        state.videos?.let { videosItem ->
-            val videoUri = videosItem.map { Uri.parse(it.video!!.manifest) }
-            val pagerState = rememberPagerState(pageCount = { videoUri.size })
+    Scaffold { paddingValues ->
+        if (state.isLoading) {
+            LoadingDialog()
+        } else {
+            state.videos?.let { videosItem ->
+                val videoUri = videosItem.map { Uri.parse(it.video!!.manifest) }
+                val pagerState = rememberPagerState(pageCount = { videoUri.size })
 
-            if (state.videoTab == CATEGORY_TAB) {
-                LaunchedEffect(initialPage) {
-                    pagerState.scrollToPage(initialPage)
-                }
-            }
-
-            val context = LocalContext.current
-            val exoPlayerPair = remember {
-                Triple(
-                    ExoPlayer.Builder(context).build(),
-                    ExoPlayer.Builder(context).build(),
-                    ExoPlayer.Builder(context).build()
-                )
-            }
-
-            Box {
-                VerticalPager(
-                    modifier = Modifier.fillMaxSize(),
-                    state = pagerState
-                ) { page ->
-
-                    val exoPlayer = when (page % 3) {
-                        0 -> exoPlayerPair.first
-                        1 -> exoPlayerPair.second
-                        else -> exoPlayerPair.third
+                if (state.videoTab == CATEGORY_TAB) {
+                    LaunchedEffect(initialPage) {
+                        pagerState.scrollToPage(initialPage)
                     }
+                }
 
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        VideoPlayer(
-                            exoPlayer = exoPlayer,
-                            uri = videoUri[page]
-                        )
-                        Column(modifier = Modifier.align(Alignment.BottomStart)) {
-                            videosItem[page].video?.let { video ->
-                                MoveMoveScoreboard(
-                                    video = video,
+                val exoPlayerPair = remember {
+                    Triple(
+                        ExoPlayer.Builder(context).build(),
+                        ExoPlayer.Builder(context).build(),
+                        ExoPlayer.Builder(context).build()
+                    )
+                }
+
+                Box {
+                    VerticalPager(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        state = pagerState
+                    ) { page ->
+
+                        val exoPlayer = when (page % 3) {
+                            0 -> exoPlayerPair.first
+                            1 -> exoPlayerPair.second
+                            else -> exoPlayerPair.third
+                        }
+
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            VideoPlayer(
+                                exoPlayer = exoPlayer,
+                                uri = videoUri[page]
+                            )
+                            Column(modifier = Modifier.align(Alignment.BottomStart)) {
+                                videosItem[page].video?.let { video ->
+                                    MoveMoveScoreboard(
+                                        video = video,
+                                        event = event
+                                    )
+                                }
+                                MoveMoveFooter(
+                                    videos = videosItem[page],
                                     event = event
                                 )
+                                Divider()
                             }
-                            MoveMoveFooter(videos = videosItem[page])
-                            Divider()
-                        }
-                    }
-
-                    when (pagerState.settledPage % 3) {
-                        0 -> {
-                            exoPlayerPair.first.play()
-                            exoPlayerPair.second.pause()
-                            exoPlayerPair.third.pause()
                         }
 
-                        1 -> {
-                            exoPlayerPair.first.pause()
-                            exoPlayerPair.second.play()
-                            exoPlayerPair.third.pause()
-                        }
-
-                        2 -> {
-                            exoPlayerPair.first.pause()
-                            exoPlayerPair.second.pause()
-                            exoPlayerPair.third.play()
-                        }
-                    }
-                }
-
-                videosItem[pagerState.settledPage].video?.let { video ->
-                    event(PutVideosViews(video.id!!))
-                }
-
-                if (state.isClickedCategory) {
-                    CategoryScreen()
-                } else {
-                    if (videosInfo == null) {
-                        MoveMoveCategory(
-                            category = state.selectedCategory.displayName,
-                            modifier = Modifier
-                                .padding(
-                                    start = 21.dp,
-                                    top = 21.dp
-                                )
-                                .align(Alignment.TopStart)
-                                .clickableWithoutRipple { event(OnClickedCategory) },
-                        )
-                    }
-                }
-            }
-
-            DisposableEffect(lifecycleOwner) {
-                val observer = LifecycleEventObserver { _, event ->
-                    if (event == Lifecycle.Event.ON_RESUME) {
                         when (pagerState.settledPage % 3) {
                             0 -> {
                                 exoPlayerPair.first.play()
@@ -214,31 +194,78 @@ fun WatchingVideoScreen(
                                 exoPlayerPair.third.play()
                             }
                         }
-                    } else if (event == Lifecycle.Event.ON_STOP) {
-                        exoPlayerPair.first.pause()
-                        exoPlayerPair.second.pause()
-                        exoPlayerPair.third.pause()
+                    }
+
+                    videosItem[pagerState.settledPage].video?.let { video ->
+                        event(PutVideosViews(video.id!!))
+                    }
+
+                    if (state.isClickedCategory) {
+                        CategoryScreen()
+                    } else {
+                        if (state.videosList == null) {
+                            MoveMoveCategory(
+                                category = state.selectedCategory.displayName,
+                                modifier = Modifier
+                                    .padding(
+                                        start = 21.dp,
+                                        top = 21.dp
+                                    )
+                                    .align(Alignment.TopStart)
+                                    .clickableWithoutRipple { event(OnClickedCategory) },
+                            )
+                        }
                     }
                 }
 
-                lifecycleOwner.lifecycle.addObserver(observer)
+                DisposableEffect(lifecycleOwner) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        if (event == Lifecycle.Event.ON_RESUME) {
+                            when (pagerState.settledPage % 3) {
+                                0 -> {
+                                    exoPlayerPair.first.play()
+                                    exoPlayerPair.second.pause()
+                                    exoPlayerPair.third.pause()
+                                }
 
-                onDispose {
-                    lifecycleOwner.lifecycle.removeObserver(observer)
-                    exoPlayerPair.first.release()
-                    exoPlayerPair.second.release()
-                    exoPlayerPair.third.release()
+                                1 -> {
+                                    exoPlayerPair.first.pause()
+                                    exoPlayerPair.second.play()
+                                    exoPlayerPair.third.pause()
+                                }
+
+                                2 -> {
+                                    exoPlayerPair.first.pause()
+                                    exoPlayerPair.second.pause()
+                                    exoPlayerPair.third.play()
+                                }
+                            }
+                        } else if (event == Lifecycle.Event.ON_STOP) {
+                            exoPlayerPair.first.pause()
+                            exoPlayerPair.second.pause()
+                            exoPlayerPair.third.pause()
+                        }
+                    }
+
+                    lifecycleOwner.lifecycle.addObserver(observer)
+
+                    onDispose {
+                        lifecycleOwner.lifecycle.removeObserver(observer)
+                        exoPlayerPair.first.release()
+                        exoPlayerPair.second.release()
+                        exoPlayerPair.third.release()
+                    }
                 }
-            }
-        } ?: run {
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                StyledText(
-                    modifier = Modifier.align(Alignment.Center),
-                    text = stringResource(R.string.empty_video_title),
-                    style = MaterialTheme.typography.titleMedium
-                )
+            } ?: run {
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    StyledText(
+                        modifier = Modifier.align(Alignment.Center),
+                        text = stringResource(R.string.empty_video_title),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
         }
     }
@@ -363,7 +390,10 @@ fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
 }
 
 @Composable
-fun MoveMoveFooter(videos: Videos) {
+fun MoveMoveFooter(
+    event: (Event) -> Unit,
+    videos: Videos,
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -383,18 +413,25 @@ fun MoveMoveFooter(videos: Videos) {
                 bottom = 18.dp
             ),
     ) {
-        MoveMoveFooterContents(videos = videos)
+        MoveMoveFooterContents(
+            event = event,
+            videos = videos
+        )
     }
 }
 
 @Composable
-fun MoveMoveFooterContents(videos: Videos) {
+fun MoveMoveFooterContents(
+    event: (Event) -> Unit,
+    videos: Videos
+) {
     Column(
         verticalArrangement = Arrangement.Center
     ) {
 
         videos.uploader?.let { uploader ->
             Row(
+                modifier = Modifier.clickableWithoutRipple { event(OnClickedProfile(uploader.uuid!!)) },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
             ) {
@@ -404,10 +441,16 @@ fun MoveMoveFooterContents(videos: Videos) {
                         .width(24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    AsyncImage(
-                        model = uploader.profileImage,
+                    uploader.profileImageUrl?.let {
+                        AsyncImage(
+                            model = uploader.profileImageUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                        )
+                    } ?: Image(
+                        painter = painterResource(id = R.drawable.img_basic_profile),
                         contentDescription = null,
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.Crop
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))

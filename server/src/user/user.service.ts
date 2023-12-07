@@ -6,12 +6,10 @@ import { Video } from 'src/video/schemas/video.schema';
 import { UserNotFoundException } from 'src/exceptions/user-not-found.exception';
 import * as _ from 'lodash';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
-import { getBucketImage } from 'src/ncpAPI/getBucketImage';
 import { VideoService } from 'src/video/video.service';
 import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
 import { checkUpload } from 'src/ncpAPI/listObjects';
-import { UploadedVideoResponseDto } from './dto/uploaded-video-response.dto';
 import { User } from './schemas/user.schema';
 import { ProfileDto } from './dto/profile.dto';
 import { RatedVideoResponseDto } from './dto/rated-video-response.dto';
@@ -93,11 +91,7 @@ export class UserService {
     };
   }
 
-  async getUploadedVideos(
-    uuid: string,
-    limit: number,
-    lastId: string,
-  ): Promise<UploadedVideoResponseDto> {
+  async getUploadedVideos(uuid: string, limit: number, lastId: string) {
     const uploaderData = await this.UserModel.findOne({ uuid }, { actions: 0 });
     const { uploader, uploaderId } = await this.getUploaderInfo(
       uuid,
@@ -118,8 +112,8 @@ export class UserService {
       .sort({ _id: -1 })
       .limit(limit);
 
-    const videos = await this.getVideoInfos(videoData);
-    return { videos, uploader };
+    const videos = await this.getVideoInfos(videoData, uploader);
+    return { videos };
   }
 
   async getUploaderInfo(uuid: string, uploaderData) {
@@ -142,7 +136,7 @@ export class UserService {
     return { uploader, uploaderId };
   }
 
-  async getVideoInfos(videoData: Array<any>) {
+  async getVideoInfos(videoData: Array<any>, uploader: object) {
     const videos = await Promise.all(
       videoData.map(async (video) => {
         const { thumbnailExtension, raterCount, totalRating, ...videoInfo } =
@@ -151,12 +145,15 @@ export class UserService {
           ? (totalRating / raterCount).toFixed(1)
           : null;
         const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
-        const thumbnailImage = await getBucketImage(
+        const thumbnailImageUrl = await createPresignedUrl(
           process.env.THUMBNAIL_BUCKET,
-          thumbnailExtension,
-          videoInfo._id,
+          `${videoInfo._id}.${thumbnailExtension}`,
+          'GET',
         );
-        return { ...videoInfo, manifest, rating, thumbnailImage };
+        return {
+          video: { ...videoInfo, manifest, rating, thumbnailImageUrl },
+          uploader,
+        };
       }),
     );
     return videos;

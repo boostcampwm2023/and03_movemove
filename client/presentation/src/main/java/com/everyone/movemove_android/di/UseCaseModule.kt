@@ -1,12 +1,16 @@
 package com.everyone.movemove_android.di
 
+import com.everyone.domain.repository.AdsRepository
 import com.everyone.domain.repository.UserRepository
 import com.everyone.domain.repository.VideosRepository
 import com.everyone.domain.usecase.GetPresignedUrlProfileUseCase
+import com.everyone.domain.usecase.GetAdsUseCase
 import com.everyone.domain.usecase.GetProfileImageUploadUrlUseCase
 import com.everyone.domain.usecase.GetStoredSignedPlatformUseCase
 import com.everyone.domain.usecase.GetStoredUUIDUseCase
 import com.everyone.domain.usecase.GetVideoUploadUrlUseCase
+import com.everyone.domain.usecase.GetVideosTopRatedUseCase
+import com.everyone.domain.usecase.GetVideosTrendUseCase
 import com.everyone.domain.usecase.LoginUseCase
 import com.everyone.domain.usecase.PatchUserProfileUseCase
 import com.everyone.domain.usecase.PostVideoInfoUseCase
@@ -86,4 +90,19 @@ object UseCaseModule {
     @Provides
     @ViewModelScoped
     fun providePostVideoInfoUseCase(repository: VideosRepository): PostVideoInfoUseCase = PostVideoInfoUseCase(repository)
+
+    @Provides
+    @ViewModelScoped
+    fun provideGetVideosTopRatedUseCase(repository: VideosRepository): GetVideosTopRatedUseCase = GetVideosTopRatedUseCase(repository)
+
+    @Provides
+    @ViewModelScoped
+    fun provideGetVideosTrendUseCase(repository: VideosRepository): GetVideosTrendUseCase = GetVideosTrendUseCase(repository)
+
+    /*
+    광고
+     */
+    @Provides
+    @ViewModelScoped
+    fun provideGetAdsUseCase(repository: AdsRepository): GetAdsUseCase = GetAdsUseCase(repository)
 }

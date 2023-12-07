@@ -18,7 +18,7 @@ class VideoTrimmer(
     private val mediaExtractor = MediaExtractor()
     private val mediaMuxer = MediaMuxer("$newPath.mp4", MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
     private val mediaMetadataRetriever = MediaMetadataRetriever()
-    private val indexMap = HashMap<Int, Int>(TRACK_COUNT)
+    private val trackIndexMap = HashMap<Int, Int>(TRACK_COUNT)
     private var bufferSize = -1
 
     init {
@@ -58,7 +58,7 @@ class VideoTrimmer(
                         break
                     } else {
                         bufferInfo.flags = mediaExtractor.sampleFlags
-                        indexMap[mediaExtractor.sampleTrackIndex]?.let { trackIndex ->
+                        trackIndexMap[mediaExtractor.sampleTrackIndex]?.let { trackIndex ->
                             mediaMuxer.writeSampleData(
                                 trackIndex,
                                 outputBuffer,
@@ -95,20 +95,22 @@ class VideoTrimmer(
 
     private fun addTracksToMuxer() {
         for (i in 0 until TRACK_COUNT) {
-            val format = mediaExtractor.getTrackFormat(i)
-            val mime = format.getString(MediaFormat.KEY_MIME)
+            runCatching {
+                val format = mediaExtractor.getTrackFormat(i)
+                val mime = format.getString(MediaFormat.KEY_MIME)
 
-            mime?.let {
-                if (mime.startsWith("audio/") || mime.startsWith("video/")) {
-                    mediaExtractor.selectTrack(i)
-                    val newTrackIndex = mediaMuxer.addTrack(format)
-                    indexMap[i] = newTrackIndex
-                    if (format.containsKey(MediaFormat.KEY_MAX_INPUT_SIZE)) {
-                        bufferSize = maxOf(bufferSize, format.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE))
+                mime?.let {
+                    if (mime.startsWith("audio/") || mime.startsWith("video/")) {
+                        mediaExtractor.selectTrack(i)
+                        val newTrackIndex = mediaMuxer.addTrack(format)
+                        trackIndexMap[i] = newTrackIndex
+                        if (format.containsKey(MediaFormat.KEY_MAX_INPUT_SIZE)) {
+                            bufferSize = maxOf(bufferSize, format.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE))
+                        }
                     }
+                } ?: run {
+                    releaseComponents()
                 }
-            } ?: run {
-                releaseComponents()
             }
         }
     }

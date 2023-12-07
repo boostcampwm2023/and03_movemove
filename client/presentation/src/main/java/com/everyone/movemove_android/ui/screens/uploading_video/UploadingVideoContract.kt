@@ -12,9 +12,19 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         val isPlaying: Boolean = false,
         val isPlayAndPauseShowing: Boolean = false,
         val isVideoReady: Boolean = false,
-        val videoInfo: VideoInfo = VideoInfo(),
+        val videoUri: Uri? = null,
+        val videoDuration: Long = 0L,
         val videoStartTime: Long = 0L,
         val videoEndTime: Long = 0L,
+        val timelineWidth: Int = 0,
+        val timelineUnitWidth: Long = 0L,
+        val videoLengthUnit: Long = 0L,
+        val indicatorPosition: Int = 0,
+        val isLowerBoundDragging: Boolean = false,
+        val lowerBoundPosition: Float = 0f,
+        val isUpperBoundDragging: Boolean = false,
+        val upperBoundPosition: Float = 0f,
+        val isVideoTrimming: Boolean = false,
         val thumbnailList: List<ImageBitmap> = emptyList(),
         val title: String = "",
         val description: String = "",
@@ -23,12 +33,9 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         val category: UploadCategory? = null,
         val isSelectThumbnailDialogShowing: Boolean = false,
         val selectedThumbnail: ImageBitmap? = null,
-        val stagedVideoFile: File? = null
-    )
-
-    data class VideoInfo(
-        val uri: Uri? = null,
-        val duration: Long = 0L
+        val stagedVideoFile: File? = null,
+        val isErrorDialogShowing: Boolean = false,
+        val errorDialogTextResourceId: Int = 0
     )
 
     sealed interface Event {
@@ -44,9 +51,31 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
 
         data class OnVideoReady(val duration: Long) : Event
 
-        data class SetVideoStartTime(val time: Long) : Event
+        data class OnTimelineWidthMeasured(val timelineWidth: Int) : Event
 
-        data class SetVideoEndTime(val time: Long) : Event
+        data object OnLowerBoundDraggingStarted : Event
+
+        data object OnLowerBoundDraggingFinished : Event
+
+        data class OnLowerBoundDrag(
+            val offset: Float,
+            val boundWidthPx: Float
+        ) : Event
+
+        data object OnUpperBoundDraggingStarted : Event
+
+        data object OnUpperBoundDraggingFinished : Event
+
+        data class OnUpperBoundDrag(
+            val offset: Float,
+            val boundWidthPx: Float
+        ) : Event
+
+        data class OnVideoPositionUpdated(val videoPosition: Long) : Event
+
+        data object SetVideoStartTime : Event
+
+        data object SetVideoEndTime : Event
 
         data class OnTitleTyped(val title: String) : Event
 
@@ -65,11 +94,21 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         data object OnSelectThumbnailDialogDismissed : Event
 
         data object OnClickUpload : Event
+
+        data object OnErrorDialogDismissed : Event
+
+        data object OnExit : Event
+
+        data object OnStopped : Event
     }
 
     sealed interface Effect {
         data object LaunchVideoPicker : Effect
 
+        data class SeekToStart(val position: Long) : Effect
+
         data object Finish : Effect
+
+        data object PauseVideo : Effect
     }
 }

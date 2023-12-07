@@ -3,6 +3,8 @@ package com.everyone.domain.repository
 import com.everyone.domain.model.Profile
 import com.everyone.domain.model.ProfileImageUploadUrl
 import com.everyone.domain.model.UserInfo
+import com.everyone.domain.model.VideosList
+import com.everyone.domain.model.VideosRated
 import com.everyone.domain.model.VideosUploaded
 import com.everyone.domain.model.base.DataState
 import kotlinx.coroutines.flow.Flow
@@ -47,11 +49,17 @@ interface UserRepository {
         userId: String,
         limit: String,
         lastId: String
-    ): Flow<DataState<VideosUploaded>>
-
-    fun patchUserProfile(
+    ): Flow<DataState<VideosList>>
+  
+      fun patchUserProfile(
         nickname: String,
         statusMessage: String,
         profileImageExtension: String
     ): Flow<DataState<Profile>>
+
+    fun getUsersVideosRated(
+        userId: String,
+        limit: String,
+        lastRatedAt: String
+    ): Flow<DataState<VideosRated>>
 }
