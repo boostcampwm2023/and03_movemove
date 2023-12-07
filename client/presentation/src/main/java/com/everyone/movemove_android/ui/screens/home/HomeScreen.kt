@@ -71,8 +71,8 @@ fun HomeScreen(
                 is OnClickedVideo -> navigateToActivity(
                     WatchingVideoActivity.newIntent(
                         context = context,
-                        videosList = null,
-                        page = null
+                        videosList = effect.videosList,
+                        page = effect.page
                     )
                 )
             }

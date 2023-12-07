@@ -28,13 +28,13 @@ interface VideosRepository {
         thumbnailExtension: String
     ): Flow<DataState<CreatedVideo>>
 
-    suspend fun getVideosRandom(
+    fun getVideosRandom(
         limit: String,
         category: String,
         seed: String
     ): Flow<DataState<VideosRandom>>
 
-    suspend fun putVideosRating(
+    fun putVideosRating(
         id: String,
         rating: String,
         reason: String

@@ -1,6 +1,7 @@
 package com.everyone.movemove_android.ui.watching_video
 
 import com.everyone.domain.model.Videos
+import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.base.BaseContract
 
 interface WatchingVideoContract :
@@ -17,6 +18,8 @@ interface WatchingVideoContract :
             Category.K_POP
         ),
         val videos: List<Videos>? = null,
+        val videosList: VideosList? = null,
+        val page: Int? = null,
         val seed: String = "",
         val videoTab: VideoTab = VideoTab.CATEGORY_TAB
     )
@@ -33,10 +36,14 @@ interface WatchingVideoContract :
         ) : Event
 
         data class ChangedVideoTab(val videoTab: VideoTab) : Event
-        data class PutVideosViews(val videoId : String) : Event
+        data class PutVideosViews(val videoId: String) : Event
+        data class OnClickedProfile(val uuid: String) : Event
+
     }
 
-    sealed interface Effect {}
+    sealed interface Effect {
+        data class NavigateToProfile(val uuid: String) : Effect
+    }
 
     enum class Category(val displayName: String) {
         TOTAL("전체"),

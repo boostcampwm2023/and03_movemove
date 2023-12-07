@@ -10,6 +10,8 @@ import com.everyone.domain.usecase.GetVideosRandomUseCase
 import com.everyone.domain.usecase.PutVideosRatingUseCase
 import com.everyone.domain.usecase.PutVideosViewsUseCase
 import com.everyone.movemove_android.di.IoDispatcher
+import com.everyone.movemove_android.di.MainImmediateDispatcher
+import com.everyone.movemove_android.ui.profile.ProfileContract
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnClickedCategory
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnCategorySelected
@@ -35,20 +37,18 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class WatchingVideoViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
     private val getVideosRandomUseCase: GetVideosRandomUseCase,
     private val putVideosRatingUseCase: PutVideosRatingUseCase,
     private val putVideosViewsUseCase: PutVideosViewsUseCase
 ) : ViewModel(), WatchingVideoContract {
-
-    val videosList = savedStateHandle.get<VideosList>(EXTRA_KEY_VIDEOS_TREND)
-    val page = savedStateHandle.get<Int>(EXTRA_KEY_VIDEOS_PAGE)
-
 
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -70,6 +70,20 @@ class WatchingVideoViewModel @Inject constructor(
 
             is ChangedVideoTab -> changedVideoTab(videoTab = event.videoTab)
             is PutVideosViews -> putVideosViews(videoId = event.videoId)
+            is Event.OnClickedProfile -> onClickedProfile(uuid = event.uuid)
+        }
+    }
+
+    init {
+        getSavedState()
+    }
+
+    private fun getSavedState() {
+        _state.update {
+            it.copy(
+                videosList = savedStateHandle.get<VideosList>(WatchingVideoActivity.EXTRA_KEY_VIDEOS_LIST),
+                page = savedStateHandle.get<Int>(WatchingVideoActivity.EXTRA_KEY_VIDEOS_PAGE)
+            )
         }
     }
 
@@ -111,7 +125,7 @@ class WatchingVideoViewModel @Inject constructor(
                         loading(isLoading = false)
                     }
                 }
-            }.launchIn(viewModelScope)
+            }.launchIn(viewModelScope + ioDispatcher)
         }
     }
 
@@ -136,7 +150,7 @@ class WatchingVideoViewModel @Inject constructor(
                     is DataState.Success -> {}
                     is DataState.Failure -> {}
                 }
-            }.launchIn(viewModelScope)
+            }.launchIn(viewModelScope + ioDispatcher)
         }
     }
 
@@ -163,9 +177,17 @@ class WatchingVideoViewModel @Inject constructor(
         }
     }
 
-    private fun loading(isLoading: Boolean) {
-        _state.update {
-            it.copy(isLoading = isLoading)
+    private fun onClickedProfile(uuid: String) {
+        viewModelScope.launch {
+            _effect.emit(Effect.NavigateToProfile(uuid = uuid))
+        }
+    }
+
+    private suspend fun loading(isLoading: Boolean) {
+        withContext(mainImmediateDispatcher) {
+            _state.update {
+                it.copy(isLoading = isLoading)
+            }
         }
     }
 
