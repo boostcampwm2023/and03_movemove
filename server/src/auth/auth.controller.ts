@@ -18,6 +18,7 @@ import { SigninRequestDto } from './dto/signin-request.dto';
 import { RefreshRequestDto } from './dto/refresh-request.dto';
 import { RefreshResponseDto } from './dto/refresh-response.dto';
 
+@ApiTags('AUTH')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -29,7 +30,6 @@ export class AuthController {
    * 회원가입
    */
   @Post('signup')
-  @ApiTags('AUTH')
   @ApiSuccessResponse(201, '회원가입 성공', SignupResponseDto)
   @ApiFailResponse('인증 실패', [OAuthFailedException])
   @ApiFailResponse('업로드 필요', [ProfileUploadRequiredException])
@@ -44,7 +44,6 @@ export class AuthController {
    * 로그인
    */
   @Post('login')
-  @ApiTags('AUTH')
   @ApiSuccessResponse(201, '로그인 성공', SigninResponseDto)
   @ApiFailResponse('인증 실패', [LoginFailException, OAuthFailedException])
   signin(
@@ -57,7 +56,6 @@ export class AuthController {
    * 토큰 재발급
    */
   @Post('refresh')
-  @ApiTags('AUTH')
   @ApiSuccessResponse(201, '토큰 재발급 성공', RefreshResponseDto)
   @ApiFailResponse('인증 실패', [InvalidRefreshTokenException])
   refresh(
