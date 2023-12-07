@@ -11,9 +11,17 @@ interface MyContract : BaseContract<MyContract.State, MyContract.Event, MyContra
 
     sealed interface Event {
         data object OnNullProfileNickname : Event
+
+        data object OnClickEditProfile : Event
+
+        data object OnClickRatingVideo : Event
     }
 
     sealed interface Effect {
         data object CloseMyScreen : Effect
+
+        data object GoToEditProfileScreen : Effect
+
+        data object GoToRatingVideoScreen : Effect
     }
 }
