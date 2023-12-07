@@ -103,28 +103,11 @@ export class VideoService {
     return { videos: videoInfos, seed: viewSeed };
   }
 
-  async getManifest(videoId: string, userId: string, seed: number) {
-    this.actionService.viewVideo(videoId, userId, seed);
-
-    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
-    const manifestURL = `${process.env.MANIFEST_URL_PREFIX}${videoId}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
-    const manifest: string = await axios
-      .get(manifestURL)
-      .then((res) => res.data);
-
-    let index = -1;
-    const modifiedManifest = manifest.replace(/.*\.m3u8$/gm, () => {
-      index += 1;
-      return `${process.env.MANIFEST_URL_PREFIX}${videoId}_${encodingSuffixes[index]}${process.env.SBR_MANIFEST_URL_SUFFIX}`;
-    });
-    return modifiedManifest;
-  }
-
   async getVideoInfo(video: any): Promise<VideoInfoDto> {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
     const rating = raterCount ? (totalRating / raterCount).toFixed(1) : null;
 
-    const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
+    const manifest = `${process.env.MANIFEST_URL_PREFIX}/${videoInfo._id}_master.m3u8`;
 
     const { profileImageExtension, uuid, ...uploaderInfo } =
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
