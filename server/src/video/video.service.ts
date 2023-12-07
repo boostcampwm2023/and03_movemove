@@ -13,7 +13,7 @@ import * as _ from 'lodash';
 import { ActionService } from 'src/action/action.service';
 import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
 import { VideoConflictException } from 'src/exceptions/video-conflict.exception';
-import { checkUpload } from 'src/ncpAPI/listObjects';
+import { checkUpload, listObjects } from 'src/ncpAPI/listObjects';
 import { VideoUploadRequiredException } from 'src/exceptions/video-upload-required-exception copy';
 import { ThumbnailUploadRequiredException } from 'src/exceptions/thumbnail-upload-required-exception copy 2';
 import { BadRequestFormatException } from 'src/exceptions/bad-request-format.exception';
@@ -153,13 +153,14 @@ export class VideoService {
       throw new ThumbnailUploadRequiredException();
     }
 
-    await this.requestEncodingAPI(
-      process.env.INPUT_BUCKET,
-      process.env.OUTPUT_BUCKET,
-      videoName,
-    );
-
-    const uploader = await this.UserModel.findOne({ uuid }, { _id: 1 });
+    const [__, uploader] = await Promise.all([
+      this.requestEncodingAPI(
+        process.env.INPUT_BUCKET,
+        process.env.OUTPUT_BUCKET,
+        videoName,
+      ),
+      this.UserModel.findOne({ uuid }, { _id: 1 }),
+    ]);
 
     const { title, content, category } = videoDto;
     const newVideo = new this.VideoModel({
@@ -199,16 +200,14 @@ export class VideoService {
   }
 
   async deleteEncodedVideo(videoId: string) {
-    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
-    const fileNamePrefix = `${process.env.VIDEO_OUTPUT_PATH}/${videoId}`;
-    return Promise.all([
-      ...encodingSuffixes.map((suffix) =>
-        deleteObject(
-          process.env.OUTPUT_BUCKET,
-          `${fileNamePrefix}_${suffix}.mp4`,
-        ),
+    const deleteList = await listObjects(process.env.OUTPUT_BUCKET, {
+      prefix: videoId,
+    });
+    return Promise.all(
+      deleteList.map((fileName: string) =>
+        deleteObject(process.env.OUTPUT_BUCKET, fileName),
       ),
-    ]);
+    );
   }
 
   async deleteVideo(videoId: string, uuid: string) {
