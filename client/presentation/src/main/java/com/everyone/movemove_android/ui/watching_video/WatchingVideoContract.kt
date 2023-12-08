@@ -19,7 +19,7 @@ interface WatchingVideoContract :
         ),
         val videos: List<Videos>? = null,
         val videosList: VideosList? = null,
-        val page: Int? = null,
+        val page: Int = 0,
         val seed: String = "",
         val videoTab: VideoTab = VideoTab.CATEGORY_TAB
     )
@@ -27,7 +27,6 @@ interface WatchingVideoContract :
     sealed interface Event {
         data object OnClickedCategory : Event
         data class OnCategorySelected(val selectedCategory: Category) : Event
-        data class SetVideos(val videos: List<Videos>) : Event
         data object GetRandomVideos : Event
         data class OnClickedVideoRating(
             val id: String,
@@ -35,7 +34,6 @@ interface WatchingVideoContract :
             val reason: String
         ) : Event
 
-        data class ChangedVideoTab(val videoTab: VideoTab) : Event
         data class PutVideosViews(val videoId: String) : Event
         data class OnClickedProfile(val uuid: String) : Event
 

@@ -69,8 +69,6 @@ import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.profile.ProfileActivity
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.*
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.*
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.VideoTab.BOTTOM_TAB
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.VideoTab.CATEGORY_TAB
 import com.everyone.movemove_android.ui.watching_video.category.CategoryScreen
 import com.everyone.movemove_android.ui.theme.FooterBottomBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterMiddleBackgroundInDark
@@ -89,8 +87,6 @@ fun WatchingVideoScreen(
 ) {
     val context = LocalContext.current
 
-    var initialPage by remember { mutableIntStateOf(0) }
-
     val (state, event, effect) = use(viewModel)
 
     LaunchedEffect(effect) {
@@ -108,24 +104,13 @@ fun WatchingVideoScreen(
         }
     }
 
-    LaunchedEffect(state.videosList) {
-        if (state.videosList != null) {
-            event(SetVideos(videos = state.videosList.videos!!))
-            initialPage = state.page!!
-            event(ChangedVideoTab(CATEGORY_TAB))
-        } else {
-            if (state.videoTab == CATEGORY_TAB) event(GetRandomVideos)
-            event(ChangedVideoTab(BOTTOM_TAB))
-        }
-    }
-
     Scaffold { paddingValues ->
         if (state.isLoading) {
             LoadingDialog()
         } else {
             state.videos?.let { videosItem ->
                 val videoUri = videosItem.map { Uri.parse(it.video!!.manifest) }
-                val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { videoUri.size })
+                val pagerState = rememberPagerState(initialPage = state.page, pageCount = { videoUri.size })
 
                 val exoPlayerPair = remember {
                     Triple(
