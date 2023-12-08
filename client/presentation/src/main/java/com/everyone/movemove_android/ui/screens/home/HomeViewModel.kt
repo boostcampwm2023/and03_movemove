@@ -7,8 +7,10 @@ import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetAdsUseCase
 import com.everyone.domain.usecase.GetVideosTopRatedUseCase
 import com.everyone.domain.usecase.GetVideosTrendUseCase
+import com.everyone.movemove_android.R
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.ui.screens.home.HomeContract.*
+import com.everyone.movemove_android.ui.screens.home.HomeContract.Event.*
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -39,7 +41,8 @@ class HomeViewModel @Inject constructor(
     override val effect: SharedFlow<Effect> = _effect.asSharedFlow()
 
     override fun event(event: Event) = when (event) {
-        is Event.OnClickedVideo -> onClickedVideo(event.videosList, event.page)
+        is OnClickedVideo -> onClickedVideo(event.videosList, event.page)
+        is OnErrorDialogDismissed -> onErrorDialogDismissed()
     }
 
     init {
@@ -70,6 +73,7 @@ class HomeViewModel @Inject constructor(
 
                 is DataState.Failure -> {
                     loading(isLoading = false)
+                    showErrorDialog(R.string.error_ads)
                 }
             }
         }.launchIn(viewModelScope + ioDispatcher)
@@ -129,6 +133,21 @@ class HomeViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope + ioDispatcher)
 
+    }
+
+    private fun showErrorDialog(textResourceId: Int) {
+        _state.update {
+            it.copy(
+                isErrorDialogShowing = true,
+                errorDialogTextResourceId = textResourceId
+            )
+        }
+    }
+
+    private fun onErrorDialogDismissed() {
+        _state.update {
+            it.copy(isErrorDialogShowing = false)
+        }
     }
 
     private fun loading(isLoading: Boolean) {

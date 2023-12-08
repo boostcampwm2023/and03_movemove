@@ -44,9 +44,11 @@ import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
+import com.everyone.movemove_android.ui.ErrorDialog
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.home.HomeContract.Effect.NavigateToWatchingVideo
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract
 import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoActivity
@@ -77,6 +79,13 @@ fun HomeScreen(
                 )
             }
         }
+    }
+
+    if (state.isErrorDialogShowing) {
+        ErrorDialog(
+            text = stringResource(id = state.errorDialogTextResourceId),
+            onDismissRequest = { event(HomeContract.Event.OnErrorDialogDismissed) }
+        )
     }
 
     if (state.isLoading) {
