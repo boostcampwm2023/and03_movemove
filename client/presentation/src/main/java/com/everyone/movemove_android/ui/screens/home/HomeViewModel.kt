@@ -99,6 +99,7 @@ class HomeViewModel @Inject constructor(
                     }
 
                     is DataState.Failure -> {
+                        showErrorDialog(R.string.error_video)
                         loading(isLoading = false)
                     }
                 }
@@ -137,6 +138,7 @@ class HomeViewModel @Inject constructor(
                     }
 
                     is DataState.Failure -> {
+                        showErrorDialog(R.string.error_video)
                         loading(isLoading = false)
                     }
                 }
