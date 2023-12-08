@@ -125,13 +125,7 @@ fun WatchingVideoScreen(
         } else {
             state.videos?.let { videosItem ->
                 val videoUri = videosItem.map { Uri.parse(it.video!!.manifest) }
-                val pagerState = rememberPagerState(pageCount = { videoUri.size })
-
-                if (state.videoTab == CATEGORY_TAB) {
-                    LaunchedEffect(initialPage) {
-                        pagerState.scrollToPage(initialPage)
-                    }
-                }
+                val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { videoUri.size })
 
                 val exoPlayerPair = remember {
                     Triple(
