@@ -1,6 +1,7 @@
 package com.everyone.movemove_android.ui.screens.home
 
 import android.content.Intent
+import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -195,17 +196,7 @@ fun MultiServiceAds(advertisements: Advertisements) {
             )
         }
     } ?: run {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp)
-        ) {
-            StyledText(
-                modifier = Modifier.align(Alignment.Center),
-                text = stringResource(R.string.empty_ads_title),
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
+        EmptyContentBox(stringResId = R.string.empty_ads_title)
     }
 }
 
@@ -223,15 +214,7 @@ fun MultiServiceAdsItem(
             contentScale = ContentScale.FillBounds,
         )
     } ?: run {
-        Box(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            StyledText(
-                modifier = Modifier.align(Alignment.Center),
-                text = stringResource(R.string.empty_ads_title),
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
+        EmptyContentBox(stringResId = R.string.empty_ads_title)
     }
 }
 
@@ -314,17 +297,7 @@ fun MoveMoveVideos(
             }
         }
     } ?: run {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(250.dp),
-        ) {
-            StyledText(
-                modifier = Modifier.align(Alignment.Center),
-                text = stringResource(R.string.empty_video_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-        }
+        EmptyContentBox(stringResId = R.string.empty_video_title)
     }
 }
 
@@ -348,13 +321,20 @@ fun MoveMoveVideo(
                 contentScale = ContentScale.Crop,
             )
         } ?: run {
-            Box(modifier = Modifier.fillMaxSize()) {
-                StyledText(
-                    modifier = Modifier.align(Alignment.Center),
-                    text = stringResource(R.string.empty_video_title),
-                    style = MaterialTheme.typography.titleSmall,
-                )
-            }
+            EmptyContentBox(stringResId = R.string.empty_video_title)
         }
+    }
+}
+
+@Composable
+fun EmptyContentBox(@StringRes stringResId: Int) {
+    Box(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        StyledText(
+            modifier = Modifier.align(Alignment.Center),
+            text = stringResource(stringResId),
+            style = MaterialTheme.typography.titleSmall
+        )
     }
 }
