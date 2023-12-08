@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -191,7 +192,7 @@ fun MultiServiceAds(advertisements: Advertisements) {
             )
         }
     } ?: run {
-        EmptyContentBox(stringResId = R.string.empty_ads_title)
+        EmptyVideoContent(stringResId = R.string.empty_ads_title)
     }
 }
 
@@ -209,7 +210,7 @@ fun MultiServiceAdsItem(
             contentScale = ContentScale.FillBounds,
         )
     } ?: run {
-        EmptyContentBox(stringResId = R.string.empty_ads_title)
+        EmptyVideoContent(stringResId = R.string.empty_ads_title)
     }
 }
 
@@ -292,7 +293,7 @@ fun MoveMoveVideos(
             }
         }
     } ?: run {
-        EmptyContentBox(stringResId = R.string.empty_video_title)
+        EmptyVideoContent(stringResId = R.string.empty_video_title)
     }
 }
 
@@ -316,16 +317,18 @@ fun MoveMoveVideo(
                 contentScale = ContentScale.Crop,
             )
         } ?: run {
-            EmptyContentBox(stringResId = R.string.empty_video_title)
+            EmptyVideoContent(stringResId = R.string.empty_video_title)
         }
     }
 }
 
 @Composable
-fun EmptyContentBox(@StringRes stringResId: Int) {
+fun EmptyVideoContent(@StringRes stringResId: Int) {
     Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+        modifier = Modifier
+            .fillMaxSize()
+            .heightIn(min = 220.dp),
+        ) {
         StyledText(
             modifier = Modifier.align(Alignment.Center),
             text = stringResource(stringResId),
