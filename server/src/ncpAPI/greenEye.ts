@@ -1,6 +1,11 @@
 import axios from 'axios';
+import { GreenEyeApiFailException } from 'src/exceptions/greeneye-api-fail.exception';
 
-export const greenEye = (requestId: string, imageUrl: string) => {
+export const greenEye = (
+  requestId: string,
+  imageName: string,
+  imageUrl: string,
+) => {
   const apiUrl = process.env.GREENEYE_API_URL;
 
   const headers = {
@@ -14,7 +19,7 @@ export const greenEye = (requestId: string, imageUrl: string) => {
     timestamp: Number(new Date()),
     images: [
       {
-        name: 'demo',
+        name: imageName,
         url: imageUrl,
       },
     ],
@@ -25,5 +30,7 @@ export const greenEye = (requestId: string, imageUrl: string) => {
       headers,
     })
     .then((response) => response.data.images.pop().result)
-    .catch((error) => error);
+    .catch(() => {
+      throw new GreenEyeApiFailException();
+    });
 };

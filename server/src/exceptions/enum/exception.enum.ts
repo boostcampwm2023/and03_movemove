@@ -20,6 +20,7 @@ enum ErrorCode {
   BadThumbnailFormat = 8100,
   BadRequestFormat = 8200,
   EncodingActionFail = 4280,
+  GreenEyeApiFail = 4281,
 }
 
 const ErrorMessage = {
@@ -43,6 +44,7 @@ const ErrorMessage = {
   [ErrorCode.VideoUploadRequired]: '비디오를 먼저 업로드 해야합니다.',
   [ErrorCode.BadRequestFormat]: '요청 형식이 잘못됨',
   [ErrorCode.EncodingActionFail]: '인코딩 액션 실패',
+  [ErrorCode.GreenEyeApiFail]: 'greeneye api 요청 실패',
 };
 
 export { ErrorCode, ErrorMessage };
