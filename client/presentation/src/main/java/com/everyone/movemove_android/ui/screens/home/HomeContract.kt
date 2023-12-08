@@ -22,7 +22,7 @@ interface HomeContract :
     }
 
     sealed interface Effect {
-        data class OnClickedVideo(
+        data class NavigateToWatchingVideo(
             val videosList: VideosList,
             val page: Int
         ) : Effect

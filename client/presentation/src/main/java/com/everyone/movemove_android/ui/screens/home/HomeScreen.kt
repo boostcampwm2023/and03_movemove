@@ -46,7 +46,7 @@ import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.screens.home.HomeContract.Effect.OnClickedVideo
+import com.everyone.movemove_android.ui.screens.home.HomeContract.Effect.NavigateToWatchingVideo
 import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoActivity
@@ -68,7 +68,7 @@ fun HomeScreen(
     LaunchedEffect(effect) {
         effect.collectLatest { effect ->
             when (effect) {
-                is OnClickedVideo -> navigateToActivity(
+                is NavigateToWatchingVideo -> navigateToActivity(
                     WatchingVideoActivity.newIntent(
                         context = context,
                         videosList = effect.videosList,

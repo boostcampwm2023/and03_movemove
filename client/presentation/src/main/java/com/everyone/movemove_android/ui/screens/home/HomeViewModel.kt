@@ -51,7 +51,7 @@ class HomeViewModel @Inject constructor(
 
     private fun onClickedVideo(videosList: VideosList, page: Int) {
         viewModelScope.launch {
-            _effect.emit(Effect.OnClickedVideo(videosList, page))
+            _effect.emit(Effect.NavigateToWatchingVideo(videosList, page))
         }
     }
 
