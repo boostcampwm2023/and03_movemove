@@ -3,7 +3,6 @@ package com.everyone.movemove_android.ui.screens.home
 import com.everyone.domain.model.Advertisements
 import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.base.BaseContract
-import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract
 
 interface HomeContract :
     BaseContract<HomeContract.State, HomeContract.Event, HomeContract.Effect> {
