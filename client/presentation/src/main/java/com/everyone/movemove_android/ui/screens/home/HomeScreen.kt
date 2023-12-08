@@ -333,20 +333,28 @@ fun MoveMoveVideo(
     modifier: Modifier,
     videos: Videos,
 ) {
-    videos.video?.let { video ->
-        Card(
-            modifier = modifier
-                .width(150.dp)
-                .height(250.dp)
-                .padding(bottom = 8.dp),
-            shape = RoundedCornerShape(size = 8.dp),
-        ) {
+    Card(
+        modifier = modifier
+            .width(150.dp)
+            .height(250.dp)
+            .padding(bottom = 8.dp),
+        shape = RoundedCornerShape(size = 8.dp),
+    ) {
+        videos.video?.let { video ->
             AsyncImage(
                 modifier = Modifier.fillMaxSize(),
                 model = video.thumbnailImageUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
             )
+        } ?: run {
+            Box(modifier = Modifier.fillMaxSize()) {
+                StyledText(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = stringResource(R.string.empty_video_title),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+            }
         }
     }
 }
