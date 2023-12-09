@@ -60,6 +60,11 @@ class ProfileViewModel @Inject constructor(
             getUsersVideosUploaded(uuid = it)
         } ?: run {
             getStoredUUID()
+            _state.update {
+                it.copy(
+                    isUser = true
+                )
+            }
         }
     }
 

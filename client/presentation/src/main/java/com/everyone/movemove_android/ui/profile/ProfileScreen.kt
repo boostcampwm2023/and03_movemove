@@ -88,7 +88,10 @@ fun ProfileScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                MoveMoveTopBar(event = event)
+                MoveMoveTopBar(
+                    event = event,
+                    isUser = state.isUser
+                )
 
                 Spacer(
                     modifier = Modifier
@@ -170,7 +173,10 @@ fun ProfileScreen(
 }
 
 @Composable
-fun MoveMoveTopBar(event: (Event) -> Unit) {
+fun MoveMoveTopBar(
+    event: (Event) -> Unit,
+    isUser: Boolean
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -181,16 +187,18 @@ fun MoveMoveTopBar(event: (Event) -> Unit) {
             text = stringResource(R.string.top_bar_profile_title),
             style = Typography.titleMedium,
         )
-
-        Icon(
-            modifier = Modifier
-                .size(24.dp)
-                .align(Alignment.CenterEnd)
-                .clickableWithoutRipple { event(OnClickedMenu) },
-            painter = painterResource(id = R.drawable.ic_menu),
-            contentDescription = null,
-            tint = Color.White
-        )
+        
+        if (isUser) {
+            Icon(
+                modifier = Modifier
+                    .size(24.dp)
+                    .align(Alignment.CenterEnd)
+                    .clickableWithoutRipple { event(OnClickedMenu) },
+                painter = painterResource(id = R.drawable.ic_menu),
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
     }
 }
 

@@ -10,7 +10,8 @@ interface ProfileContract :
         val isLoading: Boolean = false,
         val uuid: String? = null,
         val profile: Profile? = null,
-        val videosUploaded: VideosList = VideosList(null)
+        val videosUploaded: VideosList = VideosList(null),
+        val isUser : Boolean = false
     )
 
     sealed interface Event {
