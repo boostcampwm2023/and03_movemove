@@ -109,8 +109,9 @@ fun WatchingVideoScreen(
             LoadingDialog()
         } else {
             state.videos?.let { videosItem ->
-                val videoUri = videosItem.map { Uri.parse(it.video!!.manifest) }
-                val pagerState = rememberPagerState(initialPage = state.page, pageCount = { videoUri.size })
+                val videoUri = videosItem.map { Uri.parse(it.video?.manifest) }
+                val pagerState =
+                    rememberPagerState(initialPage = state.page, pageCount = { videoUri.size })
 
                 val exoPlayerPair = remember {
                     Triple(
@@ -176,7 +177,9 @@ fun WatchingVideoScreen(
                     }
 
                     videosItem[pagerState.settledPage].video?.let { video ->
-                        event(PutVideosViews(video.id!!))
+                        video.id?.let { id ->
+                            event(PutVideosViews(id))
+                        }
                     }
 
                     if (state.isClickedCategory) {
@@ -409,7 +412,11 @@ fun MoveMoveFooterContents(
 
         videos.uploader?.let { uploader ->
             Row(
-                modifier = Modifier.clickableWithoutRipple { event(OnClickedProfile(uploader.uuid!!)) },
+                modifier = Modifier.clickableWithoutRipple {
+                    uploader.uuid?.let { uuid ->
+                        event(OnClickedProfile(uuid))
+                    }
+                },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
             ) {
