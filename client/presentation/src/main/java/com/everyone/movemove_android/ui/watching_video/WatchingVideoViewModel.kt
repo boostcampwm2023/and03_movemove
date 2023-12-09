@@ -199,7 +199,5 @@ class WatchingVideoViewModel @Inject constructor(
 
     companion object {
         const val LIMIT = "10"
-        const val EXTRA_KEY_VIDEOS_TREND = "EXTRA_KEY_VIDEOS_TREND"
-        const val EXTRA_KEY_VIDEOS_PAGE = "EXTRA_KEY_VIDEOS_PAGE"
     }
 }
