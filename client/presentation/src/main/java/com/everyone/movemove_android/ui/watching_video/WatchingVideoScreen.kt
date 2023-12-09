@@ -137,7 +137,8 @@ fun WatchingVideoScreen(
                         Box(modifier = Modifier.fillMaxSize()) {
                             VideoPlayer(
                                 exoPlayer = exoPlayer,
-                                uri = videoUri[page]
+                                uri = videoUri[page],
+                                isScroll = !pagerState.isScrollInProgress
                             )
                             Column(modifier = Modifier.align(Alignment.BottomStart)) {
                                 videosItem[page].video?.let { video ->
@@ -154,24 +155,30 @@ fun WatchingVideoScreen(
                             }
                         }
 
-                        when (pagerState.settledPage % 3) {
-                            0 -> {
-                                exoPlayerPair.first.play()
-                                exoPlayerPair.second.pause()
-                                exoPlayerPair.third.pause()
-                            }
+                        if (!pagerState.isScrollInProgress) {
+                            when (pagerState.settledPage % 3) {
+                                0 -> {
+                                    exoPlayerPair.first.play()
+                                    exoPlayerPair.second.pause()
+                                    exoPlayerPair.third.pause()
+                                }
 
-                            1 -> {
-                                exoPlayerPair.first.pause()
-                                exoPlayerPair.second.play()
-                                exoPlayerPair.third.pause()
-                            }
+                                1 -> {
+                                    exoPlayerPair.first.pause()
+                                    exoPlayerPair.second.play()
+                                    exoPlayerPair.third.pause()
+                                }
 
-                            2 -> {
-                                exoPlayerPair.first.pause()
-                                exoPlayerPair.second.pause()
-                                exoPlayerPair.third.play()
+                                2 -> {
+                                    exoPlayerPair.first.pause()
+                                    exoPlayerPair.second.pause()
+                                    exoPlayerPair.third.play()
+                                }
                             }
+                        } else {
+                            exoPlayerPair.first.pause()
+                            exoPlayerPair.second.pause()
+                            exoPlayerPair.third.pause()
                         }
                     }
 
@@ -258,6 +265,7 @@ fun WatchingVideoScreen(
 fun VideoPlayer(
     exoPlayer: ExoPlayer,
     uri: Uri,
+    isScroll: Boolean
 ) {
     val context = LocalContext.current
 
@@ -269,7 +277,7 @@ fun VideoPlayer(
         exoPlayer.apply {
             setMediaSource(source)
             prepare()
-            playWhenReady = true
+            playWhenReady = isScroll
             videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
             repeatMode = Player.REPEAT_MODE_ONE
         }
