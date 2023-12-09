@@ -14,6 +14,7 @@ import com.everyone.movemove_android.ui.profile.ProfileContract.*
 import com.everyone.movemove_android.ui.profile.ProfileContract.Effect.*
 import com.everyone.movemove_android.ui.profile.ProfileContract.Event.OnClickedMenu
 import com.everyone.movemove_android.ui.profile.ProfileContract.Event.OnClickedVideo
+import com.everyone.movemove_android.ui.profile.ProfileContract.Event.Refresh
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -47,6 +48,7 @@ class ProfileViewModel @Inject constructor(
     override fun event(event: Event) = when (event) {
         is OnClickedMenu -> onClickedMenu()
         is OnClickedVideo -> onClickedVideo(event.videosList, event.page)
+        is Refresh -> getSavedState()
     }
 
     init {
@@ -75,6 +77,12 @@ class ProfileViewModel @Inject constructor(
                 result?.let { uuid ->
                     getProfile(uuid = uuid)
                     getUsersVideosUploaded(uuid = uuid)
+                } ?: run {
+                    _state.update {
+                        it.copy(
+                            isError = true
+                        )
+                    }
                 }
             }.launchIn(viewModelScope + ioDispatcher)
             loading(isLoading = false)
@@ -90,13 +98,19 @@ class ProfileViewModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 isLoading = false,
-                                profile = result.data
+                                profile = result.data,
+                                isError = false
                             )
                         }
                     }
 
                     is DataState.Failure -> {
-                        loading(isLoading = false)
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                isError = true
+                            )
+                        }
                     }
                 }
             }.launchIn(viewModelScope + ioDispatcher)
@@ -116,13 +130,19 @@ class ProfileViewModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 isLoading = false,
-                                videosUploaded = result.data
+                                videosUploaded = result.data,
+                                isError = false
                             )
                         }
                     }
 
                     is DataState.Failure -> {
-                        loading(isLoading = false)
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                isError = true
+                            )
+                        }
                     }
                 }
             }.launchIn(viewModelScope + ioDispatcher)

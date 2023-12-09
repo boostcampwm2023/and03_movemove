@@ -39,6 +39,7 @@ import coil.compose.AsyncImage
 import com.everyone.domain.model.Profile
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
+import com.everyone.movemove_android.ui.MoveMoveErrorScreen
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.my.MyActivity
 import com.everyone.movemove_android.ui.profile.ProfileContract.*
@@ -101,53 +102,58 @@ fun ProfileScreen(
                         .background(color = BorderInDark)
                 )
 
-                state.profile?.let { profile ->
-                    Spacer(modifier = Modifier.height(24.dp))
-                    MoveMoveProfile(profile = profile)
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
-
-                Spacer(
-                    modifier = Modifier
-                        .height(3.dp)
-                        .fillMaxWidth()
-                        .background(color = BorderInDark)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                if (state.videosUploaded.videos.isNullOrEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(250.dp),
-                    ) {
-                        StyledText(
-                            modifier = Modifier.align(Alignment.Center),
-                            text = stringResource(R.string.empty_video_title),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                    }
+                Spacer(modifier = Modifier.height(24.dp))
+                if (state.isError) {
+                    MoveMoveErrorScreen(onClick = { Refresh })
                 } else {
-                    LazyVerticalGrid(
-                        modifier = Modifier.fillMaxSize(),
-                        columns = GridCells.Fixed(3),
-                        horizontalArrangement = Arrangement.Center,
-                        contentPadding = PaddingValues(8.dp),
-                    ) {
+                    state.profile?.let { profile ->
+                        MoveMoveProfile(profile = profile)
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                        items(state.videosUploaded.videos!!.size) {
-                            MoveMoveGridImageItem(
-                                modifier = Modifier.clickableWithoutRipple {
-                                    event(
-                                        OnClickedVideo(
-                                            videosList = state.videosUploaded,
-                                            page = it
-                                        )
-                                    )
-                                },
-                                model = state.videosUploaded.videos!![it].video!!.thumbnailImageUrl!!,
+                    Spacer(
+                        modifier = Modifier
+                            .height(3.dp)
+                            .fillMaxWidth()
+                            .background(color = BorderInDark)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+
+                    if (state.videosUploaded.videos.isNullOrEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp),
+                        ) {
+                            StyledText(
+                                modifier = Modifier.align(Alignment.Center),
+                                text = stringResource(R.string.empty_video_title),
+                                style = MaterialTheme.typography.titleMedium,
                             )
-                            Spacer(modifier = Modifier.height(0.5.dp))
+                        }
+                    } else {
+                        LazyVerticalGrid(
+                            modifier = Modifier.fillMaxSize(),
+                            columns = GridCells.Fixed(3),
+                            horizontalArrangement = Arrangement.Center,
+                            contentPadding = PaddingValues(8.dp),
+                        ) {
+
+                            items(state.videosUploaded.videos!!.size) {
+                                MoveMoveGridImageItem(
+                                    modifier = Modifier.clickableWithoutRipple {
+                                        event(
+                                            OnClickedVideo(
+                                                videosList = state.videosUploaded,
+                                                page = it
+                                            )
+                                        )
+                                    },
+                                    model = state.videosUploaded.videos!![it].video!!.thumbnailImageUrl!!,
+                                )
+                                Spacer(modifier = Modifier.height(0.5.dp))
+                            }
                         }
                     }
                 }

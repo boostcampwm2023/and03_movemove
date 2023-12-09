@@ -1,10 +1,16 @@
 package com.everyone.movemove_android.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -20,8 +26,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.everyone.movemove_android.R
 import com.everyone.movemove_android.ui.theme.DisabledFontInDark
 import com.everyone.movemove_android.ui.theme.DisabledInDark
 import com.everyone.movemove_android.ui.theme.Point
@@ -109,5 +118,38 @@ fun MoveMoveTextField(
                 keyboardOptions = keyboardOptions
             )
         }
+    }
+}
+
+
+@Composable
+fun MoveMoveErrorScreen(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        StyledText(
+            text = stringResource(R.string.error_screen_title),
+            style = Typography.titleMedium.copy(
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            ),
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        StyledText(
+            modifier = modifier
+                .padding(start = 8.dp, end = 8.dp)
+                .clip(shape = RoundedCornerShape(8.dp))
+                .clickable { onClick() },
+            text = stringResource(R.string.error_screen_sub_title),
+            style = Typography.labelMedium.copy(
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            ),
+        )
     }
 }
