@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -16,8 +17,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -100,69 +101,52 @@ fun ProfileScreen(
                         .background(color = BorderInDark)
                 )
 
-                LazyColumn {
-                    item {
-                        state.profile?.let { profile ->
-                            Spacer(modifier = Modifier.height(24.dp))
-                            MoveMoveProfile(profile = profile)
-                            Spacer(modifier = Modifier.height(24.dp))
-                        }
+                state.profile?.let { profile ->
+                    Spacer(modifier = Modifier.height(24.dp))
+                    MoveMoveProfile(profile = profile)
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
 
-                        Spacer(
-                            modifier = Modifier
-                                .height(3.dp)
-                                .fillMaxWidth()
-                                .background(color = BorderInDark)
+                Spacer(
+                    modifier = Modifier
+                        .height(3.dp)
+                        .fillMaxWidth()
+                        .background(color = BorderInDark)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (state.videosUploaded.videos.isNullOrEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp),
+                    ) {
+                        StyledText(
+                            modifier = Modifier.align(Alignment.Center),
+                            text = stringResource(R.string.empty_video_title),
+                            style = MaterialTheme.typography.titleMedium,
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
                     }
+                } else {
+                    LazyVerticalGrid(
+                        modifier = Modifier.fillMaxSize(),
+                        columns = GridCells.Fixed(3),
+                        horizontalArrangement = Arrangement.Center,
+                        contentPadding = PaddingValues(8.dp),
+                    ) {
 
-                    if (state.videosUploaded.videos.isNullOrEmpty()) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(250.dp),
-                            ) {
-                                StyledText(
-                                    modifier = Modifier.align(Alignment.Center),
-                                    text = stringResource(R.string.empty_video_title),
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                            }
-                        }
-                    } else {
-                        items(state.videosUploaded.videos!!.chunked(3)) { rowItems ->
-                            val chunkIndex =
-                                state.videosUploaded.videos!!.indexOfFirst { it in rowItems }
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(
-                                        start = 8.dp,
-                                        end = 8.dp,
-                                    ),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                for (i in 0 until 3) {
-                                    Box(modifier = Modifier.weight(1f)) {
-                                        if (i < rowItems.size) {
-                                            MoveMoveGridImageItem(
-                                                modifier = Modifier.clickableWithoutRipple {
-                                                    event(
-                                                        OnClickedVideo(
-                                                            state.videosUploaded,
-                                                            (chunkIndex * 3) + i
-                                                        )
-                                                    )
-                                                },
-                                                model = rowItems[i].video!!.thumbnailImageUrl!!,
-                                            )
-                                        }
-                                    }
-                                }
-                            }
+                        items(state.videosUploaded.videos!!.size) {
+                            MoveMoveGridImageItem(
+                                modifier = Modifier.clickableWithoutRipple {
+                                    event(
+                                        OnClickedVideo(
+                                            videosList = state.videosUploaded,
+                                            page = it
+                                        )
+                                    )
+                                },
+                                model = state.videosUploaded.videos!![it].video!!.thumbnailImageUrl!!,
+                            )
                             Spacer(modifier = Modifier.height(0.5.dp))
                         }
                     }
@@ -187,7 +171,7 @@ fun MoveMoveTopBar(
             text = stringResource(R.string.top_bar_profile_title),
             style = Typography.titleMedium,
         )
-        
+
         if (isUser) {
             Icon(
                 modifier = Modifier
