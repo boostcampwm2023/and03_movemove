@@ -58,7 +58,9 @@
 
     <!--    home-->
     <string name="empty_ads_title">광고가 없습니다</string>
+    <string name="error_ads">광고를 가져 올 수 없습니다</string>
     <string name="empty_video_title">영상이 없습니다</string>
+    <string name="error_video">영상을 가져 올 수 없습니다</string>
 
     <!--    rating_video-->
     <string name="rating_video_title">내가 점수를 준 영상 모아보기</string>
