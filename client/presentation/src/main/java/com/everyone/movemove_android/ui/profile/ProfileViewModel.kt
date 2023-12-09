@@ -66,9 +66,9 @@ class ProfileViewModel @Inject constructor(
                 result?.let { uuid ->
                     getProfile(uuid = uuid)
                     getUsersVideosUploaded(uuid = uuid)
-                    loading(isLoading = false)
                 }
             }.launchIn(viewModelScope + ioDispatcher)
+            loading(isLoading = false)
         }
     }
 
