@@ -159,6 +159,7 @@ fun MoveMoveGridImageItem(
         shape = RoundedCornerShape(size = 8.dp),
     ) {
         AsyncImage(
+            modifier = Modifier.fillMaxSize(),
             model = model,
             contentDescription = null,
             contentScale = ContentScale.Crop
