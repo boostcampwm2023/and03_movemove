@@ -21,6 +21,7 @@ enum ErrorCode {
   BadRequestFormat = 8200,
   EncodingActionFail = 4280,
   GreenEyeApiFail = 4281,
+  GreenEyeActionFail = 4282,
 }
 
 const ErrorMessage = {
@@ -45,6 +46,7 @@ const ErrorMessage = {
   [ErrorCode.BadRequestFormat]: '요청 형식이 잘못됨',
   [ErrorCode.EncodingActionFail]: '인코딩 액션 실패',
   [ErrorCode.GreenEyeApiFail]: 'greeneye api 요청 실패',
+  [ErrorCode.GreenEyeActionFail]: 'greeneye 액션 실패',
 };
 
 export { ErrorCode, ErrorMessage };

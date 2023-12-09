@@ -18,6 +18,7 @@ import { VideoUploadRequiredException } from 'src/exceptions/video-upload-requir
 import { ThumbnailUploadRequiredException } from 'src/exceptions/thumbnail-upload-required-exception copy 2';
 import { BadRequestFormatException } from 'src/exceptions/bad-request-format.exception';
 import { EncodingActionFailException } from 'src/exceptions/encoding-action-fail.exception';
+import { GreenEyeActionFailException } from 'src/exceptions/greeneye-action-fail.exception';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -137,7 +138,12 @@ export class VideoService {
     };
   }
 
-  async uploadVideo(videoDto: VideoDto, uuid: string, videoId: string) {
+  async uploadVideo(
+    videoDto: VideoDto,
+    uuid: string,
+    videoId: string,
+    accessToken: string,
+  ) {
     if (!Types.ObjectId.isValid(videoId)) throw new BadRequestFormatException();
     const checkDuplicate = await this.VideoModel.findOne({ _id: videoId });
     if (checkDuplicate) throw new VideoConflictException();
@@ -172,7 +178,15 @@ export class VideoService {
       thumbnailExtension,
       videoExtension,
     });
-    await newVideo.save();
+    await Promise.all([
+      newVideo.save(),
+      this.requestGreenEyeAPI(
+        process.env.INPUT_BUCKET,
+        videoName,
+        videoId,
+        accessToken,
+      ),
+    ]);
     return { videoId, ...videoDto };
   }
 
@@ -191,11 +205,31 @@ export class VideoService {
       accessKey,
       secretKey,
     };
-    console.log(data);
     try {
       await axios.post(process.env.ENCODING_API_URL, data);
     } catch (error) {
       throw new EncodingActionFailException();
+    }
+  }
+
+  async requestGreenEyeAPI(
+    inputBucket: string,
+    videoName: string,
+    videoId: string,
+    accessToken: string,
+  ) {
+    const videoUrl = await createPresignedUrl(inputBucket, videoName, 'GET');
+    const data = {
+      videoUrl,
+      object_name: videoId,
+      greenEyeSecret: process.env.GREENEYE_SECRET,
+      accessToken,
+    };
+
+    try {
+      await axios.post(process.env.GREENEYE_API_URL, data);
+    } catch (error) {
+      throw new GreenEyeActionFailException();
     }
   }
 

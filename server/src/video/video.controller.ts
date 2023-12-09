@@ -84,7 +84,12 @@ export class VideoController {
     @RequestUser() user: User,
     @Param('videoId') videoId: string,
   ) {
-    return this.videoService.uploadVideo(videoDto, user.id, videoId);
+    return this.videoService.uploadVideo(
+      videoDto,
+      user.id,
+      videoId,
+      user.token,
+    );
   }
 
   /**
