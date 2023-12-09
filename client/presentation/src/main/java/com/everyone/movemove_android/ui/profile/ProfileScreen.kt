@@ -1,6 +1,7 @@
 package com.everyone.movemove_android.ui.profile
 
 import android.content.Intent
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import com.everyone.movemove_android.R
 import androidx.compose.foundation.background
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -150,7 +152,7 @@ fun ProfileScreen(
                                             )
                                         )
                                     },
-                                    model = state.videosUploaded.videos!![it].video!!.thumbnailImageUrl!!,
+                                    model = state.videosUploaded.videos!![it].video?.thumbnailImageUrl,
                                 )
                                 Spacer(modifier = Modifier.height(0.5.dp))
                             }
@@ -240,14 +242,37 @@ fun MoveMoveProfile(profile: Profile) {
 @Composable
 fun MoveMoveGridImageItem(
     modifier: Modifier = Modifier,
-    model: String
+    model: String?
 ) {
-    AsyncImage(
+    model?.let {
+        AsyncImage(
+            modifier = modifier
+                .aspectRatio(1f)
+                .padding(1.dp),
+            model = model,
+            contentDescription = null,
+            contentScale = ContentScale.Crop
+        )
+    } ?: run {
+        EmptyVideoGridItem(modifier = modifier, stringResId = R.string.invald_video_title)
+    }
+}
+
+@Composable
+fun EmptyVideoGridItem(
+    modifier : Modifier,
+    @StringRes stringResId: Int
+) {
+    Box(
         modifier = modifier
             .aspectRatio(1f)
-            .padding(1.dp),
-        model = model,
-        contentDescription = null,
-        contentScale = ContentScale.Crop
-    )
+            .padding(1.dp)
+            .background(color = Color.Black),
+    ) {
+        StyledText(
+            modifier = Modifier.align(Alignment.Center),
+            text = stringResource(stringResId),
+            style = MaterialTheme.typography.labelSmall
+        )
+    }
 }

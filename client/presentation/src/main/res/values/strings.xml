@@ -82,5 +82,6 @@
     <!--    error_screen-->
     <string name="error_screen_title">문제가 발생했습니다</string>
     <string name="error_screen_sub_title">다시 시도</string>
+    <string name="invald_video_title">잘못된 영상입니다</string>
 
 </resources>
