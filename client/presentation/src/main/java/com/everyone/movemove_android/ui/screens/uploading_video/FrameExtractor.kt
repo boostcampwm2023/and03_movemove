@@ -3,10 +3,10 @@ package com.everyone.movemove_android.ui.screens.uploading_video
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.ImageFormat
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.YuvImage
@@ -14,6 +14,7 @@ import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.media.MediaFormat.KEY_HEIGHT
+import android.media.MediaFormat.KEY_ROTATION
 import android.media.MediaFormat.KEY_WIDTH
 import io.ktor.util.moveToByteArray
 import java.io.ByteArrayOutputStream
@@ -59,14 +60,14 @@ class FrameExtractor(private val path: String) {
         }
 
         with(decoder) {
-
-            val width = decoder.outputFormat.getInteger(KEY_WIDTH)
-            val height = decoder.outputFormat.getInteger(KEY_HEIGHT)
+            val width = outputFormat.getInteger(KEY_WIDTH)
+            val height = outputFormat.getInteger(KEY_HEIGHT)
+            val rotation = outputFormat.getInteger(KEY_ROTATION)
             val bufferInfo = MediaCodec.BufferInfo()
             val unit = duration * 1000L / THUMBNAIL_COUNT
 
             for (i in 1..THUMBNAIL_COUNT) {
-                mediaExtractor.seekTo(unit * i, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
+                mediaExtractor.seekTo(unit * i, MediaExtractor.SEEK_TO_CLOSEST_SYNC)
 
                 val inputBufferIndex = dequeueInputBuffer(INPUT_BUFFER_TIMEOUT)
                 if (inputBufferIndex >= 0) {
@@ -88,12 +89,17 @@ class FrameExtractor(private val path: String) {
                         outputBuffer?.let { byteBuffer ->
                             ByteArrayOutputStream().use { stream ->
                                 val yuvImage = YuvImage(byteBuffer.moveToByteArray(), ImageFormat.NV21, width, height, null)
-                                yuvImage.compressToJpeg(Rect(0, 0, width, height), 100, stream)
+                                yuvImage.compressToJpeg(
+                                    Rect(0, 0, width, height),
+                                    100,
+                                    stream
+                                )
 
                                 onGetBitmap(
                                     createScaledBitmap(
                                         width = width,
                                         height = height,
+                                        rotation = rotation,
                                         stream = stream,
                                     )
                                 )
@@ -104,25 +110,39 @@ class FrameExtractor(private val path: String) {
                     }
                 }
             }
+
+            stop()
+            release()
         }
 
-        decoder.stop()
-        decoder.release()
         mediaExtractor.release()
     }
 
     private fun createScaledBitmap(
         width: Int,
         height: Int,
+        rotation: Int,
         stream: ByteArrayOutputStream,
     ): Bitmap {
-        val originalBitmap = BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size())
-        val filteredBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        var originalBitmap = BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size())
+        if (rotation != 0) {
+            originalBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, width, height, Matrix().apply { postRotate(rotation.toFloat()) }, true)
+        }
+        val filteredBitmap = Bitmap.createBitmap(
+            if (rotation == 0) width else height,
+            if (rotation == 0) height else width,
+            Bitmap.Config.ARGB_8888
+        )
 
         val canvas = Canvas(filteredBitmap)
         canvas.drawBitmap(originalBitmap, 0f, 0f, filteredPaint)
 
-        return Bitmap.createScaledBitmap(filteredBitmap, width / 10, height / 10, false)
+        return Bitmap.createScaledBitmap(
+            filteredBitmap,
+            filteredBitmap.width / 4,
+            filteredBitmap.height / 4,
+            false
+        )
     }
 
     companion object {

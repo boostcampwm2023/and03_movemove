@@ -160,7 +160,6 @@ class StartingViewModel @Inject constructor(
 
     private suspend fun getUserInfo(): Pair<String, String>? {
         return getStoredUUIDUseCase().zip(getStoredSignedPlatformUseCase()) { uuid, signedPlatform ->
-            println("$uuid $signedPlatform")
             if (uuid != null && signedPlatform != null) Pair(uuid, signedPlatform) else null
         }.first()
     }
