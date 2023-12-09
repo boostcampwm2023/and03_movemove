@@ -31,7 +31,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
     private val getStoredUUIDUseCase: GetStoredUUIDUseCase,
@@ -50,6 +50,10 @@ class ProfileViewModel @Inject constructor(
     }
 
     init {
+        getSavedState()
+    }
+
+    private fun getSavedState() {
         val uuid = savedStateHandle.get<String?>(ProfileActivity.EXTRA_KEY_UUID)
         uuid?.let {
             getProfile(uuid = it)
