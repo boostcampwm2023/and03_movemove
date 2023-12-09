@@ -16,11 +16,14 @@ class ProfileActivity : BaseActivity() {
     override fun InitComposeUi() {
         ProfileScreen(
             viewModel = viewModel,
-            navigateToActivity = ::launchActivity
+            navigateToActivity = ::launchActivity,
+            navigateUp = ::navigateUp
         )
     }
 
     private fun launchActivity(intent: Intent) = startActivity(intent)
+
+    private fun navigateUp() = finish()
 
     companion object {
         const val EXTRA_KEY_UUID = "EXTRA_KEY_UUID"
