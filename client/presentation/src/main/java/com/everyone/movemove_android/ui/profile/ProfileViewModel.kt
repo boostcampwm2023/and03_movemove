@@ -49,6 +49,7 @@ class ProfileViewModel @Inject constructor(
         is OnClickedMenu -> onClickedMenu()
         is OnClickedVideo -> onClickedVideo(event.videosList, event.page)
         is Refresh -> getSavedState()
+        is Event.OnClickedBack -> onClickedBack()
     }
 
     init {
@@ -159,6 +160,12 @@ class ProfileViewModel @Inject constructor(
     private fun onClickedVideo(videosList: VideosList, page: Int) {
         viewModelScope.launch {
             _effect.emit(NavigateToWatchingVideo(videosList, page))
+        }
+    }
+
+    private fun onClickedBack() {
+        viewModelScope.launch {
+            _effect.emit(NavigateUp)
         }
     }
 

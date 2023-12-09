@@ -48,6 +48,7 @@ import com.everyone.movemove_android.ui.profile.ProfileContract.*
 import com.everyone.movemove_android.ui.profile.ProfileContract.Effect.*
 import com.everyone.movemove_android.ui.profile.ProfileContract.Event.*
 import com.everyone.movemove_android.ui.profile.ProfileContract.Event.OnClickedVideo
+import com.everyone.movemove_android.ui.rating_video.RatingVideoContract
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
@@ -57,7 +58,8 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun ProfileScreen(
     navigateToActivity: (intent: Intent) -> Unit,
-    viewModel: ProfileViewModel
+    viewModel: ProfileViewModel,
+    navigateUp: () -> Unit
 ) {
     val context = LocalContext.current
 
@@ -79,6 +81,8 @@ fun ProfileScreen(
                         )
                     )
                 }
+
+                is NavigateUp -> navigateUp()
             }
         }
     }
@@ -174,6 +178,17 @@ fun MoveMoveTopBar(
             .fillMaxWidth()
             .padding(14.dp)
     ) {
+
+        Icon(
+            modifier = Modifier
+                .size(24.dp)
+                .align(Alignment.CenterStart)
+                .clickableWithoutRipple { event(OnClickedBack) },
+            painter = painterResource(id = R.drawable.ic_left_arrow),
+            contentDescription = null,
+            tint = Color.White
+        )
+
         StyledText(
             modifier = Modifier.align(Alignment.Center),
             text = stringResource(R.string.top_bar_profile_title),
@@ -260,7 +275,7 @@ fun MoveMoveGridImageItem(
 
 @Composable
 fun EmptyVideoGridItem(
-    modifier : Modifier,
+    modifier: Modifier,
     @StringRes stringResId: Int
 ) {
     Box(
