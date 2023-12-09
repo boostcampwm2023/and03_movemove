@@ -80,9 +80,7 @@ class ProfileViewModel @Inject constructor(
                     getUsersVideosUploaded(uuid = uuid)
                 } ?: run {
                     _state.update {
-                        it.copy(
-                            isError = true
-                        )
+                        it.copy(isError = true)
                     }
                 }
             }.launchIn(viewModelScope + ioDispatcher)
