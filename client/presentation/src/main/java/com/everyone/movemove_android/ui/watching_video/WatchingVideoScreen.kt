@@ -372,10 +372,12 @@ fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
                 value = sliderPosition,
                 onValueChange = {
                     sliderPosition = it
+                },
+                onValueChangeFinished = {
                     event(
                         OnClickedVideoRating(
                             id = video.id.toString(),
-                            rating = (it * 5).toInt().toString(),
+                            rating = (sliderPosition * 5).toInt().toString(),
                             reason = "테스트" // TODO 임시,,,
                         )
                     )
