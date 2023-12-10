@@ -209,7 +209,7 @@ export class UserService {
           _id: action.videoId,
         }).populate('uploaderId', '-_id -actions');
         const video = videoData
-          ? await this.videoService.getVideoInfo(videoData.toObject())
+          ? await this.videoService.getVideoInfo(videoData.toObject(), uuid)
           : { video: null, uploader: null };
         return { ...video, ratedAt: action.updatedAt };
       }),
