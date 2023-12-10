@@ -31,7 +31,8 @@ export class AuthService {
   }
 
   async create(signupRequestDto: SignupRequestDto): Promise<SignupResponseDto> {
-    const { uuid, profileImageExtension } = signupRequestDto;
+    const { uuid, profileImageExtension, accessToken } = signupRequestDto;
+    console.log(accessToken);
     await this.checkUserConflict(uuid);
     if (
       profileImageExtension &&
@@ -94,7 +95,8 @@ export class AuthService {
   }
 
   async signin(signinRequestDto: SigninRequestDto): Promise<SigninResponseDto> {
-    const { uuid } = signinRequestDto;
+    const { uuid, accessToken } = signinRequestDto;
+    console.log(accessToken);
     const user = await this.UserModel.findOne({ uuid });
     if (!user) {
       throw new LoginFailException();

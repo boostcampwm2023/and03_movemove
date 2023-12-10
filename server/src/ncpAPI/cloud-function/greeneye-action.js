@@ -81,9 +81,5 @@ const greenEye = (requestId, imageName, imageData, greenEyeSecret) => {
 };
 
 const checkHarmful = (results) => {
-  let isHarmful = false;
-  results.forEach((result) => {
-    if (result.normal.confidence < 0.5) isHarmful = true;
-  });
-  return isHarmful;
+  return results.some((result) => result.normal.confidence < 0.5);
 };
