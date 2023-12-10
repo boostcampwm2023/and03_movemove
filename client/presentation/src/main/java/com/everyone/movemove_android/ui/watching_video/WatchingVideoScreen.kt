@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -108,7 +109,13 @@ fun WatchingVideoScreen(
             LoadingDialog()
         } else {
             state.videos?.let { videosItem ->
-                val videoUri = videosItem.map { Uri.parse(it.video?.manifest) }
+                val videoUri = videosItem.map {
+                    it.video?.let { video ->
+                        Uri.parse(video.manifest)
+                    } ?: run {
+                        null
+                    }
+                }
                 val pagerState =
                     rememberPagerState(initialPage = state.page, pageCount = { videoUri.size })
 
@@ -135,11 +142,17 @@ fun WatchingVideoScreen(
                         }
 
                         Box(modifier = Modifier.fillMaxSize()) {
-                            VideoPlayer(
-                                exoPlayer = exoPlayer,
-                                uri = videoUri[page],
-                                isScroll = !pagerState.isScrollInProgress
-                            )
+                            videoUri[page]?.let { uri ->
+                                VideoPlayer(
+                                    exoPlayer = exoPlayer,
+                                    uri = uri,
+                                    isScroll = !pagerState.isScrollInProgress
+                                )
+                            } ?: run {
+                                EmptyVideoItem(stringResId = R.string.invald_video_title)
+
+                            }
+
                             Column(modifier = Modifier.align(Alignment.BottomStart)) {
                                 videosItem[page].video?.let { video ->
                                     MoveMoveScoreboard(
@@ -465,5 +478,20 @@ fun MoveMoveFooterContents(
                 style = MaterialTheme.typography.bodySmall
             )
         }
+    }
+}
+
+@Composable
+fun EmptyVideoItem(@StringRes stringResId: Int) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color.Black),
+    ) {
+        StyledText(
+            modifier = Modifier.align(Alignment.Center),
+            text = stringResource(stringResId),
+            style = MaterialTheme.typography.labelLarge
+        )
     }
 }

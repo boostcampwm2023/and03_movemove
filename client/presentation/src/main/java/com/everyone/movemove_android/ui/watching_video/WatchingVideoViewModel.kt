@@ -1,5 +1,6 @@
 package com.everyone.movemove_android.ui.watching_video
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -79,7 +80,7 @@ class WatchingVideoViewModel @Inject constructor(
         val page = savedStateHandle.get<Int>(WatchingVideoActivity.EXTRA_KEY_VIDEOS_PAGE)
 
         videosList?.let {
-            setVideos(videos = it.videos!!, page = page)
+            setVideos(videos = it.videos, page = page)
             changedVideoTab(videoTab = VideoTab.CATEGORY_TAB)
         } ?: run {
             getRandomVideos()
