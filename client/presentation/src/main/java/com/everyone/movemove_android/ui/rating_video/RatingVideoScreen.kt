@@ -91,37 +91,10 @@ fun RatingVideoScreen(
                 if (state.isError) {
                     MoveMoveErrorScreen(onClick = { Refresh })
                 } else {
-                    state.videosRated?.let { videosRated ->
-                        videosRated.videos?.let { videos ->
-                            LazyVerticalGrid(
-                                modifier = Modifier.fillMaxSize(),
-                                columns = GridCells.Fixed(2),
-                                horizontalArrangement = Arrangement.Center,
-                                contentPadding = PaddingValues(8.dp),
-                            ) {
-
-                                items(videos.size) {
-                                    MoveMoveGridImageItem(
-                                        modifier = Modifier.clickableWithoutRipple {
-                                            event(
-                                                OnClickedVideo(
-                                                    videosLit = VideosList(
-                                                        videos.map { videosRatedItem ->
-                                                            Videos(
-                                                                videosRatedItem.video,
-                                                                videosRatedItem.uploader
-                                                            )
-                                                        }),
-                                                    page = it
-                                                )
-                                            )
-                                        },
-                                        model = videos[it].video?.thumbnailImageUrl,
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    MoveMoveVideoGrid(
+                        state = state,
+                        event = event
+                    )
                 }
             }
         }
@@ -151,6 +124,43 @@ fun MoveMoveTopBar(event: (Event) -> Unit) {
             contentDescription = null,
             tint = Color.White
         )
+    }
+}
+
+@Composable
+fun MoveMoveVideoGrid(
+    state: State,
+    event: (Event) -> Unit,
+) {
+    state.videosRated?.let { videosRated ->
+        videosRated.videos?.let { videos ->
+            LazyVerticalGrid(
+                modifier = Modifier.fillMaxSize(),
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.Center,
+                contentPadding = PaddingValues(8.dp),
+            ) {
+                items(videos.size) {
+                    MoveMoveGridImageItem(
+                        modifier = Modifier.clickableWithoutRipple {
+                            event(
+                                OnClickedVideo(
+                                    videosLit = VideosList(
+                                        videos.map { videosRatedItem ->
+                                            Videos(
+                                                videosRatedItem.video,
+                                                videosRatedItem.uploader
+                                            )
+                                        }),
+                                    page = it
+                                )
+                            )
+                        },
+                        model = videos[it].video?.thumbnailImageUrl,
+                    )
+                }
+            }
+        }
     }
 }
 
