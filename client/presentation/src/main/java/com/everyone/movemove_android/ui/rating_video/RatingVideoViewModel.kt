@@ -43,6 +43,7 @@ class RatingVideoViewModel @Inject constructor(
     override fun event(event: Event) = when (event) {
         is Event.OnClickedBack -> onClickedBack()
         is Event.OnClickedVideo -> onClickedVideo(event.videosLit, event.page)
+        is Event.Refresh -> getStoredUUID()
     }
 
     init {
@@ -55,6 +56,10 @@ class RatingVideoViewModel @Inject constructor(
             getStoredUUIDUseCase().onEach { result ->
                 result?.let { uuid ->
                     getUsersVideosUploaded(uuid = uuid)
+                } ?: run {
+                    _state.update {
+                        it.copy(isError = true)
+                    }
                 }
             }.launchIn(viewModelScope + ioDispatcher)
             loading(isLoading = false)
@@ -75,13 +80,19 @@ class RatingVideoViewModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 isLoading = false,
+                                isError = false,
                                 videosRated = result.data
                             )
                         }
                     }
 
                     is DataState.Failure -> {
-                        loading(isLoading = false)
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                isError = true,
+                            )
+                        }
                     }
                 }
             }.launchIn(viewModelScope + ioDispatcher)

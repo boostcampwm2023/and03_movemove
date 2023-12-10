@@ -37,6 +37,7 @@ import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
+import com.everyone.movemove_android.ui.MoveMoveErrorScreen
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.*
 import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Event.*
@@ -87,33 +88,37 @@ fun RatingVideoScreen(
                         .fillMaxWidth()
                         .background(color = BorderInDark)
                 )
-                state.videosRated?.let { videosRated ->
-                    videosRated.videos?.let { videos ->
-                        LazyVerticalGrid(
-                            modifier = Modifier.fillMaxSize(),
-                            columns = GridCells.Fixed(2),
-                            horizontalArrangement = Arrangement.Center,
-                            contentPadding = PaddingValues(8.dp),
-                        ) {
+                if (state.isError) {
+                    MoveMoveErrorScreen(onClick = { Refresh })
+                } else {
+                    state.videosRated?.let { videosRated ->
+                        videosRated.videos?.let { videos ->
+                            LazyVerticalGrid(
+                                modifier = Modifier.fillMaxSize(),
+                                columns = GridCells.Fixed(2),
+                                horizontalArrangement = Arrangement.Center,
+                                contentPadding = PaddingValues(8.dp),
+                            ) {
 
-                            items(videos.size) {
-                                MoveMoveGridImageItem(
-                                    modifier = Modifier.clickableWithoutRipple {
-                                        event(
-                                            OnClickedVideo(
-                                                videosLit = VideosList(
-                                                    videos.map { videosRatedItem ->
-                                                        Videos(
-                                                            videosRatedItem.video,
-                                                            videosRatedItem.uploader
-                                                        )
-                                                    }),
-                                                page = it
+                                items(videos.size) {
+                                    MoveMoveGridImageItem(
+                                        modifier = Modifier.clickableWithoutRipple {
+                                            event(
+                                                OnClickedVideo(
+                                                    videosLit = VideosList(
+                                                        videos.map { videosRatedItem ->
+                                                            Videos(
+                                                                videosRatedItem.video,
+                                                                videosRatedItem.uploader
+                                                            )
+                                                        }),
+                                                    page = it
+                                                )
                                             )
-                                        )
-                                    },
-                                    model = videos[it].video?.thumbnailImageUrl,
-                                )
+                                        },
+                                        model = videos[it].video?.thumbnailImageUrl,
+                                    )
+                                }
                             }
                         }
                     }
