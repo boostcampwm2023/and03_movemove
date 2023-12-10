@@ -116,7 +116,7 @@ export class UserService {
       .sort({ _id: -1 })
       .limit(limit);
 
-    const videos = await this.getVideoInfos(videoData, uploader);
+    const videos = await this.getVideoInfos(videoData, uploader, uuid);
     return { videos };
   }
 
@@ -140,7 +140,7 @@ export class UserService {
     return { uploader, uploaderId };
   }
 
-  async getVideoInfos(videoData: Array<any>, uploader: object) {
+  async getVideoInfos(videoData: Array<any>, uploader: object, uuid: string) {
     const videos = await Promise.all(
       videoData.map(async (video) => {
         const { thumbnailExtension, raterCount, totalRating, ...videoInfo } =
@@ -148,6 +148,10 @@ export class UserService {
         const rating = raterCount
           ? (totalRating / raterCount).toFixed(1)
           : null;
+        const userRating = await this.videoService.getUserRating(
+          uuid,
+          videoInfo._id,
+        );
         const manifest = `${process.env.MANIFEST_URL_PREFIX}/${videoInfo._id}_master.m3u8`;
         const thumbnailImageUrl = await createPresignedUrl(
           process.env.THUMBNAIL_BUCKET,
@@ -155,7 +159,13 @@ export class UserService {
           'GET',
         );
         return {
-          video: { ...videoInfo, manifest, rating, thumbnailImageUrl },
+          video: {
+            ...videoInfo,
+            manifest,
+            rating,
+            userRating,
+            thumbnailImageUrl,
+          },
           uploader,
         };
       }),
