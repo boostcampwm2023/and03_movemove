@@ -84,12 +84,7 @@ export class VideoController {
     @RequestUser() user: User,
     @Param('videoId') videoId: string,
   ) {
-    return this.videoService.uploadVideo(
-      videoDto,
-      user.id,
-      videoId,
-      user.token,
-    );
+    return this.videoService.uploadVideo(videoDto, user.id, videoId);
   }
 
   /**
@@ -128,7 +123,7 @@ export class VideoController {
   @ApiFailResponse('업로더만이 삭제할 수 있음', [NotYourVideoException])
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
   deleteVideo(@Param('id') videoId: string, @RequestUser() user: User) {
-    return this.videoService.deleteVideo(videoId, user.id);
+    return this.videoService.deleteVideo(videoId, user.id, user.token);
   }
 
   /**

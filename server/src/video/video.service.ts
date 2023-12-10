@@ -138,12 +138,7 @@ export class VideoService {
     };
   }
 
-  async uploadVideo(
-    videoDto: VideoDto,
-    uuid: string,
-    videoId: string,
-    accessToken: string,
-  ) {
+  async uploadVideo(videoDto: VideoDto, uuid: string, videoId: string) {
     if (!Types.ObjectId.isValid(videoId)) throw new BadRequestFormatException();
     const checkDuplicate = await this.VideoModel.findOne({ _id: videoId });
     if (checkDuplicate) throw new VideoConflictException();
@@ -180,12 +175,7 @@ export class VideoService {
     });
     await Promise.all([
       newVideo.save(),
-      this.requestGreenEyeAPI(
-        process.env.INPUT_BUCKET,
-        videoName,
-        videoId,
-        accessToken,
-      ),
+      this.requestGreenEyeAPI(process.env.INPUT_BUCKET, videoName, videoId),
     ]);
     return { videoId, ...videoDto };
   }
@@ -216,14 +206,13 @@ export class VideoService {
     inputBucket: string,
     videoName: string,
     videoId: string,
-    accessToken: string,
   ) {
     const videoUrl = await createPresignedUrl(inputBucket, videoName, 'GET');
     const data = {
       videoUrl,
       object_name: videoId,
       greenEyeSecret: process.env.GREENEYE_SECRET,
-      accessToken,
+      accessToken: process.env.ADMIN_ACCESS_TOKEN,
     };
 
     try {
@@ -244,7 +233,7 @@ export class VideoService {
     );
   }
 
-  async deleteVideo(videoId: string, uuid: string) {
+  async deleteVideo(videoId: string, uuid: string, accessToken: string) {
     const video = await this.VideoModel.findOne({ _id: videoId }).populate(
       'uploaderId',
       '-_id -actions',
@@ -252,7 +241,10 @@ export class VideoService {
     if (!video) {
       throw new VideoNotFoundException();
     }
-    if (video.uploaderId.uuid !== uuid) {
+    if (
+      accessToken !== process.env.ADMIN_ACCESS_TOKEN &&
+      video.uploaderId.uuid !== uuid
+    ) {
       throw new NotYourVideoException();
     }
     await Promise.all([
