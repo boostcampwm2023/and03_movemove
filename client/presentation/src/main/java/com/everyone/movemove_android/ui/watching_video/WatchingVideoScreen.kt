@@ -339,8 +339,7 @@ fun MoveMoveCategory(
 @Composable
 fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
 
-    val rating = video.rating?.toFloat() ?: run { 0.4f }
-    var sliderPosition by remember { mutableFloatStateOf(rating) }
+    var sliderPosition by remember { mutableFloatStateOf(0f) }
 
     Box(
         modifier = Modifier
