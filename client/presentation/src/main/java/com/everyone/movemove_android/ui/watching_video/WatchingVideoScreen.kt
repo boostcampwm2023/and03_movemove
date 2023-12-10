@@ -204,7 +204,7 @@ fun WatchingVideoScreen(
                     if (state.isClickedCategory) {
                         CategoryScreen()
                     } else {
-                        if (state.videosList == null) {
+                        if (state.videoTab == VideoTab.BOTTOM_TAB) {
                             MoveMoveCategory(
                                 category = state.selectedCategory.displayName,
                                 modifier = Modifier
