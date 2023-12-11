@@ -346,16 +346,18 @@ fun MoveMoveVideo(
                     contentScale = ContentScale.Crop,
                 )
 
-                StyledText(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(8.dp),
-                    text = video.title!!,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.White,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 2
-                )
+                video.title?.let { title ->
+                    StyledText(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(8.dp),
+                        text = title,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 2
+                    )
+                }
             }
         } ?: run {
             EmptyVideoContent(stringResId = R.string.empty_video_title)
