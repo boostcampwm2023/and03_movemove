@@ -98,14 +98,15 @@ export class VideoService {
     const SEED_MAX = 1_000_000;
     const viewSeed = seed ?? Math.floor(Math.random() * SEED_MAX);
     const videoInfos = await Promise.all(
-      videos.map((video) => this.getVideoInfo(video)),
+      videos.map((video) => this.getVideoInfo(video, userId)),
     );
     return { videos: videoInfos, seed: viewSeed };
   }
 
-  async getVideoInfo(video: any): Promise<VideoInfoDto> {
+  async getVideoInfo(video: any, userId: string): Promise<VideoInfoDto> {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
     const rating = raterCount ? (totalRating / raterCount).toFixed(1) : null;
+    const userRating = await this.getUserRating(userId, videoInfo._id);
 
     const manifest = `${process.env.MANIFEST_URL_PREFIX}/${videoInfo._id}_master.m3u8`;
 
@@ -132,9 +133,24 @@ export class VideoService {
     };
 
     return {
-      video: { ...videoInfo, manifest, rating, thumbnailImageUrl },
+      video: { ...videoInfo, manifest, rating, userRating, thumbnailImageUrl },
       uploader,
     };
+  }
+
+  async getUserRating(uuid: string, videoId: string) {
+    const userData = await this.UserModel.findOne(
+      {
+        uuid,
+        'actions.videoId': videoId,
+      },
+      {
+        _id: 0,
+        'actions.$': 1,
+      },
+    );
+    const userRating = userData ? userData.actions.pop().rating : null;
+    return userRating;
   }
 
   async uploadVideo(videoDto: VideoDto, uuid: string, videoId: string) {
@@ -191,7 +207,7 @@ export class VideoService {
       accessKey,
       secretKey,
     };
-    console.log(data);
+
     try {
       await axios.post(process.env.ENCODING_API_URL, data);
     } catch (error) {
@@ -241,7 +257,7 @@ export class VideoService {
     };
   }
 
-  async getTrendVideo(limit: number) {
+  async getTrendVideo(limit: number, userId: string) {
     const fields = Object.keys(this.VideoModel.schema.paths).reduce(
       (acc, field) => {
         acc[field] = 1;
@@ -273,13 +289,13 @@ export class VideoService {
     });
 
     const videos = await Promise.all(
-      trendVideos.map((video) => this.getVideoInfo(video)),
+      trendVideos.map((video) => this.getVideoInfo(video, userId)),
     );
 
     return { videos };
   }
 
-  async getTopRatedVideo(category: string) {
+  async getTopRatedVideo(category: string, userId: string) {
     const videoTotal = await this.VideoModel.aggregate([
       { $match: { category } },
       {
@@ -328,12 +344,12 @@ export class VideoService {
     });
 
     const videos = await Promise.all(
-      top10Videos.map((video) => this.getVideoInfo(video)),
+      top10Videos.map((video) => this.getVideoInfo(video, userId)),
     );
     return { videos };
   }
 
-  async getVideo(videoId: string) {
+  async getVideo(videoId: string, userId: string) {
     const video = await this.VideoModel.findOne(
       { _id: videoId },
       {},
@@ -342,6 +358,6 @@ export class VideoService {
     if (!video) {
       throw new VideoNotFoundException();
     }
-    return this.getVideoInfo(video);
+    return this.getVideoInfo(video, userId);
   }
 }
