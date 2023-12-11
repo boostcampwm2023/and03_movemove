@@ -51,7 +51,6 @@ export class AuthService {
 
     const newUser = new this.UserModel({
       ...signupRequestDto,
-      profileImageExtension: profileImageExtension ?? null,
     });
     newUser.save();
     return this.getLoginInfo(newUser).then(
