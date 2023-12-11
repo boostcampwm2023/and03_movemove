@@ -113,9 +113,7 @@ export class AuthService {
           payload.aud === process.env.KAKAO_APP_KEY &&
           payload.exp > Date.now() / 1000,
       );
-      const jwks = await axios
-        .get(process.env.KAKAO_KEY_URL)
-        .then((response) => response.data.keys);
+      const jwks = (await axios.get(process.env.KAKAO_KEY_URL)).data.keys;
 
       const key = jwks.find((jwk) => jwk.kid === header.kid);
       assert(key);
