@@ -11,6 +11,8 @@ import { checkUpload } from 'src/ncpAPI/listObjects';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
 import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { OAuthFailedException } from 'src/exceptions/oauth-failed.exception';
+import assert from 'assert';
+import axios from 'axios';
 import { PlatformEnum, SignupRequestDto } from './dto/signup-request.dto';
 import { JwtDto } from './dto/jwt.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
@@ -96,30 +98,33 @@ export class AuthService {
     return { jwt, profile };
   }
 
-  verifyKakaoIdToken(uuid: string, idToken: string): Promise<{ id: string }> {
-    const tokens = idToken.split('.');
-    if (tokens.length !== 3) {
-      throw new OAuthFailedException();
-    }
-    let header;
-    let payload;
-    let signature;
+  async verifyKakaoIdToken(idToken: string) {
     try {
-      [header, payload, signature] = tokens.map((token) =>
+      const tokens = idToken.split('.');
+      assert(tokens.length === 3);
+      const [headerString, payloadString, signature] = tokens.map((token) =>
         Buffer.from(token, 'base64').toString('utf-8'),
       );
-      header = JSON.parse(header);
-      payload = JSON.parse(payload);
-      if (
+      const header = JSON.parse(headerString);
+      const payload = JSON.parse(payloadString);
+
+      assert(
         payload.iss !== process.env.KAKAO_ISS ||
-        payload.aud !== process.env.KAKAO_APP_KEY ||
-        payload.exp < Date.now() / 1000 ||
-        this.verifyUUID(uuid, payload.sub, PlatformEnum.KAKAO)
-      ) {
-        throw new OAuthFailedException();
-      }
+          payload.aud !== process.env.KAKAO_APP_KEY ||
+          payload.exp < Date.now() / 1000,
+      );
+
+      const keys = await axios
+        .get(process.env.KAKAO_KEY_URL)
+        .then((response) => response.data.keys);
+
+      assert(keys.find((key) => key.kid === header.kid));
+
+      const id = Number(payload.sub);
+
+      return this.formatAsUUID(id, id);
     } catch (e) {
-      throw new OAuthFailedException();
+      throw new InvalidKakaoIdTokenException();
     }
   }
 
@@ -131,21 +136,14 @@ export class AuthService {
     )}-${least.substring(0, 4)}-${least.substring(4)}`;
   }
 
-  verifyUUID(uuid: string, sub: string, platform: PlatformEnum) {
-    if (platform === PlatformEnum.KAKAO) {
-      const num = Number(sub);
-      return uuid === this.formatAsUUID(num, num);
+  async verifyUuid(platform: PlatformEnum, idToken: string, uuid: string) {
+    switch (platform) {
+      case PlatformEnum.KAKAO:
+        if (uuid !== (await this.verifyKakaoIdToken(idToken)))
+          throw new InconsistentKakaoUuidException();
+        break;
+      default:
     }
-    if (platform === PlatformEnum.GOOGLE) {
-      return (
-        uuid ===
-        this.formatAsUUID(
-          Number(sub.substring(0, 10)),
-          Number(sub.substring(10)),
-        )
-      );
-    }
-    return false;
   }
 
   async signin(signinRequestDto: SigninRequestDto): Promise<SigninResponseDto> {
