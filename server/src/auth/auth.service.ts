@@ -15,6 +15,10 @@ import { InvalidKakaoIdTokenException } from 'src/exceptions/invalid-kakao-idtok
 import { InconsistentKakaoUuidException } from 'src/exceptions/inconsistent-kakao-uuid.exception';
 import { createPublicKey } from 'crypto';
 import { PlatformEnum, SignupRequestDto } from './dto/signup-request.dto';
+import { OAuth2Client } from 'google-auth-library';
+import { InvalidGoogldIdTokenException } from 'src/exceptions/invalid-google-idToken.exception';
+import { InconsistentGoogldUuidException } from 'src/exceptions/inconsistent-google-uuid.exception';
+import { SignupRequestDto } from './dto/signup-request.dto';
 import { JwtDto } from './dto/jwt.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { SigninResponseDto } from './dto/signin-response.dto';
@@ -162,5 +166,43 @@ export class AuthService {
     return this.getLoginInfo(user).then(
       (loginInfo) => new SigninResponseDto(loginInfo),
     );
+  }
+
+  async verifyUuid(platform: string, idToken: string, uuid: string) {
+    switch (platform) {
+      case 'GOOGLE':
+        if (uuid !== (await this.verifyGoogleIdToken(idToken)))
+          throw new InconsistentGoogldUuidException();
+        break;
+      default:
+    }
+  }
+
+  async verifyGoogleIdToken(idToken: string) {
+    const client = new OAuth2Client();
+
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      const userid = payload.sub;
+      const uuid = this.formatAsUUID(
+        Number(userid.substring(0, 10)),
+        Number(userid.substring(10)),
+      );
+      return uuid;
+    } catch (err) {
+      throw new InvalidGoogldIdTokenException();
+    }
+  }
+
+  formatAsUUID(mostSigBits, leastSigBits) {
+    const most = mostSigBits.toString('16').padStart(16, '0');
+    const least = leastSigBits.toString('16').padStart(16, '0');
+    return `${most.substring(0, 8)}-${most.substring(8, 12)}-${most.substring(
+      12,
+    )}-${least.substring(0, 4)}-${least.substring(4)}`;
   }
 }

@@ -3,7 +3,6 @@ import { ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
-import { OAuthFailedException } from 'src/exceptions/oauth-failed.exception';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
 import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
@@ -12,6 +11,8 @@ import { PresignedUrlService } from 'src/presigned-url/presigned-url.service';
 import { SignupProfilePresignedUrlRequestDto } from 'src/presigned-url/dto/signup-profile-presigned-url-request.dto';
 import { InvalidKakaoIdTokenException } from 'src/exceptions/invalid-kakao-idtoken.exception';
 import { InconsistentKakaoUuidException } from 'src/exceptions/inconsistent-kakao-uuid.exception';
+import { InvalidGoogldIdTokenException } from 'src/exceptions/invalid-google-idToken.exception';
+import { InconsistentGoogldUuidException } from 'src/exceptions/inconsistent-google-uuid.exception';
 import { AuthService } from './auth.service';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
@@ -36,6 +37,8 @@ export class AuthController {
   @ApiFailResponse('인증 실패', [
     InvalidKakaoIdTokenException,
     InconsistentKakaoUuidException,
+    InvalidGoogldIdTokenException,
+    InconsistentGoogldUuidException,
   ])
   @ApiFailResponse('업로드 필요', [ProfileUploadRequiredException])
   @ApiFailResponse('회원가입 실패', [UserConflictException])
@@ -54,6 +57,8 @@ export class AuthController {
     LoginFailException,
     InvalidKakaoIdTokenException,
     InconsistentKakaoUuidException,
+    InvalidGoogldIdTokenException,
+    InconsistentGoogldUuidException,
   ])
   signin(
     @Body() signinRequestDto: SigninRequestDto,

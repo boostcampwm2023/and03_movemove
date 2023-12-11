@@ -8,9 +8,11 @@ interface ProfileContract :
     BaseContract<ProfileContract.State, ProfileContract.Event, ProfileContract.Effect> {
     data class State(
         val isLoading: Boolean = false,
+        val isError: Boolean = false,
         val uuid: String? = null,
         val profile: Profile? = null,
-        val videosUploaded: VideosList = VideosList(null)
+        val videosUploaded: VideosList = VideosList(null),
+        val isUser: Boolean = false,
     )
 
     sealed interface Event {
@@ -20,6 +22,8 @@ interface ProfileContract :
             val page: Int
         ) : Event
 
+        data object Refresh : Event
+        data object OnClickedBack : Event
     }
 
     sealed interface Effect {
@@ -28,5 +32,7 @@ interface ProfileContract :
             val videosList: VideosList,
             val page: Int
         ) : Effect
+
+        data object NavigateUp : Effect
     }
 }

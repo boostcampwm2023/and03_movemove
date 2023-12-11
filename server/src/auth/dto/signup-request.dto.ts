@@ -9,7 +9,7 @@ export enum PlatformEnum {
 export class SignupRequestDto extends UserDto {
   /**
    * 소셜 idToken
-   * @example '1/fFAGRNJru1FTz70BzhT3Zg'
+   * @example '1234567890'
    */
   @IsNotEmpty()
   idToken: string;

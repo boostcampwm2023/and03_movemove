@@ -78,4 +78,10 @@
             <!--    sign_up-->
     <string name="error_upload_image_failure">이미지를 업로드할 수 없습니다\n잠시 후 다시 시도해 주세요</string>
     <string name="error_sign_up">가입에 실패 하였습니다\n잠시 후 다시 시도해 주세요</string>
+
+    <!--    error_screen-->
+    <string name="error_screen_title">문제가 발생했습니다</string>
+    <string name="error_screen_sub_title">다시 시도</string>
+    <string name="invald_video_title">잘못된 영상입니다</string>
+
 </resources>
