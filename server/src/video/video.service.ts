@@ -18,6 +18,7 @@ import { VideoUploadRequiredException } from 'src/exceptions/video-upload-requir
 import { ThumbnailUploadRequiredException } from 'src/exceptions/thumbnail-upload-required-exception copy 2';
 import { BadRequestFormatException } from 'src/exceptions/bad-request-format.exception';
 import { EncodingActionFailException } from 'src/exceptions/encoding-action-fail.exception';
+import { GreenEyeActionFailException } from 'src/exceptions/greeneye-action-fail.exception';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -188,7 +189,10 @@ export class VideoService {
       thumbnailExtension,
       videoExtension,
     });
-    await newVideo.save();
+    await Promise.all([
+      newVideo.save(),
+      this.requestGreenEyeAPI(process.env.INPUT_BUCKET, videoName, videoId),
+    ]);
     return { videoId, ...videoDto };
   }
 
@@ -215,6 +219,26 @@ export class VideoService {
     }
   }
 
+  async requestGreenEyeAPI(
+    inputBucket: string,
+    videoName: string,
+    videoId: string,
+  ) {
+    const videoUrl = await createPresignedUrl(inputBucket, videoName, 'GET');
+    const data = {
+      videoUrl,
+      object_name: videoId,
+      greenEyeSecret: process.env.GREENEYE_SECRET,
+      accessToken: process.env.ADMIN_ACCESS_TOKEN,
+    };
+
+    try {
+      await axios.post(process.env.GREENEYE_API_URL, data);
+    } catch (error) {
+      throw new GreenEyeActionFailException();
+    }
+  }
+
   async deleteEncodedVideo(videoId: string) {
     const deleteList = await listObjects(process.env.OUTPUT_BUCKET, {
       prefix: videoId,
@@ -234,7 +258,10 @@ export class VideoService {
     if (!video) {
       throw new VideoNotFoundException();
     }
-    if (video.uploaderId.uuid !== uuid) {
+    if (
+      uuid !== process.env.ADMIN_UUID &&
+      video.uploaderId.uuid !== uuid
+    ) {
       throw new NotYourVideoException();
     }
     await Promise.all([
