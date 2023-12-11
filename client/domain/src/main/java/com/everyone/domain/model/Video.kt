@@ -9,6 +9,7 @@ data class Video(
     val id: String?,
     val viewCount: Int?,
     val rating: String?,
+    val userRating : Int?,
     val category: String?,
     val title: String?,
     val content: String?,
