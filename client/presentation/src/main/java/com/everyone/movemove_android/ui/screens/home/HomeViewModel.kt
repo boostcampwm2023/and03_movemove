@@ -54,6 +54,7 @@ class HomeViewModel @Inject constructor(
         geVideosTopRated(category = Category.CHALLENGE)
         geVideosTopRated(category = Category.OLD_SCHOOL)
         geVideosTopRated(category = Category.NEW_SCHOOL)
+        geVideosTopRated(category = Category.K_POP)
     }
 
     private fun onClickedVideo(videosList: VideosList, page: Int) {
@@ -139,6 +140,15 @@ class HomeViewModel @Inject constructor(
                                     it.copy(
                                         isLoading = false,
                                         videosTopRatedNewSchool = result.data
+                                    )
+                                }
+                            }
+
+                            Category.K_POP -> {
+                                _state.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        videosTopRatedKPOP = result.data
                                     )
                                 }
                             }

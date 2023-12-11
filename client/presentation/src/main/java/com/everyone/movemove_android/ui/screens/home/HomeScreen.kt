@@ -152,6 +152,18 @@ fun HomeScreen(
                 videosList = state.videosTopRatedNewSchool
             )
 
+            Spacer(modifier = Modifier.height(36.dp))
+            StyledColorText(
+                modifier = Modifier.padding(start = 16.dp),
+                style = MaterialTheme.typography.titleLarge,
+                coloredText = stringResource(R.string.k_pop),
+                plainText = stringResource(R.string.top_10_title)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            MoveMoveVideos(
+                event = event,
+                videosList = state.videosTopRatedKPOP
+            )
         }
     }
 }
