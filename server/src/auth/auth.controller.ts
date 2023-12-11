@@ -9,6 +9,8 @@ import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-re
 import { PresignedUrlResponseDto } from 'src/presigned-url/dto/presigned-url-response.dto';
 import { PresignedUrlService } from 'src/presigned-url/presigned-url.service';
 import { SignupProfilePresignedUrlRequestDto } from 'src/presigned-url/dto/signup-profile-presigned-url-request.dto';
+import { InvalidKakaoIdTokenException } from 'src/exceptions/invalid-kakao-idtoken.exception';
+import { InconsistentKakaoUuidException } from 'src/exceptions/inconsistent-kakao-uuid.exception';
 import { InvalidGoogldIdTokenException } from 'src/exceptions/invalid-google-idToken.exception';
 import { InconsistentGoogldUuidException } from 'src/exceptions/inconsistent-google-uuid.exception';
 import { AuthService } from './auth.service';
@@ -32,12 +34,14 @@ export class AuthController {
    */
   @Post('signup')
   @ApiSuccessResponse(201, '회원가입 성공', SignupResponseDto)
-  @ApiFailResponse('업로드 필요', [ProfileUploadRequiredException])
-  @ApiFailResponse('회원가입 실패', [UserConflictException])
   @ApiFailResponse('인증 실패', [
+    InvalidKakaoIdTokenException,
+    InconsistentKakaoUuidException,
     InvalidGoogldIdTokenException,
     InconsistentGoogldUuidException,
   ])
+  @ApiFailResponse('업로드 필요', [ProfileUploadRequiredException])
+  @ApiFailResponse('회원가입 실패', [UserConflictException])
   signUp(
     @Body() signupRequestDto: SignupRequestDto,
   ): Promise<SignupResponseDto> {
@@ -51,6 +55,8 @@ export class AuthController {
   @ApiSuccessResponse(201, '로그인 성공', SigninResponseDto)
   @ApiFailResponse('인증 실패', [
     LoginFailException,
+    InvalidKakaoIdTokenException,
+    InconsistentKakaoUuidException,
     InvalidGoogldIdTokenException,
     InconsistentGoogldUuidException,
   ])

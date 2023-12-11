@@ -9,6 +9,12 @@ import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-tok
 import { UserInfoDto } from 'src/user/dto/user-info.dto';
 import { checkUpload } from 'src/ncpAPI/listObjects';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
+import * as assert from 'assert';
+import axios from 'axios';
+import { InvalidKakaoIdTokenException } from 'src/exceptions/invalid-kakao-idtoken.exception';
+import { InconsistentKakaoUuidException } from 'src/exceptions/inconsistent-kakao-uuid.exception';
+import { createPublicKey } from 'crypto';
+import { PlatformEnum, SignupRequestDto } from './dto/signup-request.dto';
 import { OAuth2Client } from 'google-auth-library';
 import { InvalidGoogldIdTokenException } from 'src/exceptions/invalid-google-idToken.exception';
 import { InconsistentGoogldUuidException } from 'src/exceptions/inconsistent-google-uuid.exception';
@@ -95,6 +101,59 @@ export class AuthService {
       statusMessage: user.statusMessage,
     });
     return { jwt, profile };
+  }
+
+  async verifyKakaoIdToken(idToken: string) {
+    try {
+      const tokens = idToken.split('.');
+      assert(tokens.length === 3);
+      const [header, payload] = tokens
+        .slice(0, 2)
+        .map((token) =>
+          JSON.parse(Buffer.from(token, 'base64').toString('utf-8')),
+        );
+      assert(
+        payload.iss === process.env.KAKAO_ISS &&
+          payload.aud === process.env.KAKAO_APP_KEY &&
+          payload.exp > Date.now() / 1000,
+      );
+      const jwks = (await axios.get(process.env.KAKAO_KEY_URL)).data.keys;
+
+      const key = jwks.find((jwk) => jwk.kid === header.kid);
+      assert(key);
+      const keyObject = createPublicKey({
+        key,
+        format: 'jwk',
+      });
+      const secret = keyObject.export({ type: 'pkcs1', format: 'pem' });
+      await this.jwtService.verifyAsync(idToken, {
+        algorithms: [key.alg],
+        secret,
+      });
+      const id = Number(payload.sub);
+
+      return this.formatAsUUID(id, id);
+    } catch (e) {
+      throw new InvalidKakaoIdTokenException();
+    }
+  }
+
+  formatAsUUID(mostSigBits: number, leastSigBits: number) {
+    const most = mostSigBits.toString(16).padStart(16, '0');
+    const least = leastSigBits.toString(16).padStart(16, '0');
+    return `${most.substring(0, 8)}-${most.substring(8, 12)}-${most.substring(
+      12,
+    )}-${least.substring(0, 4)}-${least.substring(4)}`;
+  }
+
+  async verifyUuid(platform: PlatformEnum, idToken: string, uuid: string) {
+    switch (platform) {
+      case PlatformEnum.KAKAO:
+        if (uuid !== (await this.verifyKakaoIdToken(idToken)))
+          throw new InconsistentKakaoUuidException();
+        break;
+      default:
+    }
   }
 
   async signin(signinRequestDto: SigninRequestDto): Promise<SigninResponseDto> {

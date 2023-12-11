@@ -1,7 +1,7 @@
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { UserDto } from 'src/user/dto/user.dto';
 
-enum PlatformEnum {
+export enum PlatformEnum {
   GOOGLE = 'GOOGLE',
   KAKAO = 'KAKAO',
 }
