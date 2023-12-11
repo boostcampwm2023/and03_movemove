@@ -138,4 +138,12 @@ export class AuthService {
       throw new InvalidGoogldIdTokenException();
     }
   }
+
+  formatAsUUID(mostSigBits, leastSigBits) {
+    const most = mostSigBits.toString('16').padStart(16, '0');
+    const least = leastSigBits.toString('16').padStart(16, '0');
+    return `${most.substring(0, 8)}-${most.substring(8, 12)}-${most.substring(
+      12,
+    )}-${least.substring(0, 4)}-${least.substring(4)}`;
+  }
 }
