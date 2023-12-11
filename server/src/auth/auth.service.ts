@@ -9,6 +9,8 @@ import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-tok
 import { UserInfoDto } from 'src/user/dto/user-info.dto';
 import { checkUpload } from 'src/ncpAPI/listObjects';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
+import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
+import { OAuthFailedException } from 'src/exceptions/oauth-failed.exception';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { JwtDto } from './dto/jwt.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
@@ -31,8 +33,7 @@ export class AuthService {
   }
 
   async create(signupRequestDto: SignupRequestDto): Promise<SignupResponseDto> {
-    const { uuid, profileImageExtension, accessToken } = signupRequestDto;
-    console.log(accessToken);
+    const { uuid, profileImageExtension } = signupRequestDto;
     await this.checkUserConflict(uuid);
     if (
       profileImageExtension &&
@@ -46,6 +47,7 @@ export class AuthService {
 
     const newUser = new this.UserModel({
       ...signupRequestDto,
+      profileImageExtension: profileImageExtension ?? null,
     });
     newUser.save();
     return this.getLoginInfo(newUser).then(
@@ -94,9 +96,60 @@ export class AuthService {
     return { jwt, profile };
   }
 
+  verifyKakaoIdToken(uuid: string, idToken: string): Promise<{ id: string }> {
+    const tokens = idToken.split('.');
+    if (tokens.length !== 3) {
+      throw new OAuthFailedException();
+    }
+    let header;
+    let payload;
+    let signature;
+    try {
+      [header, payload, signature] = tokens.map((token) =>
+        Buffer.from(token, 'base64').toString('utf-8'),
+      );
+      header = JSON.parse(header);
+      payload = JSON.parse(payload);
+      if (
+        payload.iss !== process.env.KAKAO_ISS ||
+        payload.aud !== process.env.KAKAO_APP_KEY ||
+        payload.exp < Date.now() / 1000 ||
+        this.verifyUUID(uuid, payload.sub, PlatformEnum.KAKAO);
+      ) {
+        throw new OAuthFailedException();
+      }
+    } catch (e) {
+      throw new OAuthFailedException();
+    }
+  }
+
+  formatAsUUID(mostSigBits: number, leastSigBits: number) {
+    const most = mostSigBits.toString(16).padStart(16, '0');
+    const least = leastSigBits.toString(16).padStart(16, '0');
+    return `${most.substring(0, 8)}-${most.substring(8, 12)}-${most.substring(
+      12,
+    )}-${least.substring(0, 4)}-${least.substring(4)}`;
+  }
+
+  verifyUUID(uuid: string, sub: string, platform: PlatformEnum) {
+    if (platform === PlatformEnum.KAKAO) {
+      const num = Number(sub);
+      return uuid === this.formatAsUUID(num, num);
+    }
+    if (platform === PlatformEnum.GOOGLE) {
+      return (
+        uuid ===
+        this.formatAsUUID(
+          Number(sub.substring(0, 10)),
+          Number(sub.substring(10)),
+        )
+      );
+    }
+    return false;
+  }
+
   async signin(signinRequestDto: SigninRequestDto): Promise<SigninResponseDto> {
-    const { uuid, accessToken } = signinRequestDto;
-    console.log(accessToken);
+    const { uuid } = signinRequestDto;
     const user = await this.UserModel.findOne({ uuid });
     if (!user) {
       throw new LoginFailException();
