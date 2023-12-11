@@ -1,10 +1,10 @@
 package com.everyone.movemove_android.ui.rating_video
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.base.DataState
+import com.everyone.domain.usecase.GetStoredUUIDUseCase
 import com.everyone.domain.usecase.GetUsersVideosRatedUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
@@ -29,9 +29,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RatingVideoViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
+    private val getStoredUUIDUseCase: GetStoredUUIDUseCase,
     private val getUsersVideosRatedUseCase: GetUsersVideosRatedUseCase
 ) : ViewModel(), RatingVideoContract {
     private val _state = MutableStateFlow(State())
@@ -43,11 +43,27 @@ class RatingVideoViewModel @Inject constructor(
     override fun event(event: Event) = when (event) {
         is Event.OnClickedBack -> onClickedBack()
         is Event.OnClickedVideo -> onClickedVideo(event.videosLit, event.page)
+        is Event.Refresh -> getStoredUUID()
     }
 
     init {
-        val uuid = requireNotNull(savedStateHandle.get<String>(RatingVideoActivity.EXTRA_KEY_UUID))
-        getUsersVideosUploaded(uuid = uuid)
+        getStoredUUID()
+    }
+
+    private fun getStoredUUID() {
+        viewModelScope.launch {
+            loading(isLoading = true)
+            getStoredUUIDUseCase().onEach { result ->
+                result?.let { uuid ->
+                    getUsersVideosUploaded(uuid = uuid)
+                } ?: run {
+                    _state.update {
+                        it.copy(isError = true)
+                    }
+                }
+            }.launchIn(viewModelScope + ioDispatcher)
+            loading(isLoading = false)
+        }
     }
 
     private fun getUsersVideosUploaded(uuid: String) {
@@ -64,13 +80,19 @@ class RatingVideoViewModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 isLoading = false,
+                                isError = false,
                                 videosRated = result.data
                             )
                         }
                     }
 
                     is DataState.Failure -> {
-                        loading(isLoading = false)
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                isError = true,
+                            )
+                        }
                     }
                 }
             }.launchIn(viewModelScope + ioDispatcher)

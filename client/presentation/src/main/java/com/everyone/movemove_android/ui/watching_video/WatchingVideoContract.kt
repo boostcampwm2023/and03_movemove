@@ -18,7 +18,6 @@ interface WatchingVideoContract :
             Category.K_POP
         ),
         val videos: List<Videos>? = null,
-        val videosList: VideosList? = null,
         val page: Int = 0,
         val seed: String = "",
         val videoTab: VideoTab = VideoTab.CATEGORY_TAB

@@ -1,6 +1,5 @@
 package com.everyone.movemove_android.ui.my
 
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -50,6 +49,7 @@ import com.everyone.movemove_android.ui.my.MyContract.Event.OnClickEditProfile
 import com.everyone.movemove_android.ui.my.MyContract.Event.OnClickRatingVideo
 import com.everyone.movemove_android.ui.my.MyContract.Event.OnNullProfileNickname
 import com.everyone.movemove_android.ui.my.MyContract.Event.OnResume
+import com.everyone.movemove_android.ui.rating_video.RatingVideoActivity
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import kotlinx.coroutines.flow.collectLatest
@@ -76,8 +76,7 @@ fun MyScreen(
                 }
 
                 is GoToRatingVideoScreen -> {
-                    // TODO 주석제거
-//                    context.startActivity(RatingVideoActivity.newIntent(context))
+                    context.startActivity(RatingVideoActivity.newIntent(context))
                 }
             }
         }

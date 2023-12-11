@@ -1,6 +1,7 @@
 package com.everyone.movemove_android.ui.rating_video
 
 import android.content.Intent
+import androidx.annotation.StringRes
 import com.everyone.movemove_android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +37,7 @@ import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
+import com.everyone.movemove_android.ui.MoveMoveErrorScreen
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.*
 import com.everyone.movemove_android.ui.rating_video.RatingVideoContract.Event.*
@@ -85,36 +88,13 @@ fun RatingVideoScreen(
                         .fillMaxWidth()
                         .background(color = BorderInDark)
                 )
-                state.videosRated?.let { videosRated ->
-                    videosRated.videos?.let { videos ->
-                        LazyVerticalGrid(
-                            modifier = Modifier.fillMaxSize(),
-                            columns = GridCells.Fixed(2),
-                            horizontalArrangement = Arrangement.Center,
-                            contentPadding = PaddingValues(8.dp),
-                        ) {
-
-                            items(videos.size) {
-                                MoveMoveGridImageItem(
-                                    modifier = Modifier.clickableWithoutRipple {
-                                        event(
-                                            OnClickedVideo(
-                                                videosLit = VideosList(
-                                                    videos.map { videosRatedItem ->
-                                                        Videos(
-                                                            videosRatedItem.video,
-                                                            videosRatedItem.uploader
-                                                        )
-                                                    }),
-                                                page = it
-                                            )
-                                        )
-                                    },
-                                    model = videos[it].video?.thumbnailImageUrl,
-                                )
-                            }
-                        }
-                    }
+                if (state.isError) {
+                    MoveMoveErrorScreen(onClick = { Refresh })
+                } else {
+                    MoveMoveVideoGrid(
+                        state = state,
+                        event = event
+                    )
                 }
             }
         }
@@ -148,20 +128,81 @@ fun MoveMoveTopBar(event: (Event) -> Unit) {
 }
 
 @Composable
+fun MoveMoveVideoGrid(
+    state: State,
+    event: (Event) -> Unit,
+) {
+    state.videosRated?.let { videosRated ->
+        videosRated.videos?.let { videos ->
+            LazyVerticalGrid(
+                modifier = Modifier.fillMaxSize(),
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.Center,
+                contentPadding = PaddingValues(8.dp),
+            ) {
+                items(videos.size) {
+                    MoveMoveGridImageItem(
+                        modifier = Modifier.clickableWithoutRipple {
+                            event(
+                                OnClickedVideo(
+                                    videosLit = VideosList(
+                                        videos.map { videosRatedItem ->
+                                            Videos(
+                                                videosRatedItem.video,
+                                                videosRatedItem.uploader
+                                            )
+                                        }),
+                                    page = it
+                                )
+                            )
+                        },
+                        model = videos[it].video?.thumbnailImageUrl,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun MoveMoveGridImageItem(
     modifier: Modifier,
     model: String?
 ) {
-    Card(
+    model?.let {
+        Card(
+            modifier = modifier
+                .aspectRatio(0.6f)
+                .padding(8.dp),
+            shape = RoundedCornerShape(size = 8.dp),
+        ) {
+            AsyncImage(
+                modifier = Modifier.fillMaxSize(),
+                model = model,
+                contentDescription = null,
+                contentScale = ContentScale.Crop
+            )
+        }
+    } ?: run {
+        EmptyVideoGridItem(modifier = modifier, stringResId = R.string.invald_video_title)
+    }
+}
+
+@Composable
+fun EmptyVideoGridItem(
+    modifier: Modifier,
+    @StringRes stringResId: Int
+) {
+    Box(
         modifier = modifier
             .aspectRatio(0.6f)
-            .padding(8.dp),
-        shape = RoundedCornerShape(size = 8.dp),
+            .padding(8.dp)
+            .background(color = Color.Black),
     ) {
-        AsyncImage(
-            model = model,
-            contentDescription = null,
-            contentScale = ContentScale.Crop
+        StyledText(
+            modifier = Modifier.align(Alignment.Center),
+            text = stringResource(stringResId),
+            style = MaterialTheme.typography.labelSmall
         )
     }
 }
