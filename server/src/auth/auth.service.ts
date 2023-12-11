@@ -9,10 +9,11 @@ import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-tok
 import { UserInfoDto } from 'src/user/dto/user-info.dto';
 import { checkUpload } from 'src/ncpAPI/listObjects';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
-import assert from 'assert';
+import * as assert from 'assert';
 import axios from 'axios';
 import { InvalidKakaoIdTokenException } from 'src/exceptions/invalid-kakao-idtoken.exception';
 import { InconsistentKakaoUuidException } from 'src/exceptions/inconsistent-kakao-uuid.exception';
+import { createPublicKey } from 'crypto';
 import { PlatformEnum, SignupRequestDto } from './dto/signup-request.dto';
 import { JwtDto } from './dto/jwt.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
@@ -102,24 +103,31 @@ export class AuthService {
     try {
       const tokens = idToken.split('.');
       assert(tokens.length === 3);
-      const [headerString, payloadString, signature] = tokens.map((token) =>
-        Buffer.from(token, 'base64').toString('utf-8'),
-      );
-      const header = JSON.parse(headerString);
-      const payload = JSON.parse(payloadString);
-
+      const [header, payload] = tokens
+        .slice(0, 2)
+        .map((token) =>
+          JSON.parse(Buffer.from(token, 'base64').toString('utf-8')),
+        );
       assert(
         payload.iss !== process.env.KAKAO_ISS ||
           payload.aud !== process.env.KAKAO_APP_KEY ||
           payload.exp < Date.now() / 1000,
       );
-
-      const keys = await axios
+      const jwks = await axios
         .get(process.env.KAKAO_KEY_URL)
         .then((response) => response.data.keys);
 
-      assert(keys.find((key) => key.kid === header.kid));
-
+      const key = jwks.find((jwk) => jwk.kid === header.kid);
+      assert(key);
+      const keyObject = createPublicKey({
+        key,
+        format: 'jwk',
+      });
+      const secret = keyObject.export({ type: 'pkcs1', format: 'pem' });
+      await this.jwtService.verifyAsync(idToken, {
+        algorithms: [key.alg],
+        secret,
+      });
       const id = Number(payload.sub);
 
       return this.formatAsUUID(id, id);
