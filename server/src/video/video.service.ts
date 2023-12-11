@@ -233,7 +233,7 @@ export class VideoService {
     );
   }
 
-  async deleteVideo(videoId: string, uuid: string, accessToken: string) {
+  async deleteVideo(videoId: string, uuid: string) {
     const video = await this.VideoModel.findOne({ _id: videoId }).populate(
       'uploaderId',
       '-_id -actions',
@@ -242,7 +242,7 @@ export class VideoService {
       throw new VideoNotFoundException();
     }
     if (
-      accessToken !== process.env.ADMIN_ACCESS_TOKEN &&
+      uuid !== process.env.ADMIN_UUID &&
       video.uploaderId.uuid !== uuid
     ) {
       throw new NotYourVideoException();

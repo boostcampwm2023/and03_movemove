@@ -7,4 +7,4 @@ export const RequestUser = createParamDecorator(
   },
 );
 
-export type User = { id: string; token: string };
+export type User = { id: string };
