@@ -10,6 +10,8 @@ import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-re
 import { PresignedUrlResponseDto } from 'src/presigned-url/dto/presigned-url-response.dto';
 import { PresignedUrlService } from 'src/presigned-url/presigned-url.service';
 import { SignupProfilePresignedUrlRequestDto } from 'src/presigned-url/dto/signup-profile-presigned-url-request.dto';
+import { InvalidGoogldIdTokenException } from 'src/exceptions/invalid-google-idToken.exception';
+import { InconsistentGoogldUuidException } from 'src/exceptions/inconsistent-google-uuid.exception';
 import { AuthService } from './auth.service';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
@@ -34,6 +36,12 @@ export class AuthController {
   @ApiFailResponse('인증 실패', [OAuthFailedException])
   @ApiFailResponse('업로드 필요', [ProfileUploadRequiredException])
   @ApiFailResponse('회원가입 실패', [UserConflictException])
+  @ApiFailResponse('유효하지 않은 구글 idToken', [
+    InvalidGoogldIdTokenException,
+  ])
+  @ApiFailResponse('구글 idToken과 uuid 불일치', [
+    InconsistentGoogldUuidException,
+  ])
   signUp(
     @Body() signupRequestDto: SignupRequestDto,
   ): Promise<SignupResponseDto> {
@@ -46,6 +54,12 @@ export class AuthController {
   @Post('login')
   @ApiSuccessResponse(201, '로그인 성공', SigninResponseDto)
   @ApiFailResponse('인증 실패', [LoginFailException, OAuthFailedException])
+  @ApiFailResponse('유효하지 않은 구글 idToken', [
+    InvalidGoogldIdTokenException,
+  ])
+  @ApiFailResponse('구글 idToken과 uuid 불일치', [
+    InconsistentGoogldUuidException,
+  ])
   signin(
     @Body() signinRequestDto: SigninRequestDto,
   ): Promise<SigninResponseDto> {
