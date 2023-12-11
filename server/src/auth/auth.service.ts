@@ -9,10 +9,10 @@ import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-tok
 import { UserInfoDto } from 'src/user/dto/user-info.dto';
 import { checkUpload } from 'src/ncpAPI/listObjects';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
-import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
-import { OAuthFailedException } from 'src/exceptions/oauth-failed.exception';
 import assert from 'assert';
 import axios from 'axios';
+import { InvalidKakaoIdTokenException } from 'src/exceptions/invalid-kakao-idtoken.exception';
+import { InconsistentKakaoUuidException } from 'src/exceptions/inconsistent-kakao-uuid.exception';
 import { PlatformEnum, SignupRequestDto } from './dto/signup-request.dto';
 import { JwtDto } from './dto/jwt.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';

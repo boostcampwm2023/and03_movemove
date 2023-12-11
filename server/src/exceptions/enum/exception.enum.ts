@@ -8,6 +8,8 @@ enum ErrorCode {
   BadTokenFormat = 1003,
   OAuthFailed = 1004,
   InvalidRefreshToken = 1005,
+  InvalidKakaoIdToken = 1007,
+  InconsistentKakaoUuid = 1017,
   VideoNotFound = 4000,
   UserNotFound = 4001,
   ObjectNotFound = 4002,
@@ -47,6 +49,8 @@ const ErrorMessage = {
   [ErrorCode.EncodingActionFail]: '인코딩 액션 실패',
   [ErrorCode.GreenEyeApiFail]: 'greeneye api 요청 실패',
   [ErrorCode.GreenEyeActionFail]: 'greeneye 액션 실패',
+  [ErrorCode.InvalidKakaoIdToken]: '유효하지 않은 카카오 idToken',
+  [ErrorCode.InconsistentKakaoUuid]: '카카오 idToken과 uuid가 일치하지 않음',
 };
 
 export { ErrorCode, ErrorMessage };
