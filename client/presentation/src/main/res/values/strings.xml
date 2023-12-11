@@ -36,6 +36,7 @@
     <string name="challenge_title">챌린지</string>
     <string name="old_school_title">올드스쿨</string>
     <string name="top_10_title">" TOP 10"</string>
+    <string name="rating_video_snackbar_message">%1$s점을 주었어요</string>
 
     <!--    login-->
     <string name="kakao_login">카카오 로그인</string>

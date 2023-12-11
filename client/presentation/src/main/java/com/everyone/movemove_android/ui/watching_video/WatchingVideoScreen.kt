@@ -359,10 +359,14 @@ fun MoveMoveScoreboard(
     event: (Event) -> Unit,
     snackBarState: SnackbarHostState
 ) {
-    val rating = video.userRating?.let { userRating -> (userRating * 0.2).toFloat() } ?: run { 0f }
-    var sliderPosition by remember { mutableFloatStateOf(rating) }
+    val currentRating =
+        video.userRating?.let { userRating -> (userRating * 0.2).toFloat() } ?: run { 0f }
+    var sliderPosition by remember { mutableFloatStateOf(currentRating) }
+    val rating = sliderPosition * 5
 
     val coroutineScope = rememberCoroutineScope()
+
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -400,7 +404,7 @@ fun MoveMoveScoreboard(
                     event(
                         OnClickedVideoRating(
                             id = video.id.toString(),
-                            rating = (sliderPosition * 5).toInt().toString(),
+                            rating = rating.toInt().toString(),
                             reason = "테스트" // TODO 임시,,,
                         )
                     )
@@ -409,7 +413,8 @@ fun MoveMoveScoreboard(
 
                     coroutineScope.launch {
                         snackBarState.showSnackbar(
-                            message = "${(sliderPosition * 5).toInt()}점을 주었어요",
+                            message = context.getString(R.string.rating_video_snackbar_message)
+                                .format(rating),
                             duration = SnackbarDuration.Short
                         )
                     }
