@@ -1,6 +1,5 @@
 package com.everyone.movemove_android.ui.watching_video
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -154,7 +153,25 @@ class WatchingVideoViewModel @Inject constructor(
                 reason = reason
             ).onEach { result ->
                 when (result) {
-                    is DataState.Success -> {}
+                    is DataState.Success -> {
+                        _state.update {
+                            it.copy(
+                                videos = it.videos?.let { videosList ->
+                                    videosList.map { videos ->
+                                        if (videos.video?.id == id) {
+                                            Videos(
+                                                video = videos.video?.copy(userRating = rating.toInt()),
+                                                uploader = videos.uploader
+                                            )
+                                        } else {
+                                            videos
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
+
                     is DataState.Failure -> {}
                 }
             }.launchIn(viewModelScope + ioDispatcher)

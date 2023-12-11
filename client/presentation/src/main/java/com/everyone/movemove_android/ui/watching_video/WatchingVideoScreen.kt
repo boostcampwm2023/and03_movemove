@@ -357,8 +357,8 @@ fun MoveMoveScoreboard(
     event: (Event) -> Unit,
     snackBarState: SnackbarHostState
 ) {
-
-    var sliderPosition by remember { mutableFloatStateOf(0f) }
+    val rating = video.userRating?.let { userRating -> (userRating * 0.2).toFloat() } ?: run { 0f }
+    var sliderPosition by remember { mutableFloatStateOf(rating) }
 
     val coroutineScope = rememberCoroutineScope()
 
