@@ -36,7 +36,8 @@ export class AuthService {
   }
 
   async create(signupRequestDto: SignupRequestDto): Promise<SignupResponseDto> {
-    const { uuid, profileImageExtension } = signupRequestDto;
+    const { uuid, profileImageExtension, platform, idToken } = signupRequestDto;
+    await this.verifyUuid(platform, idToken, uuid);
     await this.checkUserConflict(uuid);
     if (
       profileImageExtension &&
@@ -155,7 +156,8 @@ export class AuthService {
   }
 
   async signin(signinRequestDto: SigninRequestDto): Promise<SigninResponseDto> {
-    const { uuid } = signinRequestDto;
+    const { uuid, platform, idToken } = signinRequestDto;
+    await this.verifyUuid(platform, idToken, uuid);
     const user = await this.UserModel.findOne({ uuid });
     if (!user) {
       throw new LoginFailException();
