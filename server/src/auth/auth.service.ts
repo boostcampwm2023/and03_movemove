@@ -110,9 +110,9 @@ export class AuthService {
           JSON.parse(Buffer.from(token, 'base64').toString('utf-8')),
         );
       assert(
-        payload.iss !== process.env.KAKAO_ISS ||
-          payload.aud !== process.env.KAKAO_APP_KEY ||
-          payload.exp < Date.now() / 1000,
+        payload.iss === process.env.KAKAO_ISS &&
+          payload.aud === process.env.KAKAO_APP_KEY &&
+          payload.exp > Date.now() / 1000,
       );
       const jwks = await axios
         .get(process.env.KAKAO_KEY_URL)
