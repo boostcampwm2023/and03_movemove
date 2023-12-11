@@ -161,16 +161,18 @@ class UploadingVideoViewModel @Inject constructor(
     }
 
     private fun onGetUri(uri: Uri) {
-        _state.update {
-            State(
-                videoUri = uri,
-                title = it.title,
-                description = it.description,
-                category = it.category
-            )
-        }
+        if (state.value.videoUri != uri) {
+            _state.update {
+                State(
+                    videoUri = uri,
+                    title = it.title,
+                    description = it.description,
+                    category = it.category
+                )
+            }
 
-        checkUploadEnable()
+            checkUploadEnable()
+        }
     }
 
     private fun onClickPlayAndPause() {
