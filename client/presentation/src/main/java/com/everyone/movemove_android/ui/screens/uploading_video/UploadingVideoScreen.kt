@@ -68,6 +68,7 @@ import com.everyone.domain.model.UploadCategory.CHALLENGE
 import com.everyone.domain.model.UploadCategory.K_POP
 import com.everyone.domain.model.UploadCategory.NEW_SCHOOL
 import com.everyone.domain.model.UploadCategory.OLD_SCHOOL
+import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.ErrorDialog
@@ -77,7 +78,7 @@ import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.SelectThumbnailDialog
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.Finish
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.GoToWatchingVideoScreen
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.PauseVideo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.SeekToStart
@@ -119,6 +120,7 @@ import com.everyone.movemove_android.ui.util.LifecycleCallbackEvent
 import com.everyone.movemove_android.ui.util.addFocusCleaner
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import com.everyone.movemove_android.ui.util.pxToDp
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoActivity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.abs
@@ -171,8 +173,14 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
                     exoPlayer.seekTo(effect.position)
                 }
 
-                is Finish -> {
+                is GoToWatchingVideoScreen -> {
+                    context.startActivity(WatchingVideoActivity.newIntent(
+                        context = context,
+                        videosList = VideosList(listOf(effect.video)),
+                        page = 0
+                    ))
 
+                    event(OnExit)
                 }
 
                 is PauseVideo -> {

@@ -2,8 +2,9 @@ package com.everyone.domain.repository
 
 import com.everyone.domain.model.CreatedVideo
 import com.everyone.domain.model.VideoUploadUrl
-import com.everyone.domain.model.VideosRandom
+import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosList
+import com.everyone.domain.model.VideosRandom
 import com.everyone.domain.model.base.DataState
 import kotlinx.coroutines.flow.Flow
 import java.io.File
@@ -48,4 +49,6 @@ interface VideosRepository {
     fun getVideosTopRated(category: String): Flow<DataState<VideosList>>
 
     fun getVideosTrend(limit: String): Flow<DataState<VideosList>>
+
+    fun getVideoWithId(videoId: String): Flow<DataState<Videos>>
 }

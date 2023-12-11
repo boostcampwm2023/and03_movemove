@@ -3,6 +3,7 @@ package com.everyone.movemove_android.ui.screens.uploading_video
 import android.net.Uri
 import androidx.compose.ui.graphics.ImageBitmap
 import com.everyone.domain.model.UploadCategory
+import com.everyone.domain.model.Videos
 import com.everyone.movemove_android.base.BaseContract
 import java.io.File
 
@@ -107,7 +108,7 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
 
         data class SeekToStart(val position: Long) : Effect
 
-        data object Finish : Effect
+        data class GoToWatchingVideoScreen(val video: Videos) : Effect
 
         data object PauseVideo : Effect
     }

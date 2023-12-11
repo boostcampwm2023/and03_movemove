@@ -10,14 +10,14 @@ import com.everyone.domain.model.UploadCategory
 import com.everyone.domain.model.VideoUploadUrl
 import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetVideoUploadUrlUseCase
+import com.everyone.domain.usecase.GetVideoWithIdUseCase
 import com.everyone.domain.usecase.PostVideoInfoUseCase
 import com.everyone.domain.usecase.PutFileUseCase
 import com.everyone.movemove_android.R
-import com.everyone.movemove_android.di.DefaultDispatcher
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect
-import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.Finish
+import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.GoToWatchingVideoScreen
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.LaunchVideoPicker
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.PauseVideo
 import com.everyone.movemove_android.ui.screens.uploading_video.UploadingVideoContract.Effect.SeekToStart
@@ -74,13 +74,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class UploadingVideoViewModel @Inject constructor(
-    @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
     @ApplicationContext private val context: Context,
     private val getVideoUploadUrlUseCase: GetVideoUploadUrlUseCase,
     private val putFileUseCase: PutFileUseCase,
     private val postVideoInfoUseCase: PostVideoInfoUseCase,
+    private val getVideoWithIdUseCase: GetVideoWithIdUseCase
 ) : ViewModel(), UploadingVideoContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -440,6 +440,10 @@ class UploadingVideoViewModel @Inject constructor(
     }
 
     private fun onClickUpload() {
+        _state.update {
+            it.copy(isLoading = true)
+        }
+
         getVideoUploadUrlUseCase(
             videoExtension = MP4,
             thumbnailExtension = WEBP
@@ -505,7 +509,7 @@ class UploadingVideoViewModel @Inject constructor(
             when (result) {
                 is DataState.Success -> {
                     withContext(mainImmediateDispatcher) {
-                        _effect.emit(Finish)
+                        getUploadedVideo(videoId)
                     }
                 }
 
@@ -515,6 +519,26 @@ class UploadingVideoViewModel @Inject constructor(
             }
         }.collect()
     }
+
+    private suspend fun getUploadedVideo(videoId: String) {
+        getVideoWithIdUseCase(videoId).onEach { result ->
+            withContext(mainImmediateDispatcher) {
+                when (result) {
+                    is DataState.Success -> {
+                        _effect.emit(GoToWatchingVideoScreen(result.data))
+                        _state.update {
+                            it.copy(isLoading = false)
+                        }
+                    }
+
+                    is DataState.Failure -> {
+
+                    }
+                }
+            }
+        }.collect()
+    }
+
 
     private fun removeTrimmedVideo() {
         val stagedVideoFile = state.value.stagedVideoFile

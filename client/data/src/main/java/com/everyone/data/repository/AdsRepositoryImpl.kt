@@ -28,7 +28,7 @@ class AdsRepositoryImpl @Inject constructor(
                 response.data?.let {
                     emit(DataState.Success(it.toDomainModel()))
                 } ?: run {
-                    emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
+                    emit(response.toFailure())
                 }
             }
         }
