@@ -192,17 +192,19 @@ class UploadingVideoViewModel @Inject constructor(
     }
 
     private fun onVideoReady(duration: Long) {
-        _state.update {
-            it.copy(
-                isVideoReady = true,
-                isPlaying = true,
-                videoDuration = duration,
-                videoEndTime = duration,
-                videoLengthUnit = duration / 1000L
-            )
-        }
+        if (state.value.videoDuration != duration) {
+            _state.update {
+                it.copy(
+                    isVideoReady = true,
+                    isPlaying = true,
+                    videoDuration = duration,
+                    videoEndTime = duration,
+                    videoLengthUnit = duration / 1000L
+                )
+            }
 
-        getThumbnailList()
+            getThumbnailList()
+        }
     }
 
     private fun onTimelineWidthMeasured(width: Int) {
