@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -336,12 +338,25 @@ fun MoveMoveVideo(
         shape = RoundedCornerShape(size = 8.dp),
     ) {
         videos.video?.let { video ->
-            AsyncImage(
-                modifier = Modifier.fillMaxSize(),
-                model = video.thumbnailImageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    model = video.thumbnailImageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                )
+
+                StyledText(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(8.dp),
+                    text = video.title!!,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 2
+                )
+            }
         } ?: run {
             EmptyVideoContent(stringResId = R.string.empty_video_title)
         }
@@ -354,7 +369,7 @@ fun EmptyVideoContent(@StringRes stringResId: Int) {
         modifier = Modifier
             .fillMaxSize()
             .heightIn(min = 220.dp),
-        ) {
+    ) {
         StyledText(
             modifier = Modifier.align(Alignment.Center),
             text = stringResource(stringResId),
