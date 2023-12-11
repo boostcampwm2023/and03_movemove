@@ -9,6 +9,7 @@ import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-tok
 import { UserInfoDto } from 'src/user/dto/user-info.dto';
 import { checkUpload } from 'src/ncpAPI/listObjects';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
+import { OAuth2Client } from 'google-auth-library';
 import { SignupRequestDto } from './dto/signup-request.dto';
 import { JwtDto } from './dto/jwt.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
@@ -104,5 +105,21 @@ export class AuthService {
     return this.getLoginInfo(user).then(
       (loginInfo) => new SigninResponseDto(loginInfo),
     );
+  }
+
+  async verifyGoogleIdToken(idToken: string) {
+    const client = new OAuth2Client();
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const userid = payload.sub;
+
+    const uuid = this.formatAsUUID(
+      Number(userid.substring(0, 10)),
+      Number(userid.substring(10)),
+    );
+    return uuid;
   }
 }
