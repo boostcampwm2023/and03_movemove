@@ -18,22 +18,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,9 +78,11 @@ import com.everyone.movemove_android.ui.watching_video.category.CategoryScreen
 import com.everyone.movemove_android.ui.theme.FooterBottomBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterMiddleBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterTopBackgroundInDark
+import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -142,6 +149,8 @@ fun WatchingVideoScreen(
                         }
 
                         Box(modifier = Modifier.fillMaxSize()) {
+                            val snackBarState = remember { SnackbarHostState() }
+
                             videoUri[page]?.let { uri ->
                                 VideoPlayer(
                                     exoPlayer = exoPlayer,
@@ -154,18 +163,26 @@ fun WatchingVideoScreen(
                             }
 
                             Column(modifier = Modifier.align(Alignment.BottomStart)) {
+
                                 videosItem[page].video?.let { video ->
+
                                     MoveMoveScoreboard(
                                         video = video,
-                                        event = event
+                                        event = event,
+                                        snackBarState = snackBarState
                                     )
                                 }
+
                                 MoveMoveFooter(
                                     videos = videosItem[page],
                                     event = event
                                 )
-                                Divider()
                             }
+
+                            MoveMoveSnackBar(
+                                modifier = Modifier.align(Alignment.BottomCenter),
+                                snackBarState = snackBarState
+                            )
                         }
 
                         if (!pagerState.isScrollInProgress) {
@@ -337,10 +354,19 @@ fun MoveMoveCategory(
 }
 
 @Composable
-fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
+fun MoveMoveScoreboard(
+    video: Video,
+    event: (Event) -> Unit,
+    snackBarState: SnackbarHostState
+) {
+    val currentRating =
+        video.userRating?.let { userRating -> (userRating * 0.2).toFloat() } ?: run { 0f }
+    var sliderPosition by remember { mutableFloatStateOf(currentRating) }
+    val rating = sliderPosition * 5
 
-    val rating = video.rating?.toFloat() ?: run { 0.4f }
-    var sliderPosition by remember { mutableFloatStateOf(rating) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -373,19 +399,73 @@ fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
                 value = sliderPosition,
                 onValueChange = {
                     sliderPosition = it
+                },
+                onValueChangeFinished = {
                     event(
                         OnClickedVideoRating(
                             id = video.id.toString(),
-                            rating = (it * 5).toInt().toString(),
+                            rating = rating.toInt().toString(),
                             reason = "테스트" // TODO 임시,,,
                         )
                     )
+
+                    if (snackBarState.currentSnackbarData != null) snackBarState.currentSnackbarData?.dismiss()
+
+                    coroutineScope.launch {
+                        snackBarState.showSnackbar(
+                            message = context.getString(R.string.rating_video_snackbar_message)
+                                .format(rating),
+                            duration = SnackbarDuration.Short
+                        )
+                    }
                 },
                 colors = SliderDefaults.colors(
                     thumbColor = Color.White,
                     inactiveTrackColor = Color.White
                 )
             )
+        }
+    }
+}
+
+@Composable
+fun MoveMoveSnackBar(
+    modifier: Modifier,
+    snackBarState: SnackbarHostState
+) {
+    SnackbarHost(
+        modifier = modifier,
+        hostState = snackBarState
+    ) { snackbarData ->
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        vertical = 10.dp,
+                        horizontal = 16.dp
+                    )
+            ) {
+                StyledText(
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    text = snackbarData.visuals.message,
+                    style = Typography.labelMedium,
+                    color = Color.White
+                )
+                Icon(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .align(Alignment.CenterEnd)
+                        .clickableWithoutRipple { snackbarData.dismiss() },
+                    painter = painterResource(id = R.drawable.ic_close),
+                    contentDescription = null,
+                    tint = Point
+                )
+            }
         }
     }
 }
