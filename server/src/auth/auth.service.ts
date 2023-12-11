@@ -14,11 +14,10 @@ import axios from 'axios';
 import { InvalidKakaoIdTokenException } from 'src/exceptions/invalid-kakao-idtoken.exception';
 import { InconsistentKakaoUuidException } from 'src/exceptions/inconsistent-kakao-uuid.exception';
 import { createPublicKey } from 'crypto';
-import { PlatformEnum, SignupRequestDto } from './dto/signup-request.dto';
 import { OAuth2Client } from 'google-auth-library';
 import { InvalidGoogldIdTokenException } from 'src/exceptions/invalid-google-idToken.exception';
 import { InconsistentGoogldUuidException } from 'src/exceptions/inconsistent-google-uuid.exception';
-import { SignupRequestDto } from './dto/signup-request.dto';
+import { PlatformEnum, SignupRequestDto } from './dto/signup-request.dto';
 import { JwtDto } from './dto/jwt.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { SigninResponseDto } from './dto/signin-response.dto';
@@ -148,6 +147,10 @@ export class AuthService {
 
   async verifyUuid(platform: PlatformEnum, idToken: string, uuid: string) {
     switch (platform) {
+      case PlatformEnum.GOOGLE:
+        if (uuid !== (await this.verifyGoogleIdToken(idToken)))
+          throw new InconsistentGoogldUuidException();
+        break;
       case PlatformEnum.KAKAO:
         if (uuid !== (await this.verifyKakaoIdToken(idToken)))
           throw new InconsistentKakaoUuidException();
@@ -168,16 +171,6 @@ export class AuthService {
     );
   }
 
-  async verifyUuid(platform: string, idToken: string, uuid: string) {
-    switch (platform) {
-      case 'GOOGLE':
-        if (uuid !== (await this.verifyGoogleIdToken(idToken)))
-          throw new InconsistentGoogldUuidException();
-        break;
-      default:
-    }
-  }
-
   async verifyGoogleIdToken(idToken: string) {
     const client = new OAuth2Client();
 
@@ -196,13 +189,5 @@ export class AuthService {
     } catch (err) {
       throw new InvalidGoogldIdTokenException();
     }
-  }
-
-  formatAsUUID(mostSigBits, leastSigBits) {
-    const most = mostSigBits.toString('16').padStart(16, '0');
-    const least = leastSigBits.toString('16').padStart(16, '0');
-    return `${most.substring(0, 8)}-${most.substring(8, 12)}-${most.substring(
-      12,
-    )}-${least.substring(0, 4)}-${least.substring(4)}`;
   }
 }
