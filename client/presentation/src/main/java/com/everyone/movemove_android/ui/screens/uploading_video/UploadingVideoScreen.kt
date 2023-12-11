@@ -46,6 +46,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.ContentScale.Companion.Crop
+import androidx.compose.ui.layout.ContentScale.Companion.FillBounds
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -464,6 +467,7 @@ private fun EditorTimeline(
                                 .fillMaxHeight()
                                 .weight(1f),
                             bitmap = thumbnail,
+                            contentScale = Crop,
                             contentDescription = null
                         )
                     }

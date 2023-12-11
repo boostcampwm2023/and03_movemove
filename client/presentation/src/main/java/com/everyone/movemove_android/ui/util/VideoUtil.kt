@@ -11,7 +11,14 @@ inline fun getVideoFilePath(
     crossinline onFailure: () -> Unit
 ) {
     val projection = arrayOf(MediaStore.Video.Media.DATA)
-    val cursor = context.contentResolver.query(videoUri, projection, null, null, null)
+    val cursor = context.contentResolver.query(
+        videoUri,
+        projection,
+        null,
+        null,
+        null
+    )
+
     cursor?.use {
         try {
             if (it.moveToFirst()) {

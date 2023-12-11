@@ -1,7 +1,6 @@
 package com.everyone.movemove_android.ui.screens.uploading_video
 
 import android.content.Context
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -284,36 +283,21 @@ class UploadingVideoViewModel @Inject constructor(
     }
 
     private fun getThumbnailList() {
-        viewModelScope.launch(ioDispatcher) {
-            val mediaMetadataRetriever = MediaMetadataRetriever().apply {
-                state.value.videoUri?.let { videoUri ->
-                    getVideoFilePath(
-                        context = context,
-                        videoUri = videoUri,
-                        onSuccess = { videoFilePath ->
-                            this@UploadingVideoViewModel.videoFilePath = videoFilePath
-                            setDataSource(videoFilePath)
-                        },
-                        onFailure = { showErrorDialog(R.string.error_get_video_file_path) }
-                    )
-                }
-            }
+        state.value.videoUri?.let { videoUri ->
+            viewModelScope.launch(ioDispatcher) {
+                val tempList = mutableListOf<ImageBitmap>()
+                getVideoFilePath(
+                    context = context,
+                    videoUri = videoUri,
+                    onSuccess = { videoFilePath ->
+                        this@UploadingVideoViewModel.videoFilePath = videoFilePath
+                        FrameExtractor(videoFilePath).getThumbnails(
+                            duration = state.value.videoDuration,
+                            onGetBitmap = {
+                                tempList.add(it.asImageBitmap())
+                            }
+                        )
 
-            withContext(defaultDispatcher) {
-                runCatching {
-                    val tempList = mutableListOf<ImageBitmap>()
-                    repeat(THUMBNAIL_COUNT) {
-                        mediaMetadataRetriever.getFrameAtTime(
-                            ((state.value.videoDuration / THUMBNAIL_COUNT) * (it + 1)) * 1000L,
-                            MediaMetadataRetriever.OPTION_CLOSEST
-                        )?.let { bitmap ->
-                            tempList.add(bitmap.asImageBitmap())
-                        }
-                    }
-
-                    tempList
-                }.onSuccess { tempList ->
-                    withContext(mainImmediateDispatcher) {
                         if (tempList.isNotEmpty()) {
                             _state.update {
                                 it.copy(thumbnailList = tempList)
@@ -321,13 +305,12 @@ class UploadingVideoViewModel @Inject constructor(
                         } else {
                             showErrorDialog(R.string.error_getting_thumbnail)
                         }
+                    },
+                    onFailure = {
+                        showErrorDialog(R.string.error_get_video_file_path)
                     }
-                }.onFailure {
-                    showErrorDialog(R.string.error_getting_thumbnail)
-                }
+                )
             }
-
-            mediaMetadataRetriever.release()
         }
     }
 
@@ -571,7 +554,6 @@ class UploadingVideoViewModel @Inject constructor(
     }
 
     companion object {
-        const val THUMBNAIL_COUNT = 15
         private const val MP4 = "mp4"
         private const val WEBP = "webp"
         private const val SUCCESS = 200
