@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -77,6 +78,7 @@ import com.everyone.movemove_android.ui.watching_video.category.CategoryScreen
 import com.everyone.movemove_android.ui.theme.FooterBottomBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterMiddleBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterTopBackgroundInDark
+import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import kotlinx.coroutines.flow.collectLatest
@@ -435,15 +437,30 @@ fun MoveMoveSnackBar(
                 .fillMaxWidth()
                 .padding(16.dp),
         ) {
-            StyledText(
-                modifier = Modifier.padding(
-                    vertical = 10.dp,
-                    horizontal = 16.dp
-                ),
-                text = snackbarData.visuals.message,
-                style = Typography.labelMedium,
-                color = Color.White
-            )
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        vertical = 10.dp,
+                        horizontal = 16.dp
+                    )
+            ) {
+                StyledText(
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    text = snackbarData.visuals.message,
+                    style = Typography.labelMedium,
+                    color = Color.White
+                )
+                Icon(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .align(Alignment.CenterEnd)
+                        .clickableWithoutRipple { snackbarData.dismiss() },
+                    painter = painterResource(id = R.drawable.ic_close),
+                    contentDescription = null,
+                    tint = Point
+                )
+            }
         }
     }
 }
