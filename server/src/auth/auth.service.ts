@@ -11,7 +11,7 @@ import { checkUpload } from 'src/ncpAPI/listObjects';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
 import { InvalidTokenException } from 'src/exceptions/invalid-token.exception';
 import { OAuthFailedException } from 'src/exceptions/oauth-failed.exception';
-import { SignupRequestDto } from './dto/signup-request.dto';
+import { PlatformEnum, SignupRequestDto } from './dto/signup-request.dto';
 import { JwtDto } from './dto/jwt.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { SigninResponseDto } from './dto/signin-response.dto';
@@ -114,7 +114,7 @@ export class AuthService {
         payload.iss !== process.env.KAKAO_ISS ||
         payload.aud !== process.env.KAKAO_APP_KEY ||
         payload.exp < Date.now() / 1000 ||
-        this.verifyUUID(uuid, payload.sub, PlatformEnum.KAKAO);
+        this.verifyUUID(uuid, payload.sub, PlatformEnum.KAKAO)
       ) {
         throw new OAuthFailedException();
       }
