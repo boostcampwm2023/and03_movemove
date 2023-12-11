@@ -12,6 +12,7 @@ interface HomeContract :
         val videosTrend: VideosList = VideosList(null),
         val videosTopRatedOldSchool: VideosList = VideosList(null),
         val videosTopRatedChallenge: VideosList = VideosList(null),
+        val videosTopRatedNewSchool: VideosList = VideosList(null),
         val isErrorDialogShowing: Boolean = false,
         val errorDialogTextResourceId: Int = 0
     )

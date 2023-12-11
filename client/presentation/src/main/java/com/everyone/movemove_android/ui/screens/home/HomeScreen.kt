@@ -138,6 +138,20 @@ fun HomeScreen(
                 event = event,
                 videosList = state.videosTopRatedOldSchool
             )
+
+            Spacer(modifier = Modifier.height(36.dp))
+            StyledColorText(
+                modifier = Modifier.padding(start = 16.dp),
+                style = MaterialTheme.typography.titleLarge,
+                coloredText = stringResource(R.string.new_school_title),
+                plainText = stringResource(R.string.top_10_title)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            MoveMoveVideos(
+                event = event,
+                videosList = state.videosTopRatedNewSchool
+            )
+
         }
     }
 }
