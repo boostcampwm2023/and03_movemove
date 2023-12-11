@@ -140,8 +140,10 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
             addListener(object : Player.Listener {
                 override fun onTracksChanged(tracks: Tracks) {
                     super.onTracksChanged(tracks)
-                    event(OnVideoReady(duration))
-                    play()
+                    if (duration != 0L && tracks.groups.isNotEmpty()) {
+                        event(OnVideoReady(duration))
+                        play()
+                    }
                 }
             })
         }
