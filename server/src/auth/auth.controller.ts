@@ -3,7 +3,6 @@ import { ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from 'src/decorators/api-succes-response';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
 import { UserConflictException } from 'src/exceptions/conflict.exception';
-import { OAuthFailedException } from 'src/exceptions/oauth-failed.exception';
 import { LoginFailException } from 'src/exceptions/login-fail.exception';
 import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-token.exception';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
@@ -33,13 +32,10 @@ export class AuthController {
    */
   @Post('signup')
   @ApiSuccessResponse(201, '회원가입 성공', SignupResponseDto)
-  @ApiFailResponse('인증 실패', [OAuthFailedException])
   @ApiFailResponse('업로드 필요', [ProfileUploadRequiredException])
   @ApiFailResponse('회원가입 실패', [UserConflictException])
-  @ApiFailResponse('유효하지 않은 구글 idToken', [
+  @ApiFailResponse('인증 실패', [
     InvalidGoogldIdTokenException,
-  ])
-  @ApiFailResponse('구글 idToken과 uuid 불일치', [
     InconsistentGoogldUuidException,
   ])
   signUp(
@@ -53,11 +49,9 @@ export class AuthController {
    */
   @Post('login')
   @ApiSuccessResponse(201, '로그인 성공', SigninResponseDto)
-  @ApiFailResponse('인증 실패', [LoginFailException, OAuthFailedException])
-  @ApiFailResponse('유효하지 않은 구글 idToken', [
+  @ApiFailResponse('인증 실패', [
+    LoginFailException,
     InvalidGoogldIdTokenException,
-  ])
-  @ApiFailResponse('구글 idToken과 uuid 불일치', [
     InconsistentGoogldUuidException,
   ])
   signin(
