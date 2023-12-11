@@ -175,7 +175,7 @@ class NetworkHandler @Inject constructor(private val userInfoManager: UserInfoMa
         const val RETRY_DELAY = 1000L
         const val UNCONNECTED_EXCEPTION = "UnconnectedException"
         val SUCCESS_RANGE = 200..299
-        private const val REQUEST_TIMEOUT = 10000L
+        private const val REQUEST_TIMEOUT = 600000L
         private const val CONNECT_TIMEOUT = 10000L
         private const val LOG_TAG = "KTOR_LOG"
     }
