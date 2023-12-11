@@ -121,7 +121,7 @@ export class AuthService {
 
   async verifyGoogleIdToken(idToken: string) {
     const client = new OAuth2Client();
-    console.log(idToken);
+
     try {
       const ticket = await client.verifyIdToken({
         idToken,
