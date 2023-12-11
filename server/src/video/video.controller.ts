@@ -92,8 +92,11 @@ export class VideoController {
    */
   @Get('top-rated')
   @ApiSuccessResponse(200, 'TOP 10 조회 성공', VideoListResponseDto)
-  getTopRatedVideo(@Query() query: TopVideoQueryDto) {
-    return this.videoService.getTopRatedVideo(query.category);
+  getTopRatedVideo(
+    @Query() query: TopVideoQueryDto,
+    @RequestUser() user: User,
+  ) {
+    return this.videoService.getTopRatedVideo(query.category, user.id);
   }
 
   /**
@@ -101,8 +104,8 @@ export class VideoController {
    */
   @Get('trend')
   @ApiSuccessResponse(200, '비디오 조회 성공', VideoListResponseDto)
-  getTrendVideo(@Query('limit') limit: number) {
-    return this.videoService.getTrendVideo(limit);
+  getTrendVideo(@Query('limit') limit: number, @RequestUser() user: User) {
+    return this.videoService.getTrendVideo(limit, user.id);
   }
 
   /**
@@ -111,8 +114,8 @@ export class VideoController {
   @Get(':id')
   @ApiSuccessResponse(200, '비디오 조회 성공', VideoInfoDto)
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
-  getVideo(@Param('id') videoId: string) {
-    return this.videoService.getVideo(videoId);
+  getVideo(@Param('id') videoId: string, @RequestUser() user: User) {
+    return this.videoService.getVideo(videoId, user.id);
   }
 
   /**

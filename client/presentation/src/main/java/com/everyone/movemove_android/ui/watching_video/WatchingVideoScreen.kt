@@ -32,7 +32,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -69,8 +68,6 @@ import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.profile.ProfileActivity
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.*
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.*
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.VideoTab.BOTTOM_TAB
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.VideoTab.CATEGORY_TAB
 import com.everyone.movemove_android.ui.watching_video.category.CategoryScreen
 import com.everyone.movemove_android.ui.theme.FooterBottomBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterMiddleBackgroundInDark
@@ -89,8 +86,6 @@ fun WatchingVideoScreen(
 ) {
     val context = LocalContext.current
 
-    var initialPage by remember { mutableIntStateOf(0) }
-
     val (state, event, effect) = use(viewModel)
 
     LaunchedEffect(effect) {
@@ -108,30 +103,14 @@ fun WatchingVideoScreen(
         }
     }
 
-    LaunchedEffect(state.videosList) {
-        if (state.videosList != null) {
-            event(SetVideos(videos = state.videosList.videos!!))
-            initialPage = state.page!!
-            event(ChangedVideoTab(CATEGORY_TAB))
-        } else {
-            if (state.videoTab == CATEGORY_TAB) event(GetRandomVideos)
-            event(ChangedVideoTab(BOTTOM_TAB))
-        }
-    }
-
     Scaffold { paddingValues ->
         if (state.isLoading) {
             LoadingDialog()
         } else {
             state.videos?.let { videosItem ->
-                val videoUri = videosItem.map { Uri.parse(it.video!!.manifest) }
-                val pagerState = rememberPagerState(pageCount = { videoUri.size })
-
-                if (state.videoTab == CATEGORY_TAB) {
-                    LaunchedEffect(initialPage) {
-                        pagerState.scrollToPage(initialPage)
-                    }
-                }
+                val videoUri = videosItem.map { Uri.parse(it.video?.manifest) }
+                val pagerState =
+                    rememberPagerState(initialPage = state.page, pageCount = { videoUri.size })
 
                 val exoPlayerPair = remember {
                     Triple(
@@ -158,7 +137,8 @@ fun WatchingVideoScreen(
                         Box(modifier = Modifier.fillMaxSize()) {
                             VideoPlayer(
                                 exoPlayer = exoPlayer,
-                                uri = videoUri[page]
+                                uri = videoUri[page],
+                                isScroll = !pagerState.isScrollInProgress
                             )
                             Column(modifier = Modifier.align(Alignment.BottomStart)) {
                                 videosItem[page].video?.let { video ->
@@ -175,29 +155,37 @@ fun WatchingVideoScreen(
                             }
                         }
 
-                        when (pagerState.settledPage % 3) {
-                            0 -> {
-                                exoPlayerPair.first.play()
-                                exoPlayerPair.second.pause()
-                                exoPlayerPair.third.pause()
-                            }
+                        if (!pagerState.isScrollInProgress) {
+                            when (pagerState.settledPage % 3) {
+                                0 -> {
+                                    exoPlayerPair.first.play()
+                                    exoPlayerPair.second.pause()
+                                    exoPlayerPair.third.pause()
+                                }
 
-                            1 -> {
-                                exoPlayerPair.first.pause()
-                                exoPlayerPair.second.play()
-                                exoPlayerPair.third.pause()
-                            }
+                                1 -> {
+                                    exoPlayerPair.first.pause()
+                                    exoPlayerPair.second.play()
+                                    exoPlayerPair.third.pause()
+                                }
 
-                            2 -> {
-                                exoPlayerPair.first.pause()
-                                exoPlayerPair.second.pause()
-                                exoPlayerPair.third.play()
+                                2 -> {
+                                    exoPlayerPair.first.pause()
+                                    exoPlayerPair.second.pause()
+                                    exoPlayerPair.third.play()
+                                }
                             }
+                        } else {
+                            exoPlayerPair.first.pause()
+                            exoPlayerPair.second.pause()
+                            exoPlayerPair.third.pause()
                         }
                     }
 
                     videosItem[pagerState.settledPage].video?.let { video ->
-                        event(PutVideosViews(video.id!!))
+                        video.id?.let { id ->
+                            event(PutVideosViews(id))
+                        }
                     }
 
                     if (state.isClickedCategory) {
@@ -277,6 +265,7 @@ fun WatchingVideoScreen(
 fun VideoPlayer(
     exoPlayer: ExoPlayer,
     uri: Uri,
+    isScroll: Boolean
 ) {
     val context = LocalContext.current
 
@@ -288,7 +277,7 @@ fun VideoPlayer(
         exoPlayer.apply {
             setMediaSource(source)
             prepare()
-            playWhenReady = true
+            playWhenReady = isScroll
             videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
             repeatMode = Player.REPEAT_MODE_ONE
         }
@@ -303,8 +292,7 @@ fun VideoPlayer(
         PlayerView(context).apply {
             hideController()
             useController = false
-            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
-
+            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
             player = exoPlayer
             layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         }
@@ -431,7 +419,11 @@ fun MoveMoveFooterContents(
 
         videos.uploader?.let { uploader ->
             Row(
-                modifier = Modifier.clickableWithoutRipple { event(OnClickedProfile(uploader.uuid!!)) },
+                modifier = Modifier.clickableWithoutRipple {
+                    uploader.uuid?.let { uuid ->
+                        event(OnClickedProfile(uuid))
+                    }
+                },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
             ) {

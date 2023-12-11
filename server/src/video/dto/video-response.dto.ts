@@ -20,6 +20,12 @@ export class VideoResponseDto {
   rating: string;
 
   /**
+   * 유저가 준 점수
+   * @example 5
+   */
+  userRating: number | null;
+
+  /**
    * 카테고리
    * @example "챌린지"
    */

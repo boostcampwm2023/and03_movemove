@@ -11,17 +11,14 @@ import com.everyone.domain.usecase.PutVideosRatingUseCase
 import com.everyone.domain.usecase.PutVideosViewsUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
-import com.everyone.movemove_android.ui.profile.ProfileContract
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnClickedCategory
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnCategorySelected
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Effect
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.ChangedVideoTab
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.GetRandomVideos
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnClickedVideoRating
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.PutVideosViews
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.SetVideos
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.State
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.VideoTab
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -60,7 +57,6 @@ class WatchingVideoViewModel @Inject constructor(
         when (event) {
             is OnClickedCategory -> onClickedCategory()
             is OnCategorySelected -> onCategorySelected(selectedCategory = event.selectedCategory)
-            is SetVideos -> setVideos(videos = event.videos)
             is GetRandomVideos -> getRandomVideos()
             is OnClickedVideoRating -> onClickedVideoRating(
                 id = event.id,
@@ -68,7 +64,6 @@ class WatchingVideoViewModel @Inject constructor(
                 reason = event.reason
             )
 
-            is ChangedVideoTab -> changedVideoTab(videoTab = event.videoTab)
             is PutVideosViews -> putVideosViews(videoId = event.videoId)
             is Event.OnClickedProfile -> onClickedProfile(uuid = event.uuid)
         }
@@ -79,11 +74,16 @@ class WatchingVideoViewModel @Inject constructor(
     }
 
     private fun getSavedState() {
-        _state.update {
-            it.copy(
-                videosList = savedStateHandle.get<VideosList>(WatchingVideoActivity.EXTRA_KEY_VIDEOS_LIST),
-                page = savedStateHandle.get<Int>(WatchingVideoActivity.EXTRA_KEY_VIDEOS_PAGE)
-            )
+        val videosList =
+            savedStateHandle.get<VideosList>(WatchingVideoActivity.EXTRA_KEY_VIDEOS_LIST)
+        val page = savedStateHandle.get<Int>(WatchingVideoActivity.EXTRA_KEY_VIDEOS_PAGE)
+
+        videosList?.let {
+            setVideos(videos = it.videos!!, page = page)
+            changedVideoTab(videoTab = VideoTab.CATEGORY_TAB)
+        } ?: run {
+            getRandomVideos()
+            changedVideoTab(videoTab = VideoTab.BOTTOM_TAB)
         }
     }
 
@@ -129,9 +129,15 @@ class WatchingVideoViewModel @Inject constructor(
         }
     }
 
-    private fun setVideos(videos: List<Videos>) {
+    private fun setVideos(
+        videos: List<Videos>?,
+        page: Int?
+    ) {
         _state.update {
-            it.copy(videos = videos)
+            it.copy(
+                videos = videos,
+                page = page ?: 0
+            )
         }
     }
 
@@ -193,7 +199,5 @@ class WatchingVideoViewModel @Inject constructor(
 
     companion object {
         const val LIMIT = "10"
-        const val EXTRA_KEY_VIDEOS_TREND = "EXTRA_KEY_VIDEOS_TREND"
-        const val EXTRA_KEY_VIDEOS_PAGE = "EXTRA_KEY_VIDEOS_PAGE"
     }
 }

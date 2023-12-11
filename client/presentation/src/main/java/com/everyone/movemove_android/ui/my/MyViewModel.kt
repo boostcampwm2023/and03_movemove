@@ -14,6 +14,7 @@ import com.everyone.movemove_android.ui.my.MyContract.Event
 import com.everyone.movemove_android.ui.my.MyContract.Event.OnClickEditProfile
 import com.everyone.movemove_android.ui.my.MyContract.Event.OnClickRatingVideo
 import com.everyone.movemove_android.ui.my.MyContract.Event.OnNullProfileNickname
+import com.everyone.movemove_android.ui.my.MyContract.Event.OnResume
 import com.everyone.movemove_android.ui.my.MyContract.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -47,6 +48,8 @@ class MyViewModel @Inject constructor(
         is OnClickEditProfile -> onClickEditProfile()
 
         is OnClickRatingVideo -> onClickRatingVideo()
+
+        is OnResume -> onResume()
     }
 
     init {
@@ -100,6 +103,10 @@ class MyViewModel @Inject constructor(
         viewModelScope.launch {
             _effect.emit(GoToRatingVideoScreen)
         }
+    }
+
+    private fun onResume() {
+        getProfile()
     }
 
 }
