@@ -12,13 +12,9 @@ import com.everyone.domain.usecase.PutVideosViewsUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnClickedCategory
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnCategorySelected
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Effect
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.GetRandomVideos
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.OnClickedVideoRating
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.PutVideosViews
+import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.*
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.State
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.VideoTab
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -65,7 +61,8 @@ class WatchingVideoViewModel @Inject constructor(
             )
 
             is PutVideosViews -> putVideosViews(videoId = event.videoId)
-            is Event.OnClickedProfile -> onClickedProfile(uuid = event.uuid)
+            is OnClickedProfile -> onClickedProfile(uuid = event.uuid)
+            is Refresh -> getSavedState()
         }
     }
 
@@ -114,7 +111,8 @@ class WatchingVideoViewModel @Inject constructor(
                                 it.copy(
                                     videos = result.data.videos,
                                     seed = result.data.seed.toString(),
-                                    isLoading = false
+                                    isLoading = false,
+                                    isError = false
                                 )
                             }
 
@@ -122,7 +120,12 @@ class WatchingVideoViewModel @Inject constructor(
                     }
 
                     is DataState.Failure -> {
-                        loading(isLoading = false)
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                isError = true
+                            )
+                        }
                     }
                 }
             }.launchIn(viewModelScope + ioDispatcher)
