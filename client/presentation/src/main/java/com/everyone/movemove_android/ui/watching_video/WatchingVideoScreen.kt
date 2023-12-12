@@ -371,6 +371,7 @@ fun MoveMoveScoreboard(
     event: (Event) -> Unit,
     snackBarState: SnackbarHostState
 ) {
+    // TODO : 유저 점수를 받아올 때 null이나 0 ~ 5(Int)를 받아 오게 되는데, Slider에 표시할 때는 0, 0.2, 0.4, 0.6, 0.8, 1f로 가공 해야함!
     val currentRating =
         video.userRating?.let { userRating -> (userRating * 0.2).toFloat() } ?: run { 0f }
     var sliderPosition by remember { mutableFloatStateOf(currentRating) }
