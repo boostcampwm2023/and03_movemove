@@ -5,13 +5,13 @@ import com.everyone.domain.model.ProfileImageUploadUrl
 import com.everyone.domain.model.UserInfo
 import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.VideosRated
-import com.everyone.domain.model.VideosUploaded
 import com.everyone.domain.model.base.DataState
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
     fun postSignUp(
-        accessToken: String,
+        platform: String,
+        idToken: String,
         uuid: String,
         profileImageExtension: String,
         nickname: String,
@@ -27,8 +27,10 @@ interface UserRepository {
     fun getProfileImageUploadUrl(
         profileImageExtension: String,
         uuid: String,
-        accessToken: String
+        idToken: String
     ): Flow<DataState<ProfileImageUploadUrl>>
+
+    fun getPresignedUrlProfile(profileExtension: String): Flow<DataState<ProfileImageUploadUrl>>
 
     fun storeRefreshToken(uuid: String): Flow<Boolean>
 
@@ -39,7 +41,8 @@ interface UserRepository {
     fun setAccessToken(accessToken: String)
 
     fun login(
-        accessToken: String,
+        platform: String,
+        idToken: String,
         uuid: String
     ): Flow<DataState<UserInfo>>
 
@@ -48,6 +51,12 @@ interface UserRepository {
         limit: String,
         lastId: String
     ): Flow<DataState<VideosList>>
+
+    fun patchUserProfile(
+        nickname: String,
+        statusMessage: String,
+        profileImageExtension: String
+    ): Flow<DataState<Profile>>
 
     fun getUsersVideosRated(
         userId: String,

@@ -15,10 +15,11 @@ import com.everyone.domain.usecase.SignUpUseCase
 import com.everyone.domain.usecase.StoreRefreshTokenUseCase
 import com.everyone.domain.usecase.StoreSignedPlatformUseCase
 import com.everyone.domain.usecase.StoreUUIDUseCase
+import com.everyone.movemove_android.R
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
-import com.everyone.movemove_android.ui.sign_up.SignUpActivity.Companion.KEY_ACCESS_TOKEN
 import com.everyone.movemove_android.ui.sign_up.SignUpActivity.Companion.KEY_BUNDLE
+import com.everyone.movemove_android.ui.sign_up.SignUpActivity.Companion.KEY_ID_TOKEN
 import com.everyone.movemove_android.ui.sign_up.SignUpActivity.Companion.KEY_PLATFORM
 import com.everyone.movemove_android.ui.sign_up.SignUpActivity.Companion.KEY_UUID
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect
@@ -27,6 +28,7 @@ import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.LaunchImag
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.LaunchImagePicker
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnClickSelectImage
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnClickSignUp
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnErrorDialogDismissed
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnGetCroppedImage
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnIntroduceTyped
@@ -83,6 +85,8 @@ class SignUpViewModel @Inject constructor(
         is OnGetCroppedImage -> onGetCroppedImage(event.imageBitmap)
 
         is OnClickSignUp -> onClickSignUp()
+
+        is OnErrorDialogDismissed -> onErrorDialogDismissed()
     }
 
     private fun onNicknameTyped(nickname: String) {
@@ -135,9 +139,9 @@ class SignUpViewModel @Inject constructor(
 
     private fun onClickSignUp() {
         val uuid = getBundle()?.getString(KEY_UUID)
-        val accessToken = getBundle()?.getString(KEY_ACCESS_TOKEN)
+        val idToken = getBundle()?.getString(KEY_ID_TOKEN)
 
-        if (uuid != null && accessToken != null) {
+        if (uuid != null && idToken != null) {
             _state.update {
                 it.copy(isLoading = true)
             }
@@ -145,19 +149,19 @@ class SignUpViewModel @Inject constructor(
             getProfileImageUploadUrlUseCase(
                 profileImageExtension = WEBP,
                 uuid = uuid,
-                accessToken = accessToken,
+                idToken = idToken,
             ).onEach { result ->
                 when (result) {
                     is DataState.Success -> {
                         result.data.presignedUrl?.let { profileImageUploadUrl ->
                             uploadProfileImage(profileImageUploadUrl)
                         } ?: run {
-                            // todo : 예외 처리
+                            showErrorDialog(R.string.error_upload_image_failure)
                         }
                     }
 
                     is DataState.Failure -> {
-                        // todo : 예외 처리
+                        showErrorDialog(R.string.error_upload_image_failure)
                     }
                 }
             }.launchIn(viewModelScope + ioDispatcher)
@@ -179,7 +183,7 @@ class SignUpViewModel @Inject constructor(
                     if (statusCode == PUT_FILE_SUCCESS) {
                         signUp()
                     } else {
-                        // todo : 예외 처리
+                        showErrorDialog(R.string.error_upload_image_failure)
                     }
                 }.collect()
             }
@@ -187,13 +191,14 @@ class SignUpViewModel @Inject constructor(
     }
 
     private suspend fun signUp() {
-        val accessToken = getBundle()?.getString(KEY_ACCESS_TOKEN)
+        val idToken = getBundle()?.getString(KEY_ID_TOKEN)
         val uuid = getBundle()?.getString(KEY_UUID)
         val platform = getBundle()?.getString(KEY_PLATFORM)
 
-        if (accessToken != null && uuid != null && platform != null) {
+        if (idToken != null && uuid != null && platform != null) {
             signUpUseCase(
-                accessToken = accessToken,
+                platform = platform,
+                idToken = idToken,
                 uuid = uuid,
                 profileImageExtension = WEBP,
                 nickname = state.value.nickname,
@@ -214,7 +219,7 @@ class SignUpViewModel @Inject constructor(
                     }
 
                     is DataState.Failure -> {
-                        // todo : 예외 처리
+                        showErrorDialog(R.string.error_sign_up)
                     }
                 }
             }.collect()
@@ -242,6 +247,19 @@ class SignUpViewModel @Inject constructor(
         }
 
         return false
+    }
+
+    private fun showErrorDialog(textResourceId: Int) {
+        _state.update {
+            it.copy(
+                isErrorDialogShowing = true,
+                errorDialogTextResourceId = textResourceId
+            )
+        }
+    }
+
+    private fun onErrorDialogDismissed() {
+
     }
 
     companion object {

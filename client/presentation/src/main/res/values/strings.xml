@@ -2,6 +2,9 @@
     <string name="app_name">뭅뭅</string>
     <string name="app_description">댄스 숏폼 비디오 플랫폼, 뭅뭅</string>
 
+    <!--    contatiner-->
+    <string name="on_back_pressed_message">뒤로가기 버튼을\n한번 더 누르면 종료됩니다.</string>
+
     <!--    common-->
     <string name="challenge">챌린지</string>
     <string name="old_school">올드스쿨</string>
@@ -9,6 +12,7 @@
     <string name="k_pop">K-POP</string>
     <string name="top_bar_profile_title">프로필</string>
     <string name="complete">완료</string>
+    <string name="confirm">확인</string>
 
     <!--    navigation-->
     <string name="navigation_home">홈</string>
@@ -34,7 +38,9 @@
     <string name="trending_title">Trending</string>
     <string name="challenge_title">챌린지</string>
     <string name="old_school_title">올드스쿨</string>
+    <string name="new_school_title">뉴스쿨</string>
     <string name="top_10_title">" TOP 10"</string>
+    <string name="rating_video_snackbar_message">%d점을 주었어요</string>
 
     <!--    login-->
     <string name="kakao_login">카카오 로그인</string>
@@ -57,9 +63,30 @@
 
     <!--    home-->
     <string name="empty_ads_title">광고가 없습니다</string>
+    <string name="error_ads">광고를 가져 올 수 없습니다</string>
     <string name="empty_video_title">영상이 없습니다</string>
+    <string name="error_video">영상을 가져 올 수 없습니다</string>
 
     <!--    rating_video-->
     <string name="rating_video_title">내가 점수를 준 영상 모아보기</string>
+
+    <!--    dialog-->
+    <string name="notice">알림</string>
+
+            <!--    uploading_video-->
+    <string name="error_get_video_file_path">영상을 가져 올 수 없습니다</string>
+    <string name="loading_video_trimming">영상을 편집하고 있습니다</string>
+    <string name="error_video_trimming">영상을 편집할 수 없습니다\n올바른 파일인지 확인해 주세요</string>
+    <string name="error_no_video">영상 파일이 추가되지 않았습니다\n다시 시도해 주세요</string>
+    <string name="error_getting_thumbnail">썸네일을 가져 올 수 없습니다\n올바른 파일인지 확인해 주세요</string>
+    <string name="error_uploading_video">비디오 업로드에 실패하였습니다\n잠시 후 다시 시도해 주세요</string>
+            <!--    sign_up-->
+    <string name="error_upload_image_failure">이미지를 업로드할 수 없습니다\n잠시 후 다시 시도해 주세요</string>
+    <string name="error_sign_up">가입에 실패 하였습니다\n잠시 후 다시 시도해 주세요</string>
+
+    <!--    error_screen-->
+    <string name="error_screen_title">문제가 발생했습니다</string>
+    <string name="error_screen_sub_title">다시 시도</string>
+    <string name="invald_video_title">잘못된 영상입니다</string>
 
 </resources>

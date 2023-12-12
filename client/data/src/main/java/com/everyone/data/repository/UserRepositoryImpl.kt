@@ -7,10 +7,11 @@ import com.everyone.data.local.UserInfoManager.Companion.KEY_UUID
 import com.everyone.data.remote.NetworkHandler
 import com.everyone.data.remote.RemoteConstants.ACCESS_TOKEN
 import com.everyone.data.remote.RemoteConstants.AUTH
-import com.everyone.data.remote.RemoteConstants.LAST_RATED_AT
+import com.everyone.data.remote.RemoteConstants.ID_TOKEN
 import com.everyone.data.remote.RemoteConstants.LIMIT
 import com.everyone.data.remote.RemoteConstants.LOGIN
 import com.everyone.data.remote.RemoteConstants.NICKNAME
+import com.everyone.data.remote.RemoteConstants.PLATFORM
 import com.everyone.data.remote.RemoteConstants.PRESIGNED_URL
 import com.everyone.data.remote.RemoteConstants.PROFILE
 import com.everyone.data.remote.RemoteConstants.PROFILE_EXTENSION
@@ -50,7 +51,8 @@ class UserRepositoryImpl @Inject constructor(
     private val userInfoManager: UserInfoManager
 ) : UserRepository {
     override fun postSignUp(
-        accessToken: String,
+        platform: String,
+        idToken: String,
         uuid: String,
         profileImageExtension: String,
         nickname: String,
@@ -61,7 +63,8 @@ class UserRepositoryImpl @Inject constructor(
             isAccessTokenNeeded = false,
             url = { path(AUTH, SIGN_UP) },
             content = {
-                append(ACCESS_TOKEN, accessToken)
+                append(PLATFORM, platform)
+                append(ID_TOKEN, idToken)
                 append(UUID, uuid)
                 append(PROFILE_IMAGE_EXTENSION, profileImageExtension)
                 append(NICKNAME, nickname)
@@ -96,7 +99,7 @@ class UserRepositoryImpl @Inject constructor(
     override fun getProfileImageUploadUrl(
         profileImageExtension: String,
         uuid: String,
-        accessToken: String
+        idToken: String
     ): Flow<DataState<ProfileImageUploadUrl>> = flow {
         networkHandler.request<ProfileImageUploadUrlResponse>(
             method = HttpMethod.Get,
@@ -105,7 +108,7 @@ class UserRepositoryImpl @Inject constructor(
                 path(AUTH, SIGN_UP, PRESIGNED_URL, PROFILE)
                 parameters.append(PROFILE_EXTENSION, profileImageExtension)
                 parameters.append(UUID, uuid)
-                parameters.append(ACCESS_TOKEN, accessToken)
+                parameters.append(ACCESS_TOKEN, idToken)
             }
         ).collect { response ->
             response.data?.let {
@@ -116,8 +119,24 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun storeRefreshToken(refreshToken: String): Flow<Boolean> =
-        userInfoManager.store(KEY_REFRESH_TOKEN, refreshToken)
+    override fun getPresignedUrlProfile(profileExtension: String): Flow<DataState<ProfileImageUploadUrl>> = flow {
+        networkHandler.request<ProfileImageUploadUrlResponse>(
+            method = HttpMethod.Get,
+            url = {
+                path(PRESIGNED_URL, PROFILE)
+                parameters.append(PROFILE_EXTENSION, profileExtension)
+            }
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
+            }
+        }
+    }
+
+    override fun storeRefreshToken(refreshToken: String): Flow<Boolean> = userInfoManager.store(KEY_REFRESH_TOKEN, refreshToken)
+
 
     override fun storeUUID(uuid: String): Flow<Boolean> = userInfoManager.store(KEY_UUID, uuid)
 
@@ -129,7 +148,8 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override fun login(
-        accessToken: String,
+        platform: String,
+        idToken: String,
         uuid: String
     ): Flow<DataState<UserInfo>> = flow {
         networkHandler.request<UserInfoResponse>(
@@ -137,7 +157,8 @@ class UserRepositoryImpl @Inject constructor(
             isAccessTokenNeeded = false,
             url = { path(AUTH, LOGIN) },
             content = {
-                append(ACCESS_TOKEN, accessToken)
+                append(PLATFORM, platform)
+                append(ID_TOKEN, idToken)
                 append(UUID, uuid)
             }
         ).collect { response ->
@@ -182,6 +203,28 @@ class UserRepositoryImpl @Inject constructor(
                 parameters.append(LIMIT, limit)
             },
             content = null
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
+            }
+        }
+    }
+
+    override fun patchUserProfile(
+        nickname: String,
+        statusMessage: String,
+        profileImageExtension: String
+    ): Flow<DataState<Profile>> = flow {
+        networkHandler.request<ProfileResponse>(
+            method = HttpMethod.Patch,
+            url = { path(USERS, PROFILE) },
+            content = {
+                append(NICKNAME, nickname)
+                append(STATUS_MESSAGE, statusMessage)
+                append(PROFILE_IMAGE_EXTENSION, profileImageExtension)
+            }
         ).collect { response ->
             response.data?.let {
                 emit(DataState.Success(it.toDomainModel()))

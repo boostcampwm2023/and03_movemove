@@ -7,8 +7,11 @@ import com.everyone.domain.model.base.DataState
 import com.everyone.domain.usecase.GetAdsUseCase
 import com.everyone.domain.usecase.GetVideosTopRatedUseCase
 import com.everyone.domain.usecase.GetVideosTrendUseCase
+import com.everyone.movemove_android.R
 import com.everyone.movemove_android.di.IoDispatcher
+import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.screens.home.HomeContract.*
+import com.everyone.movemove_android.ui.screens.home.HomeContract.Event.*
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -23,11 +26,13 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @MainImmediateDispatcher private val mainImmediateDispatcher: CoroutineDispatcher,
     private val getAdsUseCase: GetAdsUseCase,
     private val getVideosTrendUseCase: GetVideosTrendUseCase,
     private val getVideosTopRatedUseCase: GetVideosTopRatedUseCase
@@ -39,7 +44,8 @@ class HomeViewModel @Inject constructor(
     override val effect: SharedFlow<Effect> = _effect.asSharedFlow()
 
     override fun event(event: Event) = when (event) {
-        is Event.OnClickedVideo -> onClickedVideo(event.videosList, event.page)
+        is OnClickedVideo -> onClickedVideo(event.videosList, event.page)
+        is OnErrorDialogDismissed -> onErrorDialogDismissed()
     }
 
     init {
@@ -47,93 +53,139 @@ class HomeViewModel @Inject constructor(
         getVideosTrend()
         geVideosTopRated(category = Category.CHALLENGE)
         geVideosTopRated(category = Category.OLD_SCHOOL)
+        geVideosTopRated(category = Category.NEW_SCHOOL)
+        geVideosTopRated(category = Category.K_POP)
     }
 
     private fun onClickedVideo(videosList: VideosList, page: Int) {
         viewModelScope.launch {
-            _effect.emit(Effect.OnClickedVideo(videosList, page))
+            _effect.emit(Effect.NavigateToWatchingVideo(videosList, page))
         }
     }
 
     private fun getAds() {
-        loading(isLoading = true)
-        getAdsUseCase().onEach { result ->
-            when (result) {
-                is DataState.Success -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            advertisements = result.data
-                        )
+        viewModelScope.launch {
+            loading(isLoading = true)
+            getAdsUseCase().onEach { result ->
+                when (result) {
+                    is DataState.Success -> {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                advertisements = result.data
+                            )
+                        }
+                    }
+
+                    is DataState.Failure -> {
+                        loading(isLoading = false)
+                        showErrorDialog(R.string.error_ads)
                     }
                 }
-
-                is DataState.Failure -> {
-                    loading(isLoading = false)
-                }
-            }
-        }.launchIn(viewModelScope + ioDispatcher)
+            }.launchIn(viewModelScope + ioDispatcher)
+        }
     }
 
     private fun getVideosTrend() {
-        loading(isLoading = true)
-        getVideosTrendUseCase(limit = LIMIT).onEach { result ->
-            when (result) {
-                is DataState.Success -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            videosTrend = result.data
-                        )
+        viewModelScope.launch {
+            loading(isLoading = true)
+            getVideosTrendUseCase(limit = LIMIT).onEach { result ->
+                when (result) {
+                    is DataState.Success -> {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                videosTrend = result.data
+                            )
+                        }
+                    }
+
+                    is DataState.Failure -> {
+                        showErrorDialog(R.string.error_video)
+                        loading(isLoading = false)
                     }
                 }
-
-                is DataState.Failure -> {
-                    loading(isLoading = false)
-                }
-            }
-        }.launchIn(viewModelScope + ioDispatcher)
+            }.launchIn(viewModelScope + ioDispatcher)
+        }
     }
+
 
     private fun geVideosTopRated(category: Category) {
-        loading(isLoading = true)
-        getVideosTopRatedUseCase(category = category.displayName).onEach { result ->
-            when (result) {
-                is DataState.Success -> {
-                    when (category) {
-                        Category.CHALLENGE -> {
-                            _state.update {
-                                it.copy(
-                                    isLoading = false,
-                                    videosTopRatedChallenge = result.data
-                                )
+        viewModelScope.launch {
+            loading(isLoading = true)
+            getVideosTopRatedUseCase(category = category.displayName).onEach { result ->
+                when (result) {
+                    is DataState.Success -> {
+                        when (category) {
+                            Category.CHALLENGE -> {
+                                _state.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        videosTopRatedChallenge = result.data
+                                    )
+                                }
                             }
-                        }
 
-                        Category.OLD_SCHOOL -> {
-                            _state.update {
-                                it.copy(
-                                    isLoading = false,
-                                    videosTopRatedOldSchool = result.data
-                                )
+                            Category.OLD_SCHOOL -> {
+                                _state.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        videosTopRatedOldSchool = result.data
+                                    )
+                                }
                             }
-                        }
 
-                        else -> {}
+                            Category.NEW_SCHOOL -> {
+                                _state.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        videosTopRatedNewSchool = result.data
+                                    )
+                                }
+                            }
+
+                            Category.K_POP -> {
+                                _state.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        videosTopRatedKPOP = result.data
+                                    )
+                                }
+                            }
+
+                            else -> {}
+                        }
+                    }
+
+                    is DataState.Failure -> {
+                        showErrorDialog(R.string.error_video)
+                        loading(isLoading = false)
                     }
                 }
-
-                is DataState.Failure -> {
-                    loading(isLoading = false)
-                }
-            }
-        }.launchIn(viewModelScope + ioDispatcher)
-
+            }.launchIn(viewModelScope + ioDispatcher)
+        }
     }
 
-    private fun loading(isLoading: Boolean) {
+    private fun showErrorDialog(textResourceId: Int) {
         _state.update {
-            it.copy(isLoading = isLoading)
+            it.copy(
+                isErrorDialogShowing = true,
+                errorDialogTextResourceId = textResourceId
+            )
+        }
+    }
+
+    private fun onErrorDialogDismissed() {
+        _state.update {
+            it.copy(isErrorDialogShowing = false)
+        }
+    }
+
+    private suspend fun loading(isLoading: Boolean) {
+        withContext(mainImmediateDispatcher) {
+            _state.update {
+                it.copy(isLoading = isLoading)
+            }
         }
     }
 

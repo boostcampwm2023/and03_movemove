@@ -6,8 +6,11 @@ enum ErrorCode {
   TokenExpired = 1001,
   InvalidToken = 1002,
   BadTokenFormat = 1003,
-  OAuthFailed = 1004,
   InvalidRefreshToken = 1005,
+  InvalidKakaoIdToken = 1007,
+  InconsistentKakaoUuid = 1017,
+  InvalidGoogleIdToken = 1006,
+  InconsistentGoogleUuid = 1016,
   VideoNotFound = 4000,
   UserNotFound = 4001,
   ObjectNotFound = 4002,
@@ -19,6 +22,9 @@ enum ErrorCode {
   BadVideoFormat = 8000,
   BadThumbnailFormat = 8100,
   BadRequestFormat = 8200,
+  EncodingActionFail = 4280,
+  GreenEyeApiFail = 4281,
+  GreenEyeActionFail = 4282,
 }
 
 const ErrorMessage = {
@@ -28,8 +34,9 @@ const ErrorMessage = {
   [ErrorCode.LoginFail]: '가입되지 않은 회원',
   [ErrorCode.TokenExpired]: 'AccessToken 만료',
   [ErrorCode.InvalidToken]: 'AccessToken 검증 오류',
-  [ErrorCode.OAuthFailed]: '소셜 Token 인증 오류',
   [ErrorCode.InvalidRefreshToken]: '유효하지 않은 RefreshToken',
+  [ErrorCode.InvalidGoogleIdToken]: '유효하지 않은 구글 idToken',
+  [ErrorCode.InconsistentGoogleUuid]: '구글 idToken과 uuid가 일치하지 않음',
   [ErrorCode.BadVideoFormat]: '비디오 포맷 오류',
   [ErrorCode.BadThumbnailFormat]: '썸네일 포맷 오류',
   [ErrorCode.NotYourVideo]: '업로더만이 요청할 수 있음',
@@ -41,6 +48,11 @@ const ErrorMessage = {
   [ErrorCode.ThumbnailUploadRequired]: '썸네일을 먼저 업로드 해야합니다.',
   [ErrorCode.VideoUploadRequired]: '비디오를 먼저 업로드 해야합니다.',
   [ErrorCode.BadRequestFormat]: '요청 형식이 잘못됨',
+  [ErrorCode.EncodingActionFail]: '인코딩 액션 실패',
+  [ErrorCode.GreenEyeApiFail]: 'greeneye api 요청 실패',
+  [ErrorCode.GreenEyeActionFail]: 'greeneye 액션 실패',
+  [ErrorCode.InvalidKakaoIdToken]: '유효하지 않은 카카오 idToken',
+  [ErrorCode.InconsistentKakaoUuid]: '카카오 idToken과 uuid가 일치하지 않음',
 };
 
 export { ErrorCode, ErrorMessage };

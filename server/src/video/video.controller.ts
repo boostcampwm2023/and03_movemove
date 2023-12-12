@@ -6,18 +6,11 @@ import {
   Post,
   Delete,
   Body,
-  Header,
   UseInterceptors,
   UseGuards,
   Query,
 } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiBearerAuth,
-  ApiOkResponse,
-  ApiProduces,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ApiFailResponse } from 'src/decorators/api-fail-response';
@@ -29,12 +22,11 @@ import { NotYourVideoException } from 'src/exceptions/not-your-video.exception';
 import { RequestUser, User } from 'src/decorators/request-user';
 import { ActionService } from 'src/action/action.service';
 import { NeverViewVideoException } from 'src/exceptions/never-view-video.exception';
-import { IgnoreInterceptor } from 'src/decorators/ignore-interceptor';
-import { SeedQueryDto } from 'src/action/dto/manifest-query.dto';
 import { VideoConflictException } from 'src/exceptions/video-conflict.exception';
 import { ThumbnailUploadRequiredException } from 'src/exceptions/thumbnail-upload-required-exception copy 2';
 import { VideoUploadRequiredException } from 'src/exceptions/video-upload-required-exception copy';
 import { BadRequestFormatException } from 'src/exceptions/bad-request-format.exception';
+import { EncodingActionFailException } from 'src/exceptions/encoding-action-fail.exception';
 import { VideoService } from './video.service';
 import { VideoDto } from './dto/video.dto';
 import { VideoRatingDTO } from './dto/video-rating.dto';
@@ -70,7 +62,7 @@ export class VideoController {
   }
 
   /**
-   * 비디오 업로드
+   * 비디오 인코딩
    */
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -86,6 +78,7 @@ export class VideoController {
     VideoUploadRequiredException,
     ThumbnailUploadRequiredException,
   ])
+  @ApiFailResponse('인코딩 실패', [EncodingActionFailException])
   uploadVideo(
     @Body() videoDto: VideoDto,
     @RequestUser() user: User,
@@ -99,33 +92,11 @@ export class VideoController {
    */
   @Get('top-rated')
   @ApiSuccessResponse(200, 'TOP 10 조회 성공', VideoListResponseDto)
-  getTopRatedVideo(@Query() query: TopVideoQueryDto) {
-    return this.videoService.getTopRatedVideo(query.category);
-  }
-
-  /**
-   * Manifest 파일 반환
-   */
-  @IgnoreInterceptor()
-  @ApiTags('LEGACY')
-  @Get(':id/manifest')
-  @ApiProduces('application/vnd.apple.mpegurl')
-  @ApiOkResponse({
-    type: String,
-    description: '비디오 Manifest 파일',
-  })
-  @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
-  @Header('content-type', 'application/vnd.apple.mpegurl')
-  getManifest(
-    @Param('id') videoId: string,
+  getTopRatedVideo(
+    @Query() query: TopVideoQueryDto,
     @RequestUser() user: User,
-    @Query() manifestQueryDto: SeedQueryDto,
   ) {
-    return this.videoService.getManifest(
-      videoId,
-      user.id,
-      manifestQueryDto.seed,
-    );
+    return this.videoService.getTopRatedVideo(query.category, user.id);
   }
 
   /**
@@ -133,8 +104,8 @@ export class VideoController {
    */
   @Get('trend')
   @ApiSuccessResponse(200, '비디오 조회 성공', VideoListResponseDto)
-  getTrendVideo(@Query('limit') limit: number) {
-    return this.videoService.getTrendVideo(limit);
+  getTrendVideo(@Query('limit') limit: number, @RequestUser() user: User) {
+    return this.videoService.getTrendVideo(limit, user.id);
   }
 
   /**
@@ -143,8 +114,8 @@ export class VideoController {
   @Get(':id')
   @ApiSuccessResponse(200, '비디오 조회 성공', VideoInfoDto)
   @ApiFailResponse('비디오를 찾을 수 없음', [VideoNotFoundException])
-  getVideo(@Param('id') videoId: string) {
-    return this.videoService.getVideo(videoId);
+  getVideo(@Param('id') videoId: string, @RequestUser() user: User) {
+    return this.videoService.getVideo(videoId, user.id);
   }
 
   /**

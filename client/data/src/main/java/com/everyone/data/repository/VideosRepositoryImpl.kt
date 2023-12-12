@@ -21,16 +21,18 @@ import com.everyone.data.remote.model.CreatedVideoResponse
 import com.everyone.data.remote.model.CreatedVideoResponse.Companion.toDomainModel
 import com.everyone.data.remote.model.VideoUploadUrlResponse
 import com.everyone.data.remote.model.VideoUploadUrlResponse.Companion.toDomainModel
-import com.everyone.data.remote.model.VideosRandomResponse
-import com.everyone.data.remote.model.VideosRandomResponse.Companion.toDomainModel
 import com.everyone.data.remote.model.VideosListResponse
 import com.everyone.data.remote.model.VideosListResponse.Companion.toDomainModel
+import com.everyone.data.remote.model.VideosRandomResponse
+import com.everyone.data.remote.model.VideosRandomResponse.Companion.toDomainModel
+import com.everyone.data.remote.model.VideosResponse
+import com.everyone.data.remote.model.VideosResponse.Companion.toDomainModel
 import com.everyone.domain.model.CreatedVideo
 import com.everyone.domain.model.VideoUploadUrl
-import com.everyone.domain.model.VideosRandom
+import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosList
+import com.everyone.domain.model.VideosRandom
 import com.everyone.domain.model.base.DataState
-import com.everyone.domain.model.base.NetworkError
 import com.everyone.domain.repository.VideosRepository
 import io.ktor.http.HttpMethod
 import io.ktor.http.path
@@ -120,7 +122,7 @@ class VideosRepositoryImpl @Inject constructor(
                 response.data?.let {
                     emit(DataState.Success(it.toDomainModel()))
                 } ?: run {
-                    emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
+                    emit(response.toFailure())
                 }
             }
         }
@@ -143,7 +145,7 @@ class VideosRepositoryImpl @Inject constructor(
                 response.data?.let {
                     emit(DataState.Success(it))
                 } ?: run {
-                    emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
+                    emit(response.toFailure())
                 }
             }
         }
@@ -159,43 +161,52 @@ class VideosRepositoryImpl @Inject constructor(
                 response.data?.let {
                     emit(DataState.Success(it))
                 } ?: run {
-                    emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
+                    emit(response.toFailure())
                 }
             }
         }
 
-    override fun getVideosTopRated(category: String): Flow<DataState<VideosList>> {
-        return flow {
-            networkHandler.request<VideosListResponse>(
-                method = HttpMethod.Get,
-                url = {
-                    path(VIDEOS, TOP_RATED)
-                    parameters.append(CATEGORY, category)
-                }
-            ).collect { response ->
-                response.data?.let {
-                    emit(DataState.Success(it.toDomainModel()))
-                } ?: run {
-                    emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
-                }
+    override fun getVideosTopRated(category: String): Flow<DataState<VideosList>> = flow {
+        networkHandler.request<VideosListResponse>(
+            method = HttpMethod.Get,
+            url = {
+                path(VIDEOS, TOP_RATED)
+                parameters.append(CATEGORY, category)
+            }
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
             }
         }
     }
 
-    override fun getVideosTrend(limit: String): Flow<DataState<VideosList>> {
-        return flow {
-            networkHandler.request<VideosListResponse>(
-                method = HttpMethod.Get,
-                url = {
-                    path(VIDEOS, TREND)
-                    parameters.append(LIMIT, limit)
-                }
-            ).collect { response ->
-                response.data?.let {
-                    emit(DataState.Success(it.toDomainModel()))
-                } ?: run {
-                    emit(DataState.Failure(NetworkError(response.statusCode, response.message)))
-                }
+    override fun getVideosTrend(limit: String): Flow<DataState<VideosList>> = flow {
+        networkHandler.request<VideosListResponse>(
+            method = HttpMethod.Get,
+            url = {
+                path(VIDEOS, TREND)
+                parameters.append(LIMIT, limit)
+            }
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
+            }
+        }
+    }
+
+    override fun getVideoWithId(videoId: String): Flow<DataState<Videos>> = flow {
+        networkHandler.request<VideosResponse>(
+            method = HttpMethod.Get,
+            url = { path(VIDEOS, videoId) }
+        ).collect { response ->
+            response.data?.let {
+                emit(DataState.Success(it.toDomainModel()))
+            } ?: run {
+                emit(response.toFailure())
             }
         }
     }

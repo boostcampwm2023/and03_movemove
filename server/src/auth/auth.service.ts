@@ -9,7 +9,15 @@ import { InvalidRefreshTokenException } from 'src/exceptions/invalid-refresh-tok
 import { UserInfoDto } from 'src/user/dto/user-info.dto';
 import { checkUpload } from 'src/ncpAPI/listObjects';
 import { ProfileUploadRequiredException } from 'src/exceptions/profile-upload-required-exception';
-import { SignupRequestDto } from './dto/signup-request.dto';
+import * as assert from 'assert';
+import axios from 'axios';
+import { InvalidKakaoIdTokenException } from 'src/exceptions/invalid-kakao-idtoken.exception';
+import { InconsistentKakaoUuidException } from 'src/exceptions/inconsistent-kakao-uuid.exception';
+import { createPublicKey } from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
+import { InvalidGoogldIdTokenException } from 'src/exceptions/invalid-google-idToken.exception';
+import { InconsistentGoogldUuidException } from 'src/exceptions/inconsistent-google-uuid.exception';
+import { PlatformEnum, SignupRequestDto } from './dto/signup-request.dto';
 import { JwtDto } from './dto/jwt.dto';
 import { SignupResponseDto } from './dto/signup-response.dto';
 import { SigninResponseDto } from './dto/signin-response.dto';
@@ -31,7 +39,8 @@ export class AuthService {
   }
 
   async create(signupRequestDto: SignupRequestDto): Promise<SignupResponseDto> {
-    const { uuid, profileImageExtension } = signupRequestDto;
+    const { uuid, profileImageExtension, platform, idToken } = signupRequestDto;
+    await this.verifyUuid(platform, idToken, uuid);
     await this.checkUserConflict(uuid);
     if (
       profileImageExtension &&
@@ -93,8 +102,66 @@ export class AuthService {
     return { jwt, profile };
   }
 
+  async verifyKakaoIdToken(idToken: string) {
+    try {
+      const tokens = idToken.split('.');
+      assert(tokens.length === 3);
+      const [header, payload] = tokens
+        .slice(0, 2)
+        .map((token) =>
+          JSON.parse(Buffer.from(token, 'base64').toString('utf-8')),
+        );
+      assert(
+        payload.iss === process.env.KAKAO_ISS &&
+          payload.aud === process.env.KAKAO_APP_KEY &&
+          payload.exp > Date.now() / 1000,
+      );
+      const jwks = (await axios.get(process.env.KAKAO_KEY_URL)).data.keys;
+
+      const key = jwks.find((jwk) => jwk.kid === header.kid);
+      assert(key);
+      const keyObject = createPublicKey({
+        key,
+        format: 'jwk',
+      });
+      const secret = keyObject.export({ type: 'pkcs1', format: 'pem' });
+      await this.jwtService.verifyAsync(idToken, {
+        algorithms: [key.alg],
+        secret,
+      });
+      const id = Number(payload.sub);
+
+      return this.formatAsUUID(id, id);
+    } catch (e) {
+      throw new InvalidKakaoIdTokenException();
+    }
+  }
+
+  formatAsUUID(mostSigBits: number, leastSigBits: number) {
+    const most = mostSigBits.toString(16).padStart(16, '0');
+    const least = leastSigBits.toString(16).padStart(16, '0');
+    return `${most.substring(0, 8)}-${most.substring(8, 12)}-${most.substring(
+      12,
+    )}-${least.substring(0, 4)}-${least.substring(4)}`;
+  }
+
+  async verifyUuid(platform: PlatformEnum, idToken: string, uuid: string) {
+    switch (platform) {
+      case PlatformEnum.GOOGLE:
+        if (uuid !== (await this.verifyGoogleIdToken(idToken)))
+          throw new InconsistentGoogldUuidException();
+        break;
+      case PlatformEnum.KAKAO:
+        if (uuid !== (await this.verifyKakaoIdToken(idToken)))
+          throw new InconsistentKakaoUuidException();
+        break;
+      default:
+    }
+  }
+
   async signin(signinRequestDto: SigninRequestDto): Promise<SigninResponseDto> {
-    const { uuid } = signinRequestDto;
+    const { uuid, platform, idToken } = signinRequestDto;
+    await this.verifyUuid(platform, idToken, uuid);
     const user = await this.UserModel.findOne({ uuid });
     if (!user) {
       throw new LoginFailException();
@@ -102,5 +169,25 @@ export class AuthService {
     return this.getLoginInfo(user).then(
       (loginInfo) => new SigninResponseDto(loginInfo),
     );
+  }
+
+  async verifyGoogleIdToken(idToken: string) {
+    const client = new OAuth2Client();
+
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      const userid = payload.sub;
+      const uuid = this.formatAsUUID(
+        Number(userid.substring(0, 10)),
+        Number(userid.substring(10)),
+      );
+      return uuid;
+    } catch (err) {
+      throw new InvalidGoogldIdTokenException();
+    }
   }
 }

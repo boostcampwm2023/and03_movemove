@@ -4,7 +4,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { requestEncoding } from 'src/ncpAPI/requestEncoding';
 import { User } from 'src/user/schemas/user.schema';
 import { deleteObject } from 'src/ncpAPI/deleteObject';
 import { VideoNotFoundException } from 'src/exceptions/video-not-found.exception';
@@ -14,10 +13,12 @@ import * as _ from 'lodash';
 import { ActionService } from 'src/action/action.service';
 import { createPresignedUrl } from 'src/ncpAPI/presignedURL';
 import { VideoConflictException } from 'src/exceptions/video-conflict.exception';
-import { checkUpload } from 'src/ncpAPI/listObjects';
+import { checkUpload, listObjects } from 'src/ncpAPI/listObjects';
 import { VideoUploadRequiredException } from 'src/exceptions/video-upload-required-exception copy';
 import { ThumbnailUploadRequiredException } from 'src/exceptions/thumbnail-upload-required-exception copy 2';
 import { BadRequestFormatException } from 'src/exceptions/bad-request-format.exception';
+import { EncodingActionFailException } from 'src/exceptions/encoding-action-fail.exception';
+import { GreenEyeActionFailException } from 'src/exceptions/greeneye-action-fail.exception';
 import { VideoDto } from './dto/video.dto';
 import { Video } from './schemas/video.schema';
 import { CategoryEnum } from './enum/category.enum';
@@ -98,33 +99,17 @@ export class VideoService {
     const SEED_MAX = 1_000_000;
     const viewSeed = seed ?? Math.floor(Math.random() * SEED_MAX);
     const videoInfos = await Promise.all(
-      videos.map((video) => this.getVideoInfo(video)),
+      videos.map((video) => this.getVideoInfo(video, userId)),
     );
     return { videos: videoInfos, seed: viewSeed };
   }
 
-  async getManifest(videoId: string, userId: string, seed: number) {
-    this.actionService.viewVideo(videoId, userId, seed);
-
-    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
-    const manifestURL = `${process.env.MANIFEST_URL_PREFIX}${videoId}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
-    const manifest: string = await axios
-      .get(manifestURL)
-      .then((res) => res.data);
-
-    let index = -1;
-    const modifiedManifest = manifest.replace(/.*\.m3u8$/gm, () => {
-      index += 1;
-      return `${process.env.MANIFEST_URL_PREFIX}${videoId}_${encodingSuffixes[index]}${process.env.SBR_MANIFEST_URL_SUFFIX}`;
-    });
-    return modifiedManifest;
-  }
-
-  async getVideoInfo(video: any): Promise<VideoInfoDto> {
+  async getVideoInfo(video: any, userId: string): Promise<VideoInfoDto> {
     const { totalRating, raterCount, uploaderId, ...videoInfo } = video;
     const rating = raterCount ? (totalRating / raterCount).toFixed(1) : null;
+    const userRating = await this.getUserRating(userId, videoInfo._id);
 
-    const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
+    const manifest = `${process.env.MANIFEST_URL_PREFIX}/${videoInfo._id}_master.m3u8`;
 
     const { profileImageExtension, uuid, ...uploaderInfo } =
       '_doc' in uploaderId ? uploaderId._doc : uploaderId; // uploaderId가 model인경우 _doc을 붙여줘야함
@@ -149,9 +134,24 @@ export class VideoService {
     };
 
     return {
-      video: { ...videoInfo, manifest, rating, thumbnailImageUrl },
+      video: { ...videoInfo, manifest, rating, userRating, thumbnailImageUrl },
       uploader,
     };
+  }
+
+  async getUserRating(uuid: string, videoId: string) {
+    const userData = await this.UserModel.findOne(
+      {
+        uuid,
+        'actions.videoId': videoId,
+      },
+      {
+        _id: 0,
+        'actions.$': 1,
+      },
+    );
+    const userRating = userData ? userData.actions.pop().rating : null;
+    return userRating;
   }
 
   async uploadVideo(videoDto: VideoDto, uuid: string, videoId: string) {
@@ -170,9 +170,14 @@ export class VideoService {
       throw new ThumbnailUploadRequiredException();
     }
 
-    await requestEncoding(process.env.INPUT_BUCKET, [videoName]);
-
-    const uploader = await this.UserModel.findOne({ uuid }, { _id: 1 });
+    const [__, uploader] = await Promise.all([
+      this.requestEncodingAPI(
+        process.env.INPUT_BUCKET,
+        process.env.OUTPUT_BUCKET,
+        videoName,
+      ),
+      this.UserModel.findOne({ uuid }, { _id: 1 }),
+    ]);
 
     const { title, content, category } = videoDto;
     const newVideo = new this.VideoModel({
@@ -184,21 +189,65 @@ export class VideoService {
       thumbnailExtension,
       videoExtension,
     });
-    await newVideo.save();
+    await Promise.all([
+      newVideo.save(),
+      this.requestGreenEyeAPI(process.env.INPUT_BUCKET, videoName, videoId),
+    ]);
     return { videoId, ...videoDto };
   }
 
+  async requestEncodingAPI(
+    inputBucket: string,
+    outputBucket: string,
+    objectName: string,
+  ) {
+    const videoUrl = await createPresignedUrl(inputBucket, objectName, 'GET');
+    const accessKey = process.env.ACCESS_KEY;
+    const secretKey = process.env.SECRET_KEY;
+    const data = {
+      videoUrl,
+      object_name: objectName,
+      outputBucket,
+      accessKey,
+      secretKey,
+    };
+
+    try {
+      await axios.post(process.env.ENCODING_API_URL, data);
+    } catch (error) {
+      throw new EncodingActionFailException();
+    }
+  }
+
+  async requestGreenEyeAPI(
+    inputBucket: string,
+    videoName: string,
+    videoId: string,
+  ) {
+    const videoUrl = await createPresignedUrl(inputBucket, videoName, 'GET');
+    const data = {
+      videoUrl,
+      object_name: videoId,
+      greenEyeSecret: process.env.GREENEYE_SECRET,
+      accessToken: process.env.ADMIN_ACCESS_TOKEN,
+    };
+
+    try {
+      await axios.post(process.env.GREENEYE_API_URL, data);
+    } catch (error) {
+      throw new GreenEyeActionFailException();
+    }
+  }
+
   async deleteEncodedVideo(videoId: string) {
-    const encodingSuffixes = process.env.ENCODING_SUFFIXES.split(',');
-    const fileNamePrefix = `${process.env.VIDEO_OUTPUT_PATH}/${videoId}`;
-    return Promise.all([
-      ...encodingSuffixes.map((suffix) =>
-        deleteObject(
-          process.env.OUTPUT_BUCKET,
-          `${fileNamePrefix}_${suffix}.mp4`,
-        ),
+    const deleteList = await listObjects(process.env.OUTPUT_BUCKET, {
+      prefix: videoId,
+    });
+    return Promise.all(
+      deleteList.map((fileName: string) =>
+        deleteObject(process.env.OUTPUT_BUCKET, fileName),
       ),
-    ]);
+    );
   }
 
   async deleteVideo(videoId: string, uuid: string) {
@@ -209,7 +258,10 @@ export class VideoService {
     if (!video) {
       throw new VideoNotFoundException();
     }
-    if (video.uploaderId.uuid !== uuid) {
+    if (
+      uuid !== process.env.ADMIN_UUID &&
+      video.uploaderId.uuid !== uuid
+    ) {
       throw new NotYourVideoException();
     }
     await Promise.all([
@@ -232,7 +284,7 @@ export class VideoService {
     };
   }
 
-  async getTrendVideo(limit: number) {
+  async getTrendVideo(limit: number, userId: string) {
     const fields = Object.keys(this.VideoModel.schema.paths).reduce(
       (acc, field) => {
         acc[field] = 1;
@@ -264,13 +316,13 @@ export class VideoService {
     });
 
     const videos = await Promise.all(
-      trendVideos.map((video) => this.getVideoInfo(video)),
+      trendVideos.map((video) => this.getVideoInfo(video, userId)),
     );
 
     return { videos };
   }
 
-  async getTopRatedVideo(category: string) {
+  async getTopRatedVideo(category: string, userId: string) {
     const videoTotal = await this.VideoModel.aggregate([
       { $match: { category } },
       {
@@ -319,12 +371,12 @@ export class VideoService {
     });
 
     const videos = await Promise.all(
-      top10Videos.map((video) => this.getVideoInfo(video)),
+      top10Videos.map((video) => this.getVideoInfo(video, userId)),
     );
     return { videos };
   }
 
-  async getVideo(videoId: string) {
+  async getVideo(videoId: string, userId: string) {
     const video = await this.VideoModel.findOne(
       { _id: videoId },
       {},
@@ -333,6 +385,6 @@ export class VideoService {
     if (!video) {
       throw new VideoNotFoundException();
     }
-    return this.getVideoInfo(video);
+    return this.getVideoInfo(video, userId);
   }
 }

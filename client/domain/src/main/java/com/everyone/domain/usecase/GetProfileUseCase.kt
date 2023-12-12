@@ -10,8 +10,6 @@ class GetProfileUseCase @Inject constructor(private val userRepository: UserRepo
     operator fun invoke(
         uuid: String
     ): Flow<DataState<Profile>> {
-        return userRepository.getUserProfile(
-            uuid = uuid
-        )
+        return userRepository.getUserProfile(uuid = uuid)
     }
 }

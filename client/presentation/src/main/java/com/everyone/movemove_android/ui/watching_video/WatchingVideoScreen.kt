@@ -1,10 +1,12 @@
 package com.everyone.movemove_android.ui.watching_video
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
+import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,23 +19,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,31 +72,27 @@ import com.everyone.domain.model.Videos
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
+import com.everyone.movemove_android.ui.MoveMoveErrorScreen
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.profile.ProfileActivity
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.*
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.*
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.VideoTab.BOTTOM_TAB
-import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.VideoTab.CATEGORY_TAB
 import com.everyone.movemove_android.ui.watching_video.category.CategoryScreen
 import com.everyone.movemove_android.ui.theme.FooterBottomBackgroundInDark
-import com.everyone.movemove_android.ui.theme.FooterMiddleBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterTopBackgroundInDark
+import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WatchingVideoScreen(
     viewModel: WatchingVideoViewModel,
     navigateToActivity: (intent: Intent) -> Unit,
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
 ) {
     val context = LocalContext.current
-
-    var initialPage by remember { mutableIntStateOf(0) }
 
     val (state, event, effect) = use(viewModel)
 
@@ -108,166 +111,193 @@ fun WatchingVideoScreen(
         }
     }
 
-    LaunchedEffect(state.videosList) {
-        if (state.videosList != null) {
-            event(SetVideos(videos = state.videosList.videos!!))
-            initialPage = state.page!!
-            event(ChangedVideoTab(CATEGORY_TAB))
-        } else {
-            if (state.videoTab == CATEGORY_TAB) event(GetRandomVideos)
-            event(ChangedVideoTab(BOTTOM_TAB))
-        }
-    }
-
     Scaffold { paddingValues ->
         if (state.isLoading) {
             LoadingDialog()
         } else {
-            state.videos?.let { videosItem ->
-                val videoUri = videosItem.map { Uri.parse(it.video!!.manifest) }
-                val pagerState = rememberPagerState(pageCount = { videoUri.size })
+            if (state.isError) {
+                MoveMoveErrorScreen(onClick = { Refresh })
+            } else {
+                WatchingVideoContent(
+                    modifier = Modifier.padding(paddingValues),
+                    context = context,
+                    state = state,
+                    event = event,
+                )
+            }
+        }
+    }
+}
 
-                if (state.videoTab == CATEGORY_TAB) {
-                    LaunchedEffect(initialPage) {
-                        pagerState.scrollToPage(initialPage)
-                    }
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun WatchingVideoContent(
+    modifier: Modifier,
+    context: Context,
+    state: State,
+    event: (Event) -> Unit,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+) {
+    state.videos?.let { videosItem ->
+        val videoUri = videosItem.map {
+            it.video?.let { video ->
+                Uri.parse(video.manifest)
+            } ?: run {
+                null
+            }
+        }
+        val pagerState =
+            rememberPagerState(initialPage = state.page, pageCount = { videoUri.size })
+
+        val exoPlayerPair = remember {
+            Triple(
+                ExoPlayer.Builder(context).build(),
+                ExoPlayer.Builder(context).build(),
+                ExoPlayer.Builder(context).build()
+            )
+        }
+
+        Box {
+            VerticalPager(
+                modifier = modifier.fillMaxSize(),
+                state = pagerState
+            ) { page ->
+
+                val exoPlayer = when (page % 3) {
+                    0 -> exoPlayerPair.first
+                    1 -> exoPlayerPair.second
+                    else -> exoPlayerPair.third
                 }
 
-                val context = LocalContext.current
-                val exoPlayerPair = remember {
-                    Triple(
-                        ExoPlayer.Builder(context).build(),
-                        ExoPlayer.Builder(context).build(),
-                        ExoPlayer.Builder(context).build()
+                Box(modifier = Modifier.fillMaxSize()) {
+                    val snackBarState = remember { SnackbarHostState() }
+
+                    videoUri[page]?.let { uri ->
+                        VideoPlayer(
+                            context = context,
+                            exoPlayer = exoPlayer,
+                            uri = uri,
+                            isScroll = !pagerState.isScrollInProgress
+                        )
+                    } ?: run { EmptyVideoItem(stringResId = R.string.invald_video_title) }
+
+                    Column(modifier = Modifier.align(Alignment.BottomStart)) {
+                        videosItem[page].video?.let { video ->
+                            MoveMoveScoreboard(
+                                video = video,
+                                event = event,
+                                snackBarState = snackBarState
+                            )
+                        }
+
+                        MoveMoveFooter(
+                            videos = videosItem[page],
+                            event = event
+                        )
+                    }
+
+                    MoveMoveSnackBar(
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                        snackBarState = snackBarState
                     )
                 }
 
-                Box {
-                    VerticalPager(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues),
-                        state = pagerState
-                    ) { page ->
-
-                        val exoPlayer = when (page % 3) {
-                            0 -> exoPlayerPair.first
-                            1 -> exoPlayerPair.second
-                            else -> exoPlayerPair.third
-                        }
-
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            VideoPlayer(
-                                exoPlayer = exoPlayer,
-                                uri = videoUri[page]
-                            )
-                            Column(modifier = Modifier.align(Alignment.BottomStart)) {
-                                videosItem[page].video?.let { video ->
-                                    MoveMoveScoreboard(
-                                        video = video,
-                                        event = event
-                                    )
-                                }
-                                MoveMoveFooter(
-                                    videos = videosItem[page],
-                                    event = event
-                                )
-                                Divider()
-                            }
-                        }
-
-                        when (pagerState.settledPage % 3) {
-                            0 -> {
-                                exoPlayerPair.first.play()
-                                exoPlayerPair.second.pause()
-                                exoPlayerPair.third.pause()
-                            }
-
-                            1 -> {
-                                exoPlayerPair.first.pause()
-                                exoPlayerPair.second.play()
-                                exoPlayerPair.third.pause()
-                            }
-
-                            2 -> {
-                                exoPlayerPair.first.pause()
-                                exoPlayerPair.second.pause()
-                                exoPlayerPair.third.play()
-                            }
-                        }
-                    }
-
-                    videosItem[pagerState.settledPage].video?.let { video ->
-                        event(PutVideosViews(video.id!!))
-                    }
-
-                    if (state.isClickedCategory) {
-                        CategoryScreen()
-                    } else {
-                        if (state.videosList == null) {
-                            MoveMoveCategory(
-                                category = state.selectedCategory.displayName,
-                                modifier = Modifier
-                                    .padding(
-                                        start = 21.dp,
-                                        top = 21.dp
-                                    )
-                                    .align(Alignment.TopStart)
-                                    .clickableWithoutRipple { event(OnClickedCategory) },
-                            )
-                        }
-                    }
-                }
-
-                DisposableEffect(lifecycleOwner) {
-                    val observer = LifecycleEventObserver { _, event ->
-                        if (event == Lifecycle.Event.ON_RESUME) {
-                            when (pagerState.settledPage % 3) {
-                                0 -> {
-                                    exoPlayerPair.first.play()
-                                    exoPlayerPair.second.pause()
-                                    exoPlayerPair.third.pause()
-                                }
-
-                                1 -> {
-                                    exoPlayerPair.first.pause()
-                                    exoPlayerPair.second.play()
-                                    exoPlayerPair.third.pause()
-                                }
-
-                                2 -> {
-                                    exoPlayerPair.first.pause()
-                                    exoPlayerPair.second.pause()
-                                    exoPlayerPair.third.play()
-                                }
-                            }
-                        } else if (event == Lifecycle.Event.ON_STOP) {
-                            exoPlayerPair.first.pause()
+                if (!pagerState.isScrollInProgress) {
+                    when (pagerState.settledPage % 3) {
+                        0 -> {
+                            exoPlayerPair.first.play()
                             exoPlayerPair.second.pause()
                             exoPlayerPair.third.pause()
                         }
-                    }
 
-                    lifecycleOwner.lifecycle.addObserver(observer)
+                        1 -> {
+                            exoPlayerPair.first.pause()
+                            exoPlayerPair.second.play()
+                            exoPlayerPair.third.pause()
+                        }
 
-                    onDispose {
-                        lifecycleOwner.lifecycle.removeObserver(observer)
-                        exoPlayerPair.first.release()
-                        exoPlayerPair.second.release()
-                        exoPlayerPair.third.release()
+                        2 -> {
+                            exoPlayerPair.first.pause()
+                            exoPlayerPair.second.pause()
+                            exoPlayerPair.third.play()
+                        }
                     }
+                } else {
+                    exoPlayerPair.first.pause()
+                    exoPlayerPair.second.pause()
+                    exoPlayerPair.third.pause()
                 }
-            } ?: run {
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    StyledText(
-                        modifier = Modifier.align(Alignment.Center),
-                        text = stringResource(R.string.empty_video_title),
-                        style = MaterialTheme.typography.titleMedium
+            }
+
+            videosItem[pagerState.settledPage].video?.let { video ->
+                video.id?.let { id ->
+                    event(PutVideosViews(id))
+                }
+            }
+
+            if (state.isClickedCategory) {
+                CategoryScreen()
+            } else {
+                if (state.videoTab == VideoTab.BOTTOM_TAB) {
+                    MoveMoveCategory(
+                        category = state.selectedCategory.displayName,
+                        modifier = Modifier
+                            .padding(
+                                start = 21.dp,
+                                top = 21.dp
+                            )
+                            .align(Alignment.TopStart)
+                            .clickableWithoutRipple { event(OnClickedCategory) },
                     )
                 }
             }
+        }
+
+        DisposableEffect(lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    when (pagerState.settledPage % 3) {
+                        0 -> {
+                            exoPlayerPair.first.play()
+                            exoPlayerPair.second.pause()
+                            exoPlayerPair.third.pause()
+                        }
+
+                        1 -> {
+                            exoPlayerPair.first.pause()
+                            exoPlayerPair.second.play()
+                            exoPlayerPair.third.pause()
+                        }
+
+                        2 -> {
+                            exoPlayerPair.first.pause()
+                            exoPlayerPair.second.pause()
+                            exoPlayerPair.third.play()
+                        }
+                    }
+                } else if (event == Lifecycle.Event.ON_STOP) {
+                    exoPlayerPair.first.pause()
+                    exoPlayerPair.second.pause()
+                    exoPlayerPair.third.pause()
+                }
+            }
+
+            lifecycleOwner.lifecycle.addObserver(observer)
+
+            onDispose {
+                lifecycleOwner.lifecycle.removeObserver(observer)
+                exoPlayerPair.first.release()
+                exoPlayerPair.second.release()
+                exoPlayerPair.third.release()
+            }
+        }
+    } ?: run {
+        Box(modifier = Modifier.fillMaxSize()) {
+            StyledText(
+                modifier = Modifier.align(Alignment.Center),
+                text = stringResource(R.string.empty_video_title),
+                style = MaterialTheme.typography.titleMedium
+            )
         }
     }
 }
@@ -276,11 +306,11 @@ fun WatchingVideoScreen(
 @Composable
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 fun VideoPlayer(
+    context: Context,
     exoPlayer: ExoPlayer,
     uri: Uri,
+    isScroll: Boolean
 ) {
-    val context = LocalContext.current
-
     DisposableEffect(uri) {
         val dataSourceFactory: DataSource.Factory = DefaultHttpDataSource.Factory()
         val source = HlsMediaSource.Factory(dataSourceFactory)
@@ -289,7 +319,7 @@ fun VideoPlayer(
         exoPlayer.apply {
             setMediaSource(source)
             prepare()
-            playWhenReady = true
+            playWhenReady = isScroll
             videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
             repeatMode = Player.REPEAT_MODE_ONE
         }
@@ -304,8 +334,7 @@ fun VideoPlayer(
         PlayerView(context).apply {
             hideController()
             useController = false
-            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
-
+            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
             player = exoPlayer
             layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         }
@@ -337,10 +366,20 @@ fun MoveMoveCategory(
 }
 
 @Composable
-fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
+fun MoveMoveScoreboard(
+    video: Video,
+    event: (Event) -> Unit,
+    snackBarState: SnackbarHostState
+) {
+    // TODO : 유저 점수를 받아올 때 null이나 0 ~ 5(Int)를 받아 오게 되는데, Slider에 표시할 때는 0, 0.2, 0.4, 0.6, 0.8, 1f로 가공 해야함!
+    val currentRating =
+        video.userRating?.let { userRating -> (userRating * 0.2).toFloat() } ?: run { 0f }
+    var sliderPosition by remember { mutableFloatStateOf(currentRating) }
+    val rating = sliderPosition * 5
 
-    val rating = video.rating?.toFloat() ?: run { 0.4f }
-    var sliderPosition by remember { mutableFloatStateOf(rating) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -373,19 +412,73 @@ fun MoveMoveScoreboard(video: Video, event: (Event) -> Unit) {
                 value = sliderPosition,
                 onValueChange = {
                     sliderPosition = it
+                },
+                onValueChangeFinished = {
                     event(
                         OnClickedVideoRating(
                             id = video.id.toString(),
-                            rating = (it * 5).toInt().toString(),
+                            rating = rating.toInt().toString(),
                             reason = "테스트" // TODO 임시,,,
                         )
                     )
+
+                    if (snackBarState.currentSnackbarData != null) snackBarState.currentSnackbarData?.dismiss()
+
+                    coroutineScope.launch {
+                        snackBarState.showSnackbar(
+                            message = context.getString(R.string.rating_video_snackbar_message)
+                                .format(rating.toInt()),
+                            duration = SnackbarDuration.Short
+                        )
+                    }
                 },
                 colors = SliderDefaults.colors(
                     thumbColor = Color.White,
                     inactiveTrackColor = Color.White
                 )
             )
+        }
+    }
+}
+
+@Composable
+fun MoveMoveSnackBar(
+    modifier: Modifier,
+    snackBarState: SnackbarHostState
+) {
+    SnackbarHost(
+        modifier = modifier,
+        hostState = snackBarState
+    ) { snackbarData ->
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        vertical = 10.dp,
+                        horizontal = 16.dp
+                    )
+            ) {
+                StyledText(
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    text = snackbarData.visuals.message,
+                    style = Typography.labelMedium,
+                    color = Color.White
+                )
+                Icon(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .align(Alignment.CenterEnd)
+                        .clickableWithoutRipple { snackbarData.dismiss() },
+                    painter = painterResource(id = R.drawable.ic_close),
+                    contentDescription = null,
+                    tint = Point
+                )
+            }
         }
     }
 }
@@ -399,11 +492,9 @@ fun MoveMoveFooter(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                alpha = 0.2f,
                 brush = Brush.verticalGradient(
                     colors = listOf(
                         FooterTopBackgroundInDark,
-                        FooterMiddleBackgroundInDark,
                         FooterBottomBackgroundInDark,
                     )
                 )
@@ -432,7 +523,11 @@ fun MoveMoveFooterContents(
 
         videos.uploader?.let { uploader ->
             Row(
-                modifier = Modifier.clickableWithoutRipple { event(OnClickedProfile(uploader.uuid!!)) },
+                modifier = Modifier.clickableWithoutRipple {
+                    uploader.uuid?.let { uuid ->
+                        event(OnClickedProfile(uuid))
+                    }
+                },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
             ) {
@@ -444,6 +539,7 @@ fun MoveMoveFooterContents(
                 ) {
                     uploader.profileImageUrl?.let {
                         AsyncImage(
+                            modifier = Modifier.clip(CircleShape),
                             model = uploader.profileImageUrl,
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
@@ -474,5 +570,20 @@ fun MoveMoveFooterContents(
                 style = MaterialTheme.typography.bodySmall
             )
         }
+    }
+}
+
+@Composable
+fun EmptyVideoItem(@StringRes stringResId: Int) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color.Black),
+    ) {
+        StyledText(
+            modifier = Modifier.align(Alignment.Center),
+            text = stringResource(stringResId),
+            style = MaterialTheme.typography.labelLarge
+        )
     }
 }

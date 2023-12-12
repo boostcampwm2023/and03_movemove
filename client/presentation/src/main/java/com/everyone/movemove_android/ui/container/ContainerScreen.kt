@@ -1,6 +1,9 @@
 package com.everyone.movemove_android.ui.container
 
+import android.app.Activity
 import android.content.Intent
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.background
@@ -21,7 +24,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +41,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.everyone.movemove_android.R
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.home.HomeScreen
 import com.everyone.movemove_android.ui.container.navigation.Destination
@@ -62,6 +68,7 @@ fun MainScreen(navigateToActivity: (intent: Intent) -> Unit) {
         Destination.PROFILE.route
     )
 
+    BackOnPressed()
     Scaffold(
         bottomBar = {
             if (currentDestination?.route in mainRoutes) {
@@ -176,4 +183,21 @@ fun NavGraphBuilder.navScreen(
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { ExitTransition.None }
     ) { content() }
+}
+
+@Composable
+fun BackOnPressed() {
+    val context = LocalContext.current
+    var backPressedState by remember { mutableStateOf(true) }
+    var backPressedTime = 0L
+
+    BackHandler(enabled = backPressedState) {
+        if (System.currentTimeMillis() - backPressedTime <= 1500L) {
+            (context as Activity).finish()
+        } else {
+            backPressedTime = System.currentTimeMillis()
+            backPressedState = true
+            Toast.makeText(context, R.string.on_back_pressed_message, Toast.LENGTH_SHORT).show()
+        }
+    }
 }

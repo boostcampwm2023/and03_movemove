@@ -35,6 +35,9 @@
             android:name=".ui.my.MyActivity"
             android:theme="@style/Theme.MoveMoveAndroid" />
         <activity
+            android:name=".ui.edit_profile.EditProfileActivity"
+            android:theme="@style/Theme.MoveMoveAndroid" />
+        <activity
             android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
             android:exported="true">
             <intent-filter>

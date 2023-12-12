@@ -93,6 +93,10 @@ export class UserService {
 
   async getUploadedVideos(uuid: string, limit: number, lastId: string) {
     const uploaderData = await this.UserModel.findOne({ uuid }, { actions: 0 });
+    if (!uploaderData) {
+      throw new UserNotFoundException();
+    }
+
     const { uploader, uploaderId } = await this.getUploaderInfo(
       uuid,
       uploaderData.toObject(),
@@ -112,7 +116,7 @@ export class UserService {
       .sort({ _id: -1 })
       .limit(limit);
 
-    const videos = await this.getVideoInfos(videoData, uploader);
+    const videos = await this.getVideoInfos(videoData, uploader, uuid);
     return { videos };
   }
 
@@ -136,7 +140,7 @@ export class UserService {
     return { uploader, uploaderId };
   }
 
-  async getVideoInfos(videoData: Array<any>, uploader: object) {
+  async getVideoInfos(videoData: Array<any>, uploader: object, uuid: string) {
     const videos = await Promise.all(
       videoData.map(async (video) => {
         const { thumbnailExtension, raterCount, totalRating, ...videoInfo } =
@@ -144,14 +148,24 @@ export class UserService {
         const rating = raterCount
           ? (totalRating / raterCount).toFixed(1)
           : null;
-        const manifest = `${process.env.MANIFEST_URL_PREFIX}${videoInfo._id}_,${process.env.ENCODING_SUFFIXES}${process.env.ABR_MANIFEST_URL_SUFFIX}`;
+        const userRating = await this.videoService.getUserRating(
+          uuid,
+          videoInfo._id,
+        );
+        const manifest = `${process.env.MANIFEST_URL_PREFIX}/${videoInfo._id}_master.m3u8`;
         const thumbnailImageUrl = await createPresignedUrl(
           process.env.THUMBNAIL_BUCKET,
           `${videoInfo._id}.${thumbnailExtension}`,
           'GET',
         );
         return {
-          video: { ...videoInfo, manifest, rating, thumbnailImageUrl },
+          video: {
+            ...videoInfo,
+            manifest,
+            rating,
+            userRating,
+            thumbnailImageUrl,
+          },
           uploader,
         };
       }),
@@ -204,9 +218,9 @@ export class UserService {
         const videoData = await this.VideoModel.findOne({
           _id: action.videoId,
         }).populate('uploaderId', '-_id -actions');
-        const video = await this.videoService.getVideoInfo(
-          videoData.toObject(),
-        );
+        const video = videoData
+          ? await this.videoService.getVideoInfo(videoData.toObject(), uuid)
+          : { video: null, uploader: null };
         return { ...video, ratedAt: action.updatedAt };
       }),
     );

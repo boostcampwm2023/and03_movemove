@@ -7,6 +7,8 @@ import com.everyone.domain.usecase.GetStoredSignedPlatformUseCase
 import com.everyone.domain.usecase.GetStoredUUIDUseCase
 import com.everyone.domain.usecase.LoginUseCase
 import com.everyone.domain.usecase.SetAccessTokenUseCase
+import com.everyone.domain.usecase.StoreSignedPlatformUseCase
+import com.everyone.domain.usecase.StoreUUIDUseCase
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
 import com.everyone.movemove_android.ui.UiConstants.KAKAO
@@ -46,7 +48,9 @@ class StartingViewModel @Inject constructor(
     private val getStoredUUIDUseCase: GetStoredUUIDUseCase,
     private val getStoredSignedPlatformUseCase: GetStoredSignedPlatformUseCase,
     private val loginUseCase: LoginUseCase,
-    private val setAccessTokenUseCase: SetAccessTokenUseCase
+    private val setAccessTokenUseCase: SetAccessTokenUseCase,
+    private val storeUUIDUseCase: StoreUUIDUseCase,
+    private val storeSignedPlatformUseCase: StoreSignedPlatformUseCase
 ) : ViewModel(), StartingContract {
     private val _state = MutableStateFlow(State())
     override val state: StateFlow<State> = _state.asStateFlow()
@@ -62,7 +66,7 @@ class StartingViewModel @Inject constructor(
         is OnClickGoogleLogin -> onClickGoogleLogin()
 
         is OnSocialLoginSuccess -> onSocialLoginSuccess(
-            accessToken = event.accessToken,
+            idToken = event.idToken,
             uuid = event.uuid,
             platform = event.platform
         )
@@ -102,12 +106,13 @@ class StartingViewModel @Inject constructor(
     }
 
     private fun onSocialLoginSuccess(
-        accessToken: String,
+        idToken: String,
         uuid: String,
         platform: String
     ) {
         loginUseCase(
-            accessToken = accessToken,
+            platform = platform,
+            idToken = idToken,
             uuid = uuid
         ).onEach { result ->
             withContext(mainImmediateDispatcher) {
@@ -115,7 +120,19 @@ class StartingViewModel @Inject constructor(
                     is DataState.Success -> {
                         result.data.jsonWebToken?.accessToken?.let { accessToken ->
                             setAccessTokenUseCase(accessToken)
-                            _effect.emit(GoToHomeScreen)
+                            result.data.profile?.uuid?.let { uuid ->
+                                if (storeLoginData(
+                                        uuid = uuid,
+                                        platform = platform
+                                    )
+                                ) {
+                                    _effect.emit(GoToHomeScreen)
+                                } else {
+                                    // todo : 저장 실패 예외 처리
+                                }
+                            } ?: run {
+                                // todo : uuid 없는 경우 예외 처리
+                            }
                         } ?: run {
                             // todo : 액세스 토큰 없는 경우 예외 처리
                         }
@@ -124,7 +141,7 @@ class StartingViewModel @Inject constructor(
                     is DataState.Failure -> {
                         _effect.emit(
                             GoToSignUpScreen(
-                                accessToken = accessToken,
+                                idToken = idToken,
                                 uuid = uuid,
                                 platform = platform,
                             )
@@ -134,6 +151,13 @@ class StartingViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope + ioDispatcher)
     }
+
+    private suspend fun storeLoginData(
+        uuid: String,
+        platform: String
+    ): Boolean = storeUUIDUseCase(uuid).zip(storeSignedPlatformUseCase(platform)) { isUUIDStored, isSignedPlatformStored ->
+        isUUIDStored && isSignedPlatformStored
+    }.first()
 
     private suspend fun getUserInfo(): Pair<String, String>? {
         return getStoredUUIDUseCase().zip(getStoredSignedPlatformUseCase()) { uuid, signedPlatform ->

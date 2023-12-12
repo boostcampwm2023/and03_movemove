@@ -1,16 +1,19 @@
 package com.everyone.movemove_android.ui.screens.home
 
 import android.content.Intent
+import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -34,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -44,9 +48,10 @@ import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
+import com.everyone.movemove_android.ui.ErrorDialog
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.screens.home.HomeContract.Effect.OnClickedVideo
+import com.everyone.movemove_android.ui.screens.home.HomeContract.Effect.NavigateToWatchingVideo
 import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoActivity
@@ -68,7 +73,7 @@ fun HomeScreen(
     LaunchedEffect(effect) {
         effect.collectLatest { effect ->
             when (effect) {
-                is OnClickedVideo -> navigateToActivity(
+                is NavigateToWatchingVideo -> navigateToActivity(
                     WatchingVideoActivity.newIntent(
                         context = context,
                         videosList = effect.videosList,
@@ -77,6 +82,13 @@ fun HomeScreen(
                 )
             }
         }
+    }
+
+    if (state.isErrorDialogShowing) {
+        ErrorDialog(
+            text = stringResource(id = state.errorDialogTextResourceId),
+            onDismissRequest = { event(HomeContract.Event.OnErrorDialogDismissed) }
+        )
     }
 
     if (state.isLoading) {
@@ -127,6 +139,32 @@ fun HomeScreen(
             MoveMoveVideos(
                 event = event,
                 videosList = state.videosTopRatedOldSchool
+            )
+
+            Spacer(modifier = Modifier.height(36.dp))
+            StyledColorText(
+                modifier = Modifier.padding(start = 16.dp),
+                style = MaterialTheme.typography.titleLarge,
+                coloredText = stringResource(R.string.new_school_title),
+                plainText = stringResource(R.string.top_10_title)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            MoveMoveVideos(
+                event = event,
+                videosList = state.videosTopRatedNewSchool
+            )
+
+            Spacer(modifier = Modifier.height(36.dp))
+            StyledColorText(
+                modifier = Modifier.padding(start = 16.dp),
+                style = MaterialTheme.typography.titleLarge,
+                coloredText = stringResource(R.string.k_pop),
+                plainText = stringResource(R.string.top_10_title)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            MoveMoveVideos(
+                event = event,
+                videosList = state.videosTopRatedKPOP
             )
         }
     }
@@ -182,17 +220,7 @@ fun MultiServiceAds(advertisements: Advertisements) {
             )
         }
     } ?: run {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp)
-        ) {
-            StyledText(
-                modifier = Modifier.align(Alignment.Center),
-                text = stringResource(R.string.empty_ads_title),
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
+        EmptyVideoContent(stringResId = R.string.empty_ads_title)
     }
 }
 
@@ -209,6 +237,8 @@ fun MultiServiceAdsItem(
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
         )
+    } ?: run {
+        EmptyVideoContent(stringResId = R.string.empty_ads_title)
     }
 }
 
@@ -291,17 +321,7 @@ fun MoveMoveVideos(
             }
         }
     } ?: run {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(250.dp),
-        ) {
-            StyledText(
-                modifier = Modifier.align(Alignment.Center),
-                text = stringResource(R.string.empty_video_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-        }
+        EmptyVideoContent(stringResId = R.string.empty_video_title)
     }
 }
 
@@ -310,20 +330,52 @@ fun MoveMoveVideo(
     modifier: Modifier,
     videos: Videos,
 ) {
-    videos.video?.let { video ->
-        Card(
-            modifier = modifier
-                .width(150.dp)
-                .height(250.dp)
-                .padding(bottom = 8.dp),
-            shape = RoundedCornerShape(size = 8.dp),
-        ) {
-            AsyncImage(
-                modifier = Modifier.fillMaxSize(),
-                model = video.thumbnailImageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-            )
+    Card(
+        modifier = modifier
+            .width(150.dp)
+            .height(250.dp)
+            .padding(bottom = 8.dp),
+        shape = RoundedCornerShape(size = 8.dp),
+    ) {
+        videos.video?.let { video ->
+            Box(modifier = Modifier.fillMaxSize()) {
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    model = video.thumbnailImageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                )
+
+                video.title?.let { title ->
+                    StyledText(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(8.dp),
+                        text = title,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 2
+                    )
+                }
+            }
+        } ?: run {
+            EmptyVideoContent(stringResId = R.string.empty_video_title)
         }
+    }
+}
+
+@Composable
+fun EmptyVideoContent(@StringRes stringResId: Int) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .heightIn(min = 220.dp),
+    ) {
+        StyledText(
+            modifier = Modifier.align(Alignment.Center),
+            text = stringResource(stringResId),
+            style = MaterialTheme.typography.titleSmall
+        )
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,10 +25,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import coil.compose.AsyncImage
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.R.drawable.ic_heart
@@ -36,14 +41,24 @@ import com.everyone.movemove_android.R.string.edit_profile
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
+import com.everyone.movemove_android.ui.edit_profile.EditProfileActivity
 import com.everyone.movemove_android.ui.my.MyContract.Effect.CloseMyScreen
+import com.everyone.movemove_android.ui.my.MyContract.Effect.GoToEditProfileScreen
+import com.everyone.movemove_android.ui.my.MyContract.Effect.GoToRatingVideoScreen
+import com.everyone.movemove_android.ui.my.MyContract.Event.OnClickEditProfile
+import com.everyone.movemove_android.ui.my.MyContract.Event.OnClickRatingVideo
 import com.everyone.movemove_android.ui.my.MyContract.Event.OnNullProfileNickname
+import com.everyone.movemove_android.ui.my.MyContract.Event.OnResume
+import com.everyone.movemove_android.ui.rating_video.RatingVideoActivity
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
+fun MyScreen(
+    viewModel: MyViewModel = hiltViewModel(),
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+) {
     val context = LocalContext.current
     val (state, event, effect) = use(viewModel)
 
@@ -55,7 +70,29 @@ fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
                         context.finish()
                     }
                 }
+
+                is GoToEditProfileScreen -> {
+                    context.startActivity(EditProfileActivity.newIntent(context))
+                }
+
+                is GoToRatingVideoScreen -> {
+                    context.startActivity(RatingVideoActivity.newIntent(context))
+                }
             }
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, lifecycleEvent ->
+            if (lifecycleEvent == Lifecycle.Event.ON_RESUME) {
+                event(OnResume)
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
@@ -108,7 +145,7 @@ fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .clickableWithoutRipple { },
+                    .clickableWithoutRipple { event(OnClickEditProfile) },
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -126,31 +163,6 @@ fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
                 )
             }
 
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .clickableWithoutRipple { },
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_my_video),
-                    contentDescription = null,
-                    tint = Color.Gray
-                )
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                StyledText(
-                    text = stringResource(R.string.my_video),
-                    style = Typography.bodyLarge
-                )
-            }
-
             Spacer(modifier = Modifier.height(14.dp))
 
             Row(
@@ -158,7 +170,7 @@ fun MyScreen(viewModel: MyViewModel = hiltViewModel()) {
                     .fillMaxWidth()
                     .height(48.dp)
                     .padding(start = 4.dp)
-                    .clickableWithoutRipple { },
+                    .clickableWithoutRipple { event(OnClickRatingVideo) },
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically,
             ) {

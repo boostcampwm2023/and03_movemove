@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -43,6 +44,7 @@ import com.everyone.movemove_android.R.string.nickname
 import com.everyone.movemove_android.R.string.one_line_introduce
 import com.everyone.movemove_android.R.string.sign_up
 import com.everyone.movemove_android.base.use
+import com.everyone.movemove_android.ui.ErrorDialog
 import com.everyone.movemove_android.ui.MoveMoveTextField
 import com.everyone.movemove_android.ui.RoundedCornerButton
 import com.everyone.movemove_android.ui.StyledText
@@ -54,6 +56,7 @@ import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.LaunchImag
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect.LaunchImagePicker
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnClickSelectImage
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnClickSignUp
+import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnErrorDialogDismissed
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnGetCroppedImage
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnGetUri
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Event.OnIntroduceTyped
@@ -146,7 +149,7 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
                 }
 
                 StyledText(
-                    modifier = Modifier.align(alignment = Alignment.Center),
+                    modifier = Modifier.align(alignment = Center),
                     text = stringResource(id = sign_up),
                     style = Typography.labelLarge
                 )
@@ -177,22 +180,21 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
                     )
                 }
 
-                IconButton(
+                Box(
                     modifier = Modifier
-                        .align(alignment = Alignment.BottomEnd)
-                        .size(30.dp)
                         .padding(
                             bottom = 6.dp,
                             end = 6.dp
-                        ),
-                    onClick = {},
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = ProfileAddGray,
-                        contentColor = Color.White
-                    )
+                        )
+                        .clip(CircleShape)
+                        .align(alignment = Alignment.BottomEnd)
+                        .size(24.dp)
+                        .background(color = ProfileAddGray)
                 ) {
                     Icon(
+                        modifier = Modifier.align(Center),
                         painter = painterResource(id = ic_profile_add),
+                        tint = Color.White,
                         contentDescription = null
                     )
                 }
@@ -249,6 +251,13 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
             buttonText = stringResource(id = complete),
             isEnabled = state.isSignUpEnabled,
             onClick = { event(OnClickSignUp) }
+        )
+    }
+
+    if (state.isErrorDialogShowing) {
+        ErrorDialog(
+            text = stringResource(id = state.errorDialogTextResourceId),
+            onDismissRequest = { event(OnErrorDialogDismissed) }
         )
     }
 }
