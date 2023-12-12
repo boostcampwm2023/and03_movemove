@@ -62,6 +62,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
@@ -333,9 +334,17 @@ fun VideoPlayer(
 
     AndroidView(factory = {
         PlayerView(context).apply {
+            exoPlayer.addListener(object : Player.Listener {
+                override fun onVideoSizeChanged(videoSize: VideoSize) {
+                    resizeMode = if (videoSize.pixelWidthHeightRatio.toInt() <= 1) {
+                        AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
+                    } else {
+                        AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
+                    }
+                }
+            })
             hideController()
             useController = false
-            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
             player = exoPlayer
             layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         }
