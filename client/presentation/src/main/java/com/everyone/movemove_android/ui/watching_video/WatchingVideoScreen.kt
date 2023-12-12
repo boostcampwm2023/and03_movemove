@@ -426,7 +426,7 @@ fun MoveMoveScoreboard(
                     coroutineScope.launch {
                         snackBarState.showSnackbar(
                             message = context.getString(R.string.rating_video_snackbar_message)
-                                .format(rating),
+                                .format(rating.toInt()),
                             duration = SnackbarDuration.Short
                         )
                     }
