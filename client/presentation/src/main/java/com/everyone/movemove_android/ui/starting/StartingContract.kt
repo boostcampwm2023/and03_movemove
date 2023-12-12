@@ -16,6 +16,7 @@ interface StartingContract : BaseContract<StartingContract.State, StartingContra
         data object OnClickGoogleLogin : Event
 
         data class OnSocialLoginSuccess(
+            val idToken: String,
             val accessToken: String,
             val uuid: String,
             val platform: String,
@@ -28,7 +29,7 @@ interface StartingContract : BaseContract<StartingContract.State, StartingContra
         data object LaunchGoogleLogin : Effect
 
         data class GoToSignUpScreen(
-            val accessToken: String,
+            val idToken: String,
             val uuid: String,
             val platform: String
         ) : Effect

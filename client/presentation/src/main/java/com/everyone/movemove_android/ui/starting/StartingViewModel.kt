@@ -66,6 +66,7 @@ class StartingViewModel @Inject constructor(
         is OnClickGoogleLogin -> onClickGoogleLogin()
 
         is OnSocialLoginSuccess -> onSocialLoginSuccess(
+            idToken = event.idToken,
             accessToken = event.accessToken,
             uuid = event.uuid,
             platform = event.platform
@@ -106,12 +107,14 @@ class StartingViewModel @Inject constructor(
     }
 
     private fun onSocialLoginSuccess(
+        idToken: String,
         accessToken: String,
         uuid: String,
         platform: String
     ) {
         loginUseCase(
-            accessToken = accessToken,
+            platform = platform,
+            idToken = idToken,
             uuid = uuid
         ).onEach { result ->
             withContext(mainImmediateDispatcher) {
@@ -140,7 +143,7 @@ class StartingViewModel @Inject constructor(
                     is DataState.Failure -> {
                         _effect.emit(
                             GoToSignUpScreen(
-                                accessToken = accessToken,
+                                idToken = idToken,
                                 uuid = uuid,
                                 platform = platform,
                             )

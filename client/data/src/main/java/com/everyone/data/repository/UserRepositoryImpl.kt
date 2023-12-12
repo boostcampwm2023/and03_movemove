@@ -5,12 +5,12 @@ import com.everyone.data.local.UserInfoManager.Companion.KEY_REFRESH_TOKEN
 import com.everyone.data.local.UserInfoManager.Companion.KEY_SIGNED_PLATFORM
 import com.everyone.data.local.UserInfoManager.Companion.KEY_UUID
 import com.everyone.data.remote.NetworkHandler
-import com.everyone.data.remote.RemoteConstants.ACCESS_TOKEN
 import com.everyone.data.remote.RemoteConstants.AUTH
-import com.everyone.data.remote.RemoteConstants.LAST_RATED_AT
+import com.everyone.data.remote.RemoteConstants.ID_TOKEN
 import com.everyone.data.remote.RemoteConstants.LIMIT
 import com.everyone.data.remote.RemoteConstants.LOGIN
 import com.everyone.data.remote.RemoteConstants.NICKNAME
+import com.everyone.data.remote.RemoteConstants.PLATFORM
 import com.everyone.data.remote.RemoteConstants.PRESIGNED_URL
 import com.everyone.data.remote.RemoteConstants.PROFILE
 import com.everyone.data.remote.RemoteConstants.PROFILE_EXTENSION
@@ -50,7 +50,8 @@ class UserRepositoryImpl @Inject constructor(
     private val userInfoManager: UserInfoManager
 ) : UserRepository {
     override fun postSignUp(
-        accessToken: String,
+        platform: String,
+        idToken: String,
         uuid: String,
         profileImageExtension: String,
         nickname: String,
@@ -61,7 +62,8 @@ class UserRepositoryImpl @Inject constructor(
             isAccessTokenNeeded = false,
             url = { path(AUTH, SIGN_UP) },
             content = {
-                append(ACCESS_TOKEN, accessToken)
+                append(PLATFORM, platform)
+                append(ID_TOKEN, idToken)
                 append(UUID, uuid)
                 append(PROFILE_IMAGE_EXTENSION, profileImageExtension)
                 append(NICKNAME, nickname)
@@ -105,7 +107,7 @@ class UserRepositoryImpl @Inject constructor(
                 path(AUTH, SIGN_UP, PRESIGNED_URL, PROFILE)
                 parameters.append(PROFILE_EXTENSION, profileImageExtension)
                 parameters.append(UUID, uuid)
-                parameters.append(ACCESS_TOKEN, accessToken)
+                parameters.append(ID_TOKEN, accessToken)
             }
         ).collect { response ->
             response.data?.let {
@@ -145,7 +147,8 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override fun login(
-        accessToken: String,
+        platform: String,
+        idToken: String,
         uuid: String
     ): Flow<DataState<UserInfo>> = flow {
         networkHandler.request<UserInfoResponse>(
@@ -153,7 +156,8 @@ class UserRepositoryImpl @Inject constructor(
             isAccessTokenNeeded = false,
             url = { path(AUTH, LOGIN) },
             content = {
-                append(ACCESS_TOKEN, accessToken)
+                append(PLATFORM, platform)
+                append(ID_TOKEN, idToken)
                 append(UUID, uuid)
             }
         ).collect { response ->

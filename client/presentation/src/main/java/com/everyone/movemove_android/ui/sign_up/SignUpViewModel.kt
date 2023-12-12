@@ -18,8 +18,8 @@ import com.everyone.domain.usecase.StoreUUIDUseCase
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.di.IoDispatcher
 import com.everyone.movemove_android.di.MainImmediateDispatcher
-import com.everyone.movemove_android.ui.sign_up.SignUpActivity.Companion.KEY_ACCESS_TOKEN
 import com.everyone.movemove_android.ui.sign_up.SignUpActivity.Companion.KEY_BUNDLE
+import com.everyone.movemove_android.ui.sign_up.SignUpActivity.Companion.KEY_ID_TOKEN
 import com.everyone.movemove_android.ui.sign_up.SignUpActivity.Companion.KEY_PLATFORM
 import com.everyone.movemove_android.ui.sign_up.SignUpActivity.Companion.KEY_UUID
 import com.everyone.movemove_android.ui.sign_up.SignUpContract.Effect
@@ -139,9 +139,9 @@ class SignUpViewModel @Inject constructor(
 
     private fun onClickSignUp() {
         val uuid = getBundle()?.getString(KEY_UUID)
-        val accessToken = getBundle()?.getString(KEY_ACCESS_TOKEN)
+        val idToken = getBundle()?.getString(KEY_ID_TOKEN)
 
-        if (uuid != null && accessToken != null) {
+        if (uuid != null && idToken != null) {
             _state.update {
                 it.copy(isLoading = true)
             }
@@ -149,7 +149,7 @@ class SignUpViewModel @Inject constructor(
             getProfileImageUploadUrlUseCase(
                 profileImageExtension = WEBP,
                 uuid = uuid,
-                accessToken = accessToken,
+                accessToken = idToken,
             ).onEach { result ->
                 when (result) {
                     is DataState.Success -> {
@@ -191,13 +191,14 @@ class SignUpViewModel @Inject constructor(
     }
 
     private suspend fun signUp() {
-        val accessToken = getBundle()?.getString(KEY_ACCESS_TOKEN)
+        val idToken = getBundle()?.getString(KEY_ID_TOKEN)
         val uuid = getBundle()?.getString(KEY_UUID)
         val platform = getBundle()?.getString(KEY_PLATFORM)
 
-        if (accessToken != null && uuid != null && platform != null) {
+        if (idToken != null && uuid != null && platform != null) {
             signUpUseCase(
-                accessToken = accessToken,
+                platform = platform,
+                idToken = idToken,
                 uuid = uuid,
                 profileImageExtension = WEBP,
                 nickname = state.value.nickname,

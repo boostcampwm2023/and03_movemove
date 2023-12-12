@@ -51,7 +51,6 @@ import com.everyone.movemove_android.R
 import com.everyone.movemove_android.base.use
 import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
-import com.everyone.movemove_android.ui.UiConstants
 import com.everyone.movemove_android.ui.UiConstants.GOOGLE
 import com.everyone.movemove_android.ui.UiConstants.KAKAO
 import com.everyone.movemove_android.ui.container.ContainerActivity
@@ -119,17 +118,18 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
             try {
                 val account = it?.getResult(ApiException::class.java)
                 account?.let {
-                    val idToken = account.idToken
-                    val id = account.id
+                    val googleAccessToken = account.idToken
+                    val googleId = account.id
 
-                    if (idToken != null && id != null) {
+                    if (googleId != null && googleAccessToken != null) {
                         event(
                             OnSocialLoginSuccess(
-                                accessToken = idToken,
+                                idToken = googleId,
+                                accessToken = googleAccessToken,
                                 platform = GOOGLE,
                                 uuid = UUID(
-                                    id.substring(0 until 10).toLong(),
-                                    id.substring(10 until id.length).toLong()
+                                    googleId.substring(0 until 10).toLong(),
+                                    googleId.substring(10 until googleId.length).toLong()
                                 ).toString()
                                 // 구글 ID 는 Long 이 아니라 String 으로 들어오는데, 그 수가 Long 의 최대값을 넘기 때문에 잘라내어 사용합니다.
                             )
@@ -162,13 +162,15 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                                     callback = { _, _ -> }
                                 )
                             } else {
-                                val accessToken = token?.accessToken
+                                val kakaoAccessToken = token?.accessToken
+                                val kakaoIdToken = token?.idToken
                                 kakaoSignInClient.me { user, error ->
                                     val userId = user?.id
-                                    if (accessToken != null && userId != null) {
+                                    if (kakaoIdToken != null && userId != null && kakaoAccessToken != null) {
                                         event(
                                             OnSocialLoginSuccess(
-                                                accessToken = accessToken,
+                                                idToken = kakaoIdToken,
+                                                accessToken = kakaoAccessToken,
                                                 platform = KAKAO,
                                                 uuid = UUID(userId, userId).toString()
                                             )
@@ -202,7 +204,7 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                     context.startActivity(
                         SignUpActivity.newIntent(
                             context = context,
-                            accessToken = effect.accessToken,
+                            idToken = effect.idToken,
                             platform = effect.platform,
                             uuid = effect.uuid
                         )

@@ -11,7 +11,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
     fun postSignUp(
-        accessToken: String,
+        platform: String,
+        idToken: String,
         uuid: String,
         profileImageExtension: String,
         nickname: String,
@@ -41,7 +42,8 @@ interface UserRepository {
     fun setAccessToken(accessToken: String)
 
     fun login(
-        accessToken: String,
+        platform: String,
+        idToken: String,
         uuid: String
     ): Flow<DataState<UserInfo>>
 
