@@ -5,6 +5,7 @@ import com.everyone.data.local.UserInfoManager.Companion.KEY_REFRESH_TOKEN
 import com.everyone.data.local.UserInfoManager.Companion.KEY_SIGNED_PLATFORM
 import com.everyone.data.local.UserInfoManager.Companion.KEY_UUID
 import com.everyone.data.remote.NetworkHandler
+import com.everyone.data.remote.RemoteConstants.ACCESS_TOKEN
 import com.everyone.data.remote.RemoteConstants.AUTH
 import com.everyone.data.remote.RemoteConstants.ID_TOKEN
 import com.everyone.data.remote.RemoteConstants.LIMIT
@@ -98,7 +99,7 @@ class UserRepositoryImpl @Inject constructor(
     override fun getProfileImageUploadUrl(
         profileImageExtension: String,
         uuid: String,
-        accessToken: String
+        idToken: String
     ): Flow<DataState<ProfileImageUploadUrl>> = flow {
         networkHandler.request<ProfileImageUploadUrlResponse>(
             method = HttpMethod.Get,
@@ -107,7 +108,7 @@ class UserRepositoryImpl @Inject constructor(
                 path(AUTH, SIGN_UP, PRESIGNED_URL, PROFILE)
                 parameters.append(PROFILE_EXTENSION, profileImageExtension)
                 parameters.append(UUID, uuid)
-                parameters.append(ID_TOKEN, accessToken)
+                parameters.append(ACCESS_TOKEN, idToken)
             }
         ).collect { response ->
             response.data?.let {

@@ -17,7 +17,6 @@ interface StartingContract : BaseContract<StartingContract.State, StartingContra
 
         data class OnSocialLoginSuccess(
             val idToken: String,
-            val accessToken: String,
             val uuid: String,
             val platform: String,
         ) : Event

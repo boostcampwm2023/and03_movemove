@@ -118,14 +118,13 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
             try {
                 val account = it?.getResult(ApiException::class.java)
                 account?.let {
-                    val googleAccessToken = account.idToken
+                    val googleIdToken = account.idToken
                     val googleId = account.id
 
-                    if (googleId != null && googleAccessToken != null) {
+                    if (googleId != null && googleIdToken != null) {
                         event(
                             OnSocialLoginSuccess(
-                                idToken = googleId,
-                                accessToken = googleAccessToken,
+                                idToken = googleIdToken,
                                 platform = GOOGLE,
                                 uuid = UUID(
                                     googleId.substring(0 until 10).toLong(),
@@ -162,15 +161,13 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                                     callback = { _, _ -> }
                                 )
                             } else {
-                                val kakaoAccessToken = token?.accessToken
                                 val kakaoIdToken = token?.idToken
                                 kakaoSignInClient.me { user, error ->
                                     val userId = user?.id
-                                    if (kakaoIdToken != null && userId != null && kakaoAccessToken != null) {
+                                    if (kakaoIdToken != null && userId != null) {
                                         event(
                                             OnSocialLoginSuccess(
                                                 idToken = kakaoIdToken,
-                                                accessToken = kakaoAccessToken,
                                                 platform = KAKAO,
                                                 uuid = UUID(userId, userId).toString()
                                             )

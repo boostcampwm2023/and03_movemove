@@ -67,7 +67,6 @@ class StartingViewModel @Inject constructor(
 
         is OnSocialLoginSuccess -> onSocialLoginSuccess(
             idToken = event.idToken,
-            accessToken = event.accessToken,
             uuid = event.uuid,
             platform = event.platform
         )
@@ -108,7 +107,6 @@ class StartingViewModel @Inject constructor(
 
     private fun onSocialLoginSuccess(
         idToken: String,
-        accessToken: String,
         uuid: String,
         platform: String
     ) {

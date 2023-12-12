@@ -29,6 +29,7 @@ object RemoteConstants {
     const val PROFILE_EXTENSION = "profileExtension"
     const val UUID = "uuid"
     const val ID_TOKEN = "idToken"
+    const val ACCESS_TOKEN = "accessToken"
     const val NICKNAME = "nickname"
     const val STATUS_MESSAGE = "statusMessage"
     const val TITLE = "title"

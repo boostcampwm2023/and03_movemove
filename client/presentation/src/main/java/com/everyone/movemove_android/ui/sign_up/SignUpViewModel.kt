@@ -149,7 +149,7 @@ class SignUpViewModel @Inject constructor(
             getProfileImageUploadUrlUseCase(
                 profileImageExtension = WEBP,
                 uuid = uuid,
-                accessToken = idToken,
+                idToken = idToken,
             ).onEach { result ->
                 when (result) {
                     is DataState.Success -> {
