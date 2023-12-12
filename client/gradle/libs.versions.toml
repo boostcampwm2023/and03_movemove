@@ -26,7 +26,7 @@ retrofit = "2.9.0"
 okHttp = "5.0.0-alpha.2"
 coil = "2.5.0"
 hilt = "2.48"
-media3 = "1.1.1"
+media3 = "1.2.0"
 
 ## kakao
 kakao = "2.17.0"
