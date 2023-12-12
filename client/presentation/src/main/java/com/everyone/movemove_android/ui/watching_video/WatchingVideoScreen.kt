@@ -322,7 +322,6 @@ fun VideoPlayer(
             setMediaSource(source)
             prepare()
             playWhenReady = isScroll
-            videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
             repeatMode = Player.REPEAT_MODE_ONE
         }
 
