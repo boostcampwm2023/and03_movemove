@@ -76,6 +76,7 @@
             <!--    uploading_video-->
     <string name="error_get_video_file_path">영상을 가져 올 수 없습니다</string>
     <string name="loading_video_trimming">영상을 편집하고 있습니다</string>
+    <string name="loading_video_encoding">영상을 인코딩하고 있습니다. 잠시만 기다려 주세요!</string>
     <string name="error_video_trimming">영상을 편집할 수 없습니다\n올바른 파일인지 확인해 주세요</string>
     <string name="error_no_video">영상 파일이 추가되지 않았습니다\n다시 시도해 주세요</string>
     <string name="error_getting_thumbnail">썸네일을 가져 올 수 없습니다\n올바른 파일인지 확인해 주세요</string>
