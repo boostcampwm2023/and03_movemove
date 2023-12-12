@@ -2,6 +2,6 @@ package com.everyone.movemove_android.ui
 
 object UiConstants {
     // PLATFORM
-    const val KAKAO = "kakao"
-    const val GOOGLE = "google"
+    const val KAKAO = "KAKAO"
+    const val GOOGLE = "GOOGLE"
 }

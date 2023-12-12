@@ -28,6 +28,7 @@ object RemoteConstants {
     const val PROFILE_IMAGE_EXTENSION = "profileImageExtension"
     const val PROFILE_EXTENSION = "profileExtension"
     const val UUID = "uuid"
+    const val ID_TOKEN = "idToken"
     const val ACCESS_TOKEN = "accessToken"
     const val NICKNAME = "nickname"
     const val STATUS_MESSAGE = "statusMessage"
@@ -39,6 +40,7 @@ object RemoteConstants {
     const val REASON = "reason"
     const val VIEWS = "views"
     const val REFRESH_TOKEN = "refreshToken"
+    const val PLATFORM = "platform"
 
     // HEADER
     const val AUTHORIZATION = "Authorization"

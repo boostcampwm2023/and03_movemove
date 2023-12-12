@@ -16,19 +16,19 @@ class SignUpActivity : BaseActivity() {
 
     companion object {
         const val KEY_BUNDLE = "key_bundle"
-        const val KEY_ACCESS_TOKEN = "key_access_token"
+        const val KEY_ID_TOKEN = "key_id_token"
         const val KEY_UUID = "key_uuid"
         const val KEY_PLATFORM = "key_platform"
 
         fun newIntent(
             context: Context,
-            accessToken: String,
+            idToken: String,
             uuid: String,
             platform: String
         ): Intent = Intent(context, SignUpActivity::class.java).apply {
             putExtra(
                 KEY_BUNDLE, bundleOf(
-                    KEY_ACCESS_TOKEN to accessToken,
+                    KEY_ID_TOKEN to idToken,
                     KEY_UUID to uuid,
                     KEY_PLATFORM to platform
                 )

@@ -10,10 +10,10 @@ class GetProfileImageUploadUrlUseCase @Inject constructor(private val repository
     operator fun invoke(
         profileImageExtension: String,
         uuid: String,
-        accessToken: String
+        idToken: String
     ): Flow<DataState<ProfileImageUploadUrl>> = repository.getProfileImageUploadUrl(
         profileImageExtension = profileImageExtension,
         uuid = uuid,
-        accessToken = accessToken
+        idToken = idToken
     )
 }
