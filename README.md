@@ -70,7 +70,8 @@
 
 ### 비디오 스트리밍 최적화
 많은 비디오를 쇼츠 형태로 효율적으로 보기 위해서는 ExoPlayer를 최적화해야 했습니다. 
-[ExoPlayer 최적화](https://github.com/boostcampwm2023/and03_movemove/wiki/%E2%9C%8F%EF%B8%8F-MoveMove-Tech-%EC%A1%B0%EC%A4%80%EC%9E%A5)를 위해서 두 가지 방식을 고려했습니다.
+
+[ExoPlayer 최적화](https://github.com/boostcampwm2023/and03_movemove/wiki/%E2%9C%8F%EF%B8%8F-MoveMove-Tech-%EC%A1%B0%EC%A4%80%EC%9E%A5)를 위해서는 두 가지 방식을 고려해야 했습니다.
 
 첫 번째 방식은 하나의  ```ExoPlayer```를 생성하고 재활용하는 것으로, 메모리 사용량을 감소시키고 성능을 향상시킬 수 있는 장점이 있었습니다. 그러나 스크롤 중에 영상 상태가 초기화되어 일시 정지나 재시작이 발생할 수 있는 단점이 있었습니다.
 
