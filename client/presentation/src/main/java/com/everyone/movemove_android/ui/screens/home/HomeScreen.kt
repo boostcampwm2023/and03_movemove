@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -137,6 +139,32 @@ fun HomeScreen(
             MoveMoveVideos(
                 event = event,
                 videosList = state.videosTopRatedOldSchool
+            )
+
+            Spacer(modifier = Modifier.height(36.dp))
+            StyledColorText(
+                modifier = Modifier.padding(start = 16.dp),
+                style = MaterialTheme.typography.titleLarge,
+                coloredText = stringResource(R.string.new_school_title),
+                plainText = stringResource(R.string.top_10_title)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            MoveMoveVideos(
+                event = event,
+                videosList = state.videosTopRatedNewSchool
+            )
+
+            Spacer(modifier = Modifier.height(36.dp))
+            StyledColorText(
+                modifier = Modifier.padding(start = 16.dp),
+                style = MaterialTheme.typography.titleLarge,
+                coloredText = stringResource(R.string.k_pop),
+                plainText = stringResource(R.string.top_10_title)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            MoveMoveVideos(
+                event = event,
+                videosList = state.videosTopRatedKPOP
             )
         }
     }
@@ -310,12 +338,27 @@ fun MoveMoveVideo(
         shape = RoundedCornerShape(size = 8.dp),
     ) {
         videos.video?.let { video ->
-            AsyncImage(
-                modifier = Modifier.fillMaxSize(),
-                model = video.thumbnailImageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    model = video.thumbnailImageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                )
+
+                video.title?.let { title ->
+                    StyledText(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(8.dp),
+                        text = title,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 2
+                    )
+                }
+            }
         } ?: run {
             EmptyVideoContent(stringResId = R.string.empty_video_title)
         }
@@ -328,7 +371,7 @@ fun EmptyVideoContent(@StringRes stringResId: Int) {
         modifier = Modifier
             .fillMaxSize()
             .heightIn(min = 220.dp),
-        ) {
+    ) {
         StyledText(
             modifier = Modifier.align(Alignment.Center),
             text = stringResource(stringResId),

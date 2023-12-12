@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.everyone.movemove_android.R
 import com.everyone.movemove_android.ui.theme.DisabledFontInDark
@@ -43,13 +44,17 @@ fun StyledText(
     modifier: Modifier = Modifier,
     text: String,
     style: TextStyle,
-    color: Color = MaterialTheme.colorScheme.onBackground
+    color: Color = MaterialTheme.colorScheme.onBackground,
+    overflow: TextOverflow = TextOverflow.Clip,
+    maxLines: Int = Int.MAX_VALUE,
 ) {
     Text(
         modifier = modifier,
         text = text,
         style = style,
-        color = color
+        color = color,
+        overflow = overflow,
+        maxLines = maxLines
     )
 }
 
