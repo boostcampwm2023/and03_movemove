@@ -74,8 +74,7 @@
 ![cloudcraft-removebg](https://github.com/boostcampwm2023/and03_movemove/assets/39575061/d13a671b-0bfc-4e2d-b248-6cc287554bd4)
 
 ### 기술스택
-<img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=ffffff">
-<img src="https://img.shields.io/badge/Nest.js-E0234E?logo=NestJS&logoColor=white"/>
+<img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=ffffff"> <img src="https://img.shields.io/badge/Nest.js-E0234E?logo=NestJS&logoColor=white"/>
 <img src="https://img.shields.io/badge/Yarn Berry-2C8EBB?logo=yarn&logoColor=ffffff">
 <img src="https://img.shields.io/badge/MongoDB-114411?logo=mongodb">
 <img src="https://img.shields.io/badge/Mongoose-114411?logo=mongodb">
