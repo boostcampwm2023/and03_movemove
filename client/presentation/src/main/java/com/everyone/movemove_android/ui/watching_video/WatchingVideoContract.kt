@@ -8,6 +8,7 @@ interface WatchingVideoContract :
     BaseContract<WatchingVideoContract.State, WatchingVideoContract.Event, WatchingVideoContract.Effect> {
     data class State(
         val isLoading: Boolean = false,
+        val isError: Boolean = false,
         val isClickedCategory: Boolean = false,
         val selectedCategory: Category = Category.TOTAL,
         val categoryList: List<Category> = listOf(
@@ -35,6 +36,7 @@ interface WatchingVideoContract :
 
         data class PutVideosViews(val videoId: String) : Event
         data class OnClickedProfile(val uuid: String) : Event
+        data object Refresh : Event
 
     }
 
