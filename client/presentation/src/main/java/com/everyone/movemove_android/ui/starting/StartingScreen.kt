@@ -185,8 +185,21 @@ fun StartingScreen(viewModel: StartingViewModel = hiltViewModel()) {
                                 if (error != null) {
                                     //fail without application login
                                 } else if (token != null) {
-                                    //success, use token.accessToken,
-                                    //kakaoSignInClient.me { user, _ -> user!!.id }
+                                    val kakaoIdToken = token.idToken
+                                    kakaoSignInClient.me { user, _ ->
+                                        val userId = user?.id
+                                        if (kakaoIdToken != null && userId != null) {
+                                            event(
+                                                OnSocialLoginSuccess(
+                                                    idToken = kakaoIdToken,
+                                                    platform = KAKAO,
+                                                    uuid = UUID(userId, userId).toString()
+                                                )
+                                            )
+                                        } else {
+                                            // todo : 예외 처리
+                                        }
+                                    }
                                 }
                             }
                         )
