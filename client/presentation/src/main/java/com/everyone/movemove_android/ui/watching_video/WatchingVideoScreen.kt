@@ -79,7 +79,6 @@ import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.*
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoContract.Event.*
 import com.everyone.movemove_android.ui.watching_video.category.CategoryScreen
 import com.everyone.movemove_android.ui.theme.FooterBottomBackgroundInDark
-import com.everyone.movemove_android.ui.theme.FooterMiddleBackgroundInDark
 import com.everyone.movemove_android.ui.theme.FooterTopBackgroundInDark
 import com.everyone.movemove_android.ui.theme.Point
 import com.everyone.movemove_android.ui.theme.Typography
@@ -492,11 +491,9 @@ fun MoveMoveFooter(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                alpha = 0.2f,
                 brush = Brush.verticalGradient(
                     colors = listOf(
                         FooterTopBackgroundInDark,
-                        FooterMiddleBackgroundInDark,
                         FooterBottomBackgroundInDark,
                     )
                 )
