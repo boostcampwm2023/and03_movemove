@@ -441,7 +441,10 @@ class UploadingVideoViewModel @Inject constructor(
 
     private fun onClickUpload() {
         _state.update {
-            it.copy(isLoading = true)
+            it.copy(
+                isPlaying = false,
+                isVideoEncoding = true
+            )
         }
 
         getVideoUploadUrlUseCase(
@@ -454,7 +457,7 @@ class UploadingVideoViewModel @Inject constructor(
                 }
 
                 is DataState.Failure -> {
-                    // todo : 예외 처리
+                    showErrorDialog(R.string.error_uploading_video)
                 }
             }
         }.launchIn(viewModelScope + ioDispatcher)
@@ -526,13 +529,10 @@ class UploadingVideoViewModel @Inject constructor(
                 when (result) {
                     is DataState.Success -> {
                         _effect.emit(GoToWatchingVideoScreen(result.data))
-                        _state.update {
-                            it.copy(isLoading = false)
-                        }
                     }
 
                     is DataState.Failure -> {
-
+                        showErrorDialog(R.string.error_uploading_video)
                     }
                 }
             }
@@ -555,6 +555,7 @@ class UploadingVideoViewModel @Inject constructor(
         _state.update {
             it.copy(
                 isErrorDialogShowing = true,
+                isVideoEncoding = false,
                 errorDialogTextResourceId = textResourceId
             )
         }

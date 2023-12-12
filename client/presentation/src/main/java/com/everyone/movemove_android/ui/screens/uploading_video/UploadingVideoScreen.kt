@@ -252,6 +252,10 @@ fun UploadingVideoScreen(viewModel: UploadingVideoViewModel = hiltViewModel()) {
             LoadingDialogWithText(text = stringResource(id = R.string.loading_video_trimming))
         }
 
+        if (state.isVideoEncoding) {
+            LoadingDialogWithText(text = stringResource(id = R.string.loading_video_encoding))
+        }
+
         if (state.isErrorDialogShowing) {
             ErrorDialog(
                 text = stringResource(id = state.errorDialogTextResourceId),
@@ -410,12 +414,6 @@ private fun ColumnScope.VideoFrame(
                 state = state,
                 event = event
             )
-        }
-
-        DisposableEffect(Unit) {
-            onDispose {
-                exoPlayer.release()
-            }
         }
     } ?: run {
         Box(
