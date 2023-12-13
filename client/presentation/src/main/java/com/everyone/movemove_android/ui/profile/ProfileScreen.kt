@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,9 +34,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import coil.compose.AsyncImage
 import com.everyone.domain.model.Profile
 import com.everyone.movemove_android.base.use
@@ -48,6 +53,7 @@ import com.everyone.movemove_android.ui.profile.ProfileContract.Effect.*
 import com.everyone.movemove_android.ui.profile.ProfileContract.Event.*
 import com.everyone.movemove_android.ui.profile.ProfileContract.Event.OnClickedVideo
 import com.everyone.movemove_android.ui.rating_video.RatingVideoContract
+import com.everyone.movemove_android.ui.screens.home.HomeContract
 import com.everyone.movemove_android.ui.theme.BorderInDark
 import com.everyone.movemove_android.ui.theme.Typography
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
@@ -58,6 +64,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun ProfileScreen(
     navigateToActivity: (intent: Intent) -> Unit,
     viewModel: ProfileViewModel,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     navigateUp: () -> Unit
 ) {
     val context = LocalContext.current
@@ -83,6 +90,20 @@ fun ProfileScreen(
 
                 is NavigateUp -> navigateUp()
             }
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                event(Refresh)
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 

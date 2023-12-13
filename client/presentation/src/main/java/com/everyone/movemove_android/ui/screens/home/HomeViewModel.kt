@@ -46,10 +46,15 @@ class HomeViewModel @Inject constructor(
     override fun event(event: Event) = when (event) {
         is OnClickedVideo -> onClickedVideo(event.videosList, event.page)
         is OnErrorDialogDismissed -> onErrorDialogDismissed()
+        is Refresh -> getVideos()
     }
 
     init {
         getAds()
+        getVideos()
+    }
+
+    private fun getVideos(){
         getVideosTrend()
         geVideosTopRated(category = Category.CHALLENGE)
         geVideosTopRated(category = Category.OLD_SCHOOL)
