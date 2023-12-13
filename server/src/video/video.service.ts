@@ -37,6 +37,7 @@ export class VideoService {
     { category, limit, seed }: RandomVideoQueryDto,
     userId: string,
   ) {
+    console.log('random video response:', category, limit, seed);
     const actions = await this.UserModel.aggregate([
       { $match: { uuid: userId } },
       { $unwind: '$actions' },
@@ -63,7 +64,9 @@ export class VideoService {
       { $replaceRoot: { newRoot: '$actions' } },
     ]);
 
-    const viewIdList = actions.map((userAction) => userAction.videoId);
+    const viewIdList = actions.map(
+      (userAction) => new Types.ObjectId(userAction.videoId),
+    );
     const condition = {
       _id: { $not: { $in: viewIdList } },
       ...(category !== CategoryEnum.전체 && { category }),
@@ -258,10 +261,7 @@ export class VideoService {
     if (!video) {
       throw new VideoNotFoundException();
     }
-    if (
-      uuid !== process.env.ADMIN_UUID &&
-      video.uploaderId.uuid !== uuid
-    ) {
+    if (uuid !== process.env.ADMIN_UUID && video.uploaderId.uuid !== uuid) {
       throw new NotYourVideoException();
     }
     await Promise.all([
