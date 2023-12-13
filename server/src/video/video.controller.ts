@@ -58,6 +58,7 @@ export class VideoController {
     @Query() query: RandomVideoQueryDto,
     @RequestUser() user: User,
   ) {
+    console.log(`랜덤 비디오 응답 API : ${JSON.stringify(query)}`);
     return this.videoService.getRandomVideo(query, user.id);
   }
 
