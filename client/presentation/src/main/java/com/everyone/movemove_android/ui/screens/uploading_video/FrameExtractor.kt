@@ -82,7 +82,11 @@ class FrameExtractor(private val path: String) {
                         var outputBufferIndex = dequeueOutputBuffer(bufferInfo, OUTPUT_BUFFER_TIMEOUT)
 
                         while (outputBufferIndex < 0) {
-                            outputBufferIndex = dequeueOutputBuffer(bufferInfo, OUTPUT_BUFFER_TIMEOUT)
+                            if (outputBufferIndex == -1) {
+                                return
+                            } else {
+                                outputBufferIndex = dequeueOutputBuffer(bufferInfo, OUTPUT_BUFFER_TIMEOUT)
+                            }
                         }
 
                         val outputBuffer = getOutputBuffer(outputBufferIndex)
@@ -139,8 +143,8 @@ class FrameExtractor(private val path: String) {
 
         return Bitmap.createScaledBitmap(
             filteredBitmap,
-            filteredBitmap.width / 4,
-            filteredBitmap.height / 4,
+            filteredBitmap.width,
+            filteredBitmap.height,
             false
         )
     }
@@ -148,7 +152,7 @@ class FrameExtractor(private val path: String) {
     companion object {
         private const val MIME_VIDEO = "video/"
         private const val THUMBNAIL_COUNT = 15
-        private const val INPUT_BUFFER_TIMEOUT = 1000L
-        private const val OUTPUT_BUFFER_TIMEOUT = -1L
+        private const val INPUT_BUFFER_TIMEOUT = 100000L
+        private const val OUTPUT_BUFFER_TIMEOUT = 300000L
     }
 }

@@ -36,7 +36,8 @@ interface UploadingVideoContract : BaseContract<UploadingVideoContract.State, Up
         val selectedThumbnail: ImageBitmap? = null,
         val stagedVideoFile: File? = null,
         val isErrorDialogShowing: Boolean = false,
-        val errorDialogTextResourceId: Int = 0
+        val errorDialogTextResourceId: Int = 0,
+        val isVideoEncoding: Boolean = false
     )
 
     sealed interface Event {

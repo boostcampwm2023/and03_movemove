@@ -26,6 +26,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -52,6 +53,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -60,6 +62,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
@@ -320,7 +323,6 @@ fun VideoPlayer(
             setMediaSource(source)
             prepare()
             playWhenReady = isScroll
-            videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
             repeatMode = Player.REPEAT_MODE_ONE
         }
 
@@ -332,9 +334,17 @@ fun VideoPlayer(
 
     AndroidView(factory = {
         PlayerView(context).apply {
+            exoPlayer.addListener(object : Player.Listener {
+                override fun onVideoSizeChanged(videoSize: VideoSize) {
+                    resizeMode = if (videoSize.pixelWidthHeightRatio.toInt() <= 1) {
+                        AspectRatioFrameLayout.RESIZE_MODE_FIXED_HEIGHT
+                    } else {
+                        AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
+                    }
+                }
+            })
             hideController()
             useController = false
-            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
             player = exoPlayer
             layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         }
@@ -365,6 +375,7 @@ fun MoveMoveCategory(
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoveMoveScoreboard(
     video: Video,
@@ -408,6 +419,21 @@ fun MoveMoveScoreboard(
             )
 
             Slider(
+                thumb = {
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(shape = CircleShape)
+                            .background(color = Color.White)
+                    ) {
+                        StyledText(
+                            modifier = Modifier.align(Alignment.Center),
+                            text = rating.toInt().toString(),
+                            style = Typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                            color = Point
+                        )
+                    }
+                },
                 steps = 4,
                 value = sliderPosition,
                 onValueChange = {
@@ -435,7 +461,7 @@ fun MoveMoveScoreboard(
                 colors = SliderDefaults.colors(
                     thumbColor = Color.White,
                     inactiveTrackColor = Color.White
-                )
+                ),
             )
         }
     }
