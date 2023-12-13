@@ -36,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.everyone.movemove_android.R
 import com.everyone.movemove_android.R.drawable.ic_left_arrow
 import com.everyone.movemove_android.R.drawable.ic_profile_add
 import com.everyone.movemove_android.R.drawable.img_basic_profile
@@ -198,6 +199,16 @@ fun SignUpScreen(viewModel: SignUpViewModel = hiltViewModel()) {
                         contentDescription = null
                     )
                 }
+            }
+
+            if(state.profileImage == null) {
+                Spacer(modifier = Modifier.height(14.dp))
+
+                StyledText(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    text = stringResource(R.string.no_profile_image_alarm),
+                    style = Typography.labelMedium
+                )
             }
 
             Spacer(modifier = Modifier.height(36.dp))

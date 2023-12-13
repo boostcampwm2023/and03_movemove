@@ -61,9 +61,11 @@ export class UserController {
   getUploadedVideos(
     @Param('userId') userId: string,
     @Query() query: UserUploadedVideoQueryDto,
+    @RequestUser() user: User,
   ) {
     return this.userService.getUploadedVideos(
       userId,
+      user.id,
       query.limit,
       query.lastId,
     );
