@@ -301,20 +301,28 @@ class UploadingVideoViewModel @Inject constructor(
                                 tempList.add(it.asImageBitmap())
                             }
                         )
-
                         if (tempList.isNotEmpty()) {
                             _state.update {
                                 it.copy(thumbnailList = tempList)
                             }
                         } else {
+                            initializeScreen()
                             showErrorDialog(R.string.error_getting_thumbnail)
                         }
                     },
                     onFailure = {
+                        initializeScreen()
                         showErrorDialog(R.string.error_get_video_file_path)
                     }
                 )
             }
+        }
+    }
+
+    private fun initializeScreen() {
+        _state.update { State() }
+        viewModelScope.launch {
+            _effect.emit(PauseVideo)
         }
     }
 
