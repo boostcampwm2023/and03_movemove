@@ -245,10 +245,7 @@ fun WatchingVideoContent(
                     MoveMoveCategory(
                         category = state.selectedCategory.displayName,
                         modifier = Modifier
-                            .padding(
-                                start = 21.dp,
-                                top = 21.dp
-                            )
+                            .padding(21.dp)
                             .align(Alignment.TopStart)
                             .clickableWithoutRipple { event(OnClickedCategory) },
                     )
@@ -357,20 +354,34 @@ fun MoveMoveCategory(
     modifier: Modifier
 ) {
 
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        FooterBottomBackgroundInDark,
+                        FooterTopBackgroundInDark,
+                    )
+                ),
+                alpha = 0.5f
+            )
     ) {
-        StyledText(
-            text = category,
-            style = MaterialTheme.typography.bodyLarge.copy(color = Color.White)
-        )
+        Row(
+            modifier = modifier,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            StyledText(
+                text = category,
+                style = MaterialTheme.typography.bodyLarge.copy(color = Color.White)
+            )
 
-        Icon(
-            modifier = Modifier.padding(start = 5.dp),
-            painter = painterResource(id = R.drawable.ic_expand_more),
-            contentDescription = null
-        )
+            Icon(
+                modifier = Modifier.padding(start = 5.dp),
+                painter = painterResource(id = R.drawable.ic_expand_more),
+                contentDescription = null
+            )
+        }
     }
 
 }
