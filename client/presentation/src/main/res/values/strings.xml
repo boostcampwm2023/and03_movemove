@@ -51,6 +51,7 @@
     <string name="sign_up">회원가입</string>
     <string name="nickname">닉네임</string>
     <string name="one_line_introduce">한 줄 소개</string>
+    <string name="no_profile_image_alarm">프로필 이미지를 등록해주세요.</string>
 
     <!--    my-->
     <string name="edit_profile">프로필 편집</string>
