@@ -36,7 +36,7 @@ object RemoteConstants {
     const val CONTENT = "content"
     const val CATEGORY = "category"
     const val LIMIT = "limit"
-    const val SEED = "SEED"
+    const val SEED = "seed"
     const val REASON = "reason"
     const val VIEWS = "views"
     const val REFRESH_TOKEN = "refreshToken"

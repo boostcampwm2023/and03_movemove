@@ -116,7 +116,7 @@ class VideosRepositoryImpl @Inject constructor(
                     path(VIDEOS, RANDOM)
                     parameters.append(LIMIT, limit)
                     parameters.append(CATEGORY, category)
-                    parameters.append(SEED, seed)
+                    if (seed.isNotBlank()) parameters.append(SEED, seed)
                 }
             ).collect { response ->
                 response.data?.let {
@@ -156,7 +156,7 @@ class VideosRepositoryImpl @Inject constructor(
             networkHandler.request<Unit>(
                 method = HttpMethod.Put,
                 url = { path(VIDEOS, videoId, VIEWS) },
-                content = { append(SEED, seed) }
+                content = { if (seed.isNotBlank()) append(SEED, seed) }
             ).collect { response ->
                 response.data?.let {
                     emit(DataState.Success(it))
