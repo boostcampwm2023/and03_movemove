@@ -178,15 +178,22 @@ export class UserService {
     limit: number,
     lastRatedAt: string,
   ): Promise<RatedVideoResponseDto> {
-    const array = lastRatedAt
+    const condition = lastRatedAt
       ? {
-          $filter: {
-            input: '$actions',
-            as: 'action',
-            cond: { $lt: ['$$action.updatedAt', new Date(lastRatedAt)] },
-          },
+          $and: [
+            { $lt: ['$$action.updatedAt', new Date(lastRatedAt)] },
+            { $ne: ['$$action.rating', null] },
+          ],
         }
-      : '$actions';
+      : { $ne: ['$$action.rating', null] };
+
+    const array = {
+      $filter: {
+        input: '$actions',
+        as: 'action',
+        cond: condition,
+      },
+    };
 
     const data = await this.UserModel.aggregate([
       { $match: { uuid } },
