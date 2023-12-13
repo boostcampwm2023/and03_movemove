@@ -59,7 +59,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
@@ -386,8 +385,6 @@ fun MoveMoveScoreboard(
     val currentRating =
         video.userRating?.let { userRating -> (userRating * 0.2).toFloat() } ?: run { 0f }
     var sliderPosition by remember { mutableFloatStateOf(currentRating) }
-    val rating = sliderPosition * 5
-
     val coroutineScope = rememberCoroutineScope()
 
     val context = LocalContext.current
@@ -428,7 +425,7 @@ fun MoveMoveScoreboard(
                     ) {
                         StyledText(
                             modifier = Modifier.align(Alignment.Center),
-                            text = rating.toInt().toString(),
+                            text = (sliderPosition * 5).toInt().toString(),
                             style = Typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                             color = Point
                         )
@@ -443,7 +440,7 @@ fun MoveMoveScoreboard(
                     event(
                         OnClickedVideoRating(
                             id = video.id.toString(),
-                            rating = rating.toInt().toString(),
+                            rating = (sliderPosition * 5).toInt().toString(),
                             reason = "테스트" // TODO 임시,,,
                         )
                     )
@@ -453,7 +450,7 @@ fun MoveMoveScoreboard(
                     coroutineScope.launch {
                         snackBarState.showSnackbar(
                             message = context.getString(R.string.rating_video_snackbar_message)
-                                .format(rating.toInt()),
+                                .format( (sliderPosition * 5).toInt()),
                             duration = SnackbarDuration.Short
                         )
                     }
