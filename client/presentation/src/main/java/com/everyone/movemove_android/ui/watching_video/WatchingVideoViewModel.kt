@@ -3,6 +3,7 @@ package com.everyone.movemove_android.ui.watching_video
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.cachedIn
 import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosList
 import com.everyone.domain.model.base.DataState
@@ -87,7 +88,7 @@ class WatchingVideoViewModel @Inject constructor(
     private fun putVideosViews(videoId: String) {
         putVideosViewsUseCase(
             videoId = videoId,
-            seed = state.value.seed
+            seed = state.value.seed.value
         ).onEach { result ->
             when (result) {
                 is DataState.Success -> {}
@@ -97,39 +98,13 @@ class WatchingVideoViewModel @Inject constructor(
     }
 
     private fun getRandomVideos() {
-        viewModelScope.launch {
-            loading(isLoading = true)
-            getVideosRandomUseCase(
-                limit = LIMIT,
-                category = state.value.selectedCategory.displayName,
-                seed = state.value.seed
-            ).onEach { result ->
-                when (result) {
-                    is DataState.Success -> {
-                        result.data.videos?.let { videos ->
-                            _state.update {
-                                it.copy(
-                                    videos = result.data.videos,
-                                    seed = result.data.seed.toString(),
-                                    isLoading = false,
-                                    isError = false
-                                )
-                            }
-
-                        }
-                    }
-
-                    is DataState.Failure -> {
-                        _state.update {
-                            it.copy(
-                                isLoading = false,
-                                isError = true
-                            )
-                        }
-                    }
-                }
-            }.launchIn(viewModelScope + ioDispatcher)
-        }
+        state.value.videosRandom =
+            createVideoPagingSource(
+                getVideosRandomUseCase = getVideosRandomUseCase,
+                viewModel = this
+            ).flow.cachedIn(
+                viewModelScope + ioDispatcher
+            )
     }
 
     private fun setVideos(
@@ -139,7 +114,8 @@ class WatchingVideoViewModel @Inject constructor(
         _state.update {
             it.copy(
                 videos = videos,
-                page = page ?: 0
+                page = page ?: 0,
+                seed = MutableStateFlow("")
             )
         }
     }

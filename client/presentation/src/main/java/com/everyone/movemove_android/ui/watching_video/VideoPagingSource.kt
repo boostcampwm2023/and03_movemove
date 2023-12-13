@@ -12,7 +12,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-fun createVideoPagingSource(getVideosRandomUseCase: GetVideosRandomUseCase): Pager<Int, Videos> {
+fun createVideoPagingSource(
+    getVideosRandomUseCase: GetVideosRandomUseCase,
+    viewModel: WatchingVideoViewModel,
+): Pager<Int, Videos> {
     return Pager(
         config = PagingConfig(
             pageSize = 10,
@@ -20,29 +23,39 @@ fun createVideoPagingSource(getVideosRandomUseCase: GetVideosRandomUseCase): Pag
             enablePlaceholders = true
         ),
         initialKey = 0,
-        pagingSourceFactory = { VideoPagingSource(getVideosRandomUseCase = getVideosRandomUseCase) }
+        pagingSourceFactory = {
+            VideoPagingSource(
+                getVideosRandomUseCase = getVideosRandomUseCase,
+                viewModel = viewModel
+            )
+        }
     )
 }
 
-class VideoPagingSource(private val getVideosRandomUseCase: GetVideosRandomUseCase) :
+class VideoPagingSource(
+    private val getVideosRandomUseCase: GetVideosRandomUseCase,
+    private val viewModel: WatchingVideoViewModel
+) :
     PagingSource<Int, Videos>() {
 
     override fun getRefreshKey(state: PagingState<Int, Videos>): Int? = state.anchorPosition
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Videos> {
         val pageIndex = params.key ?: 0
+        val limit = "10"
 
         return try {
             var data: List<Videos>? = null
 
             getVideosRandomUseCase(
-                limit = "10",
-                category = WatchingVideoContract.Category.TOTAL.displayName,
-                seed = ""
+                limit = limit,
+                category = viewModel.state.value.selectedCategory.displayName,
+                seed = viewModel.state.value.seed.value
             ).onEach { result ->
                 when (result) {
                     is DataState.Success -> {
                         data = result.data.videos
+                        viewModel.state.value.seed.value = result.data.seed.toString()
                     }
 
                     is DataState.Failure -> {}

@@ -1,8 +1,12 @@
 package com.everyone.movemove_android.ui.watching_video
 
+import androidx.paging.PagingData
 import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.base.BaseContract
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 
 interface WatchingVideoContract :
     BaseContract<WatchingVideoContract.State, WatchingVideoContract.Event, WatchingVideoContract.Effect> {
@@ -19,8 +23,9 @@ interface WatchingVideoContract :
             Category.K_POP
         ),
         val videos: List<Videos>? = null,
+        var videosRandom: Flow<PagingData<Videos>> = emptyFlow(),
         val page: Int = 0,
-        val seed: String = "",
+        val seed: MutableStateFlow<String> = MutableStateFlow(""),
         val videoTab: VideoTab = VideoTab.CATEGORY_TAB
     )
 

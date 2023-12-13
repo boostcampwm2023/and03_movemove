@@ -59,7 +59,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
@@ -69,6 +68,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.everyone.domain.model.Video
 import com.everyone.domain.model.Videos
@@ -121,13 +121,190 @@ fun WatchingVideoScreen(
             if (state.isError) {
                 MoveMoveErrorScreen(onClick = { Refresh })
             } else {
-                WatchingVideoContent(
-                    modifier = Modifier.padding(paddingValues),
-                    context = context,
-                    state = state,
-                    event = event,
+                if (state.videoTab == VideoTab.BOTTOM_TAB) {
+                    WatchingVideoRandomContent(
+                        modifier = Modifier.padding(paddingValues),
+                        context = context,
+                        state = state,
+                        event = event,
+                    )
+                } else {
+                    WatchingVideoContent(
+                        modifier = Modifier.padding(paddingValues),
+                        context = context,
+                        state = state,
+                        event = event,
+                    )
+                }
+
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun WatchingVideoRandomContent(
+    modifier: Modifier,
+    context: Context,
+    state: State,
+    event: (Event) -> Unit,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+) {
+
+    val videosRandom = state.videosRandom.collectAsLazyPagingItems()
+
+    val pagerState = rememberPagerState(pageCount = { videosRandom.itemCount })
+
+    val exoPlayerPair = remember {
+        Triple(
+            ExoPlayer.Builder(context).build(),
+            ExoPlayer.Builder(context).build(),
+            ExoPlayer.Builder(context).build()
+        )
+    }
+
+    Box {
+        VerticalPager(
+            modifier = modifier.fillMaxSize(),
+            state = pagerState
+        ) { page ->
+
+            val exoPlayer = when (page % 3) {
+                0 -> exoPlayerPair.first
+                1 -> exoPlayerPair.second
+                else -> exoPlayerPair.third
+            }
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                videosRandom[page]?.let { videos ->
+                    videos.video?.let { video ->
+                        val snackBarState = remember { SnackbarHostState() }
+                        Uri.parse(video.manifest)?.let { uri ->
+                            VideoPlayer(
+                                context = context,
+                                exoPlayer = exoPlayer,
+                                uri = uri,
+                                isScroll = !pagerState.isScrollInProgress
+                            )
+                        } ?: run { EmptyVideoItem(stringResId = R.string.invald_video_title) }
+
+
+
+                        Column(modifier = Modifier.align(Alignment.BottomStart)) {
+                            MoveMoveScoreboard(
+                                video = video,
+                                event = event,
+                                snackBarState = snackBarState
+                            )
+
+                            MoveMoveFooter(
+                                videos = videos,
+                                event = event
+                            )
+                        }
+
+                        MoveMoveSnackBar(
+                            modifier = Modifier.align(Alignment.BottomCenter),
+                            snackBarState = snackBarState
+                        )
+                    }
+                }
+            }
+            if (!pagerState.isScrollInProgress) {
+                when (pagerState.settledPage % 3) {
+                    0 -> {
+                        exoPlayerPair.first.play()
+                        exoPlayerPair.second.pause()
+                        exoPlayerPair.third.pause()
+                    }
+
+                    1 -> {
+                        exoPlayerPair.first.pause()
+                        exoPlayerPair.second.play()
+                        exoPlayerPair.third.pause()
+                    }
+
+                    2 -> {
+                        exoPlayerPair.first.pause()
+                        exoPlayerPair.second.pause()
+                        exoPlayerPair.third.play()
+                    }
+                }
+            } else {
+                exoPlayerPair.first.pause()
+                exoPlayerPair.second.pause()
+                exoPlayerPair.third.pause()
+            }
+        }
+
+
+        if (state.isClickedCategory) {
+            CategoryScreen()
+        } else {
+            if (state.videoTab == VideoTab.BOTTOM_TAB) {
+                MoveMoveCategory(
+                    category = state.selectedCategory.displayName,
+                    modifier = Modifier
+                        .padding(
+                            start = 21.dp,
+                            top = 21.dp
+                        )
+                        .align(Alignment.TopStart)
+                        .clickableWithoutRipple { event(OnClickedCategory) },
                 )
             }
+        }
+
+        if (videosRandom.itemCount > 0) {
+            videosRandom[pagerState.settledPage]?.let { videos ->
+                videos.video?.let { video ->
+                    video.id?.let { id ->
+                        event(PutVideosViews(id))
+
+                    }
+                }
+            }
+        }
+
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                when (pagerState.settledPage % 3) {
+                    0 -> {
+                        exoPlayerPair.first.play()
+                        exoPlayerPair.second.pause()
+                        exoPlayerPair.third.pause()
+                    }
+
+                    1 -> {
+                        exoPlayerPair.first.pause()
+                        exoPlayerPair.second.play()
+                        exoPlayerPair.third.pause()
+                    }
+
+                    2 -> {
+                        exoPlayerPair.first.pause()
+                        exoPlayerPair.second.pause()
+                        exoPlayerPair.third.play()
+                    }
+                }
+            } else if (event == Lifecycle.Event.ON_STOP) {
+                exoPlayerPair.first.pause()
+                exoPlayerPair.second.pause()
+                exoPlayerPair.third.pause()
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            exoPlayerPair.first.release()
+            exoPlayerPair.second.release()
+            exoPlayerPair.third.release()
         }
     }
 }
@@ -232,12 +409,6 @@ fun WatchingVideoContent(
                 }
             }
 
-            videosItem[pagerState.settledPage].video?.let { video ->
-                video.id?.let { id ->
-                    event(PutVideosViews(id))
-                }
-            }
-
             if (state.isClickedCategory) {
                 CategoryScreen()
             } else {
@@ -252,6 +423,12 @@ fun WatchingVideoContent(
                             .align(Alignment.TopStart)
                             .clickableWithoutRipple { event(OnClickedCategory) },
                     )
+                }
+            }
+
+            videosItem[pagerState.settledPage].video?.let { video ->
+                video.id?.let { id ->
+                    event(PutVideosViews(id))
                 }
             }
         }
