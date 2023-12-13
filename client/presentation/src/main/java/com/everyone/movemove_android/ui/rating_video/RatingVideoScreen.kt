@@ -31,8 +31,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.everyone.domain.model.Video
 import com.everyone.domain.model.Videos
 import com.everyone.domain.model.VideosList
 import com.everyone.movemove_android.base.use
@@ -156,7 +158,7 @@ fun MoveMoveVideoGrid(
                                 )
                             )
                         },
-                        model = videos[it].video?.thumbnailImageUrl,
+                        video = videos[it].video,
                     )
                 }
             }
@@ -167,21 +169,36 @@ fun MoveMoveVideoGrid(
 @Composable
 fun MoveMoveGridImageItem(
     modifier: Modifier,
-    model: String?
+    video: Video?
 ) {
-    model?.let {
+    video?.let {
         Card(
             modifier = modifier
                 .aspectRatio(0.6f)
                 .padding(8.dp),
             shape = RoundedCornerShape(size = 8.dp),
         ) {
-            AsyncImage(
-                modifier = Modifier.fillMaxSize(),
-                model = model,
-                contentDescription = null,
-                contentScale = ContentScale.Crop
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                AsyncImage(
+                    modifier = Modifier.fillMaxSize(),
+                    model = video.thumbnailImageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                )
+
+                video.title?.let { title ->
+                    StyledText(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(8.dp),
+                        text = title,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 2
+                    )
+                }
+            }
         }
     } ?: run {
         EmptyVideoGridItem(modifier = modifier, stringResId = R.string.invald_video_title)
