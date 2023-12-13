@@ -91,7 +91,12 @@ export class UserService {
     };
   }
 
-  async getUploadedVideos(uuid: string, limit: number, lastId: string) {
+  async getUploadedVideos(
+    uuid: string,
+    viewerUuid: string,
+    limit: number,
+    lastId: string,
+  ) {
     const uploaderData = await this.UserModel.findOne({ uuid }, { actions: 0 });
     if (!uploaderData) {
       throw new UserNotFoundException();
@@ -116,7 +121,7 @@ export class UserService {
       .sort({ _id: -1 })
       .limit(limit);
 
-    const videos = await this.getVideoInfos(videoData, uploader, uuid);
+    const videos = await this.getVideoInfos(videoData, uploader, viewerUuid);
     return { videos };
   }
 
@@ -140,7 +145,11 @@ export class UserService {
     return { uploader, uploaderId };
   }
 
-  async getVideoInfos(videoData: Array<any>, uploader: object, uuid: string) {
+  async getVideoInfos(
+    videoData: Array<any>,
+    uploader: object,
+    viewerUuid: string,
+  ) {
     const videos = await Promise.all(
       videoData.map(async (video) => {
         const { thumbnailExtension, raterCount, totalRating, ...videoInfo } =
@@ -149,7 +158,7 @@ export class UserService {
           ? (totalRating / raterCount).toFixed(1)
           : null;
         const userRating = await this.videoService.getUserRating(
-          uuid,
+          viewerUuid,
           videoInfo._id,
         );
         const manifest = `${process.env.MANIFEST_URL_PREFIX}/${videoInfo._id}_master.m3u8`;

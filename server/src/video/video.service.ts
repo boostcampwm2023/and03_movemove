@@ -37,7 +37,6 @@ export class VideoService {
     { category, limit, seed }: RandomVideoQueryDto,
     userId: string,
   ) {
-    console.log('random video response:', category, limit, seed);
     const actions = await this.UserModel.aggregate([
       { $match: { uuid: userId } },
       { $unwind: '$actions' },

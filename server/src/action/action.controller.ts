@@ -30,7 +30,7 @@ export class ActionController {
     @RequestUser() user: User,
     @Query() query: SeedQueryDto,
   ) {
-    console.log(`조회수 증가 API : ${JSON.stringify(query)}`);
+    console.log(`${user.id} 조회수 증가 API : ${JSON.stringify(query)}`);
     return this.actionService.viewVideo(videoId, user.id, query.seed);
   }
 }
