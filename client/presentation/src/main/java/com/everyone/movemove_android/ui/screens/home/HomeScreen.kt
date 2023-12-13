@@ -7,9 +7,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.lifecycle.Lifecycle
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.foundation.layout.Spacer
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,6 +58,7 @@ import com.everyone.movemove_android.ui.LoadingDialog
 import com.everyone.movemove_android.ui.StyledText
 import com.everyone.movemove_android.ui.screens.home.HomeContract.Effect.NavigateToWatchingVideo
 import com.everyone.movemove_android.ui.theme.Point
+import com.everyone.movemove_android.ui.screens.home.HomeContract.Event.*
 import com.everyone.movemove_android.ui.util.clickableWithoutRipple
 import com.everyone.movemove_android.ui.watching_video.WatchingVideoActivity
 import kotlinx.coroutines.NonCancellable
@@ -64,6 +70,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     navigateToActivity: (intent: Intent) -> Unit
 ) {
     val context = LocalContext.current
@@ -81,6 +88,20 @@ fun HomeScreen(
                     )
                 )
             }
+        }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                event(Refresh)
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 

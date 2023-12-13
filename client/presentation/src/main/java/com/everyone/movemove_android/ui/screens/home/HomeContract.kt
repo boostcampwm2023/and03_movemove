@@ -25,6 +25,7 @@ interface HomeContract :
         ) : Event
 
         data object OnErrorDialogDismissed : Event
+        data object Refresh : Event
     }
 
     sealed interface Effect {
