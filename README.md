@@ -32,9 +32,11 @@
 
 ## 🗝 Key-Feature
 ### 동영상 시청
+![영상재생](https://github.com/boostcampwm2023/and03_movemove/assets/82919343/118821c3-006a-4436-8ec1-3f01bdea2041)
 ### 동영상 점수 부여
+![점수부여](https://github.com/boostcampwm2023/and03_movemove/assets/82919343/5b0804c6-e1b2-43fe-a898-aeb2a30acbff)
 ### 동영상 업로드
-
+![upload](https://github.com/boostcampwm2023/and03_movemove/assets/82919343/c781fd25-8b59-4746-bf15-aab983762f6d)
 ---
 
 ## 📷 앱 스크린샷
@@ -140,4 +142,3 @@
 - 대부분이 유휴 상태로 비용적 이득
 
 ---
-## 📕 팀 문서
