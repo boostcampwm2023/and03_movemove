@@ -16,6 +16,9 @@
     height="300"
   >
 </p>
+<p align="center">
+  <a href="https:/github.com/boostcampwm2023/and03_movemove/wiki/">팀 위키</a>
+</p>
 
 ### 앱 <뭅뭅>은 댄스 영상을 숏폼 비디오 형태로 시청하고 업로드할 수 있는 플랫폼입니다.
 최근, 숏 폼 비디오 플랫폼이 빠르게 성장하고 있음에 기인하여 시작된 프로젝트입니다.
@@ -40,79 +43,107 @@
 ---
 
 ## 📷 앱 스크린샷
+- **스플래시 및 로그인 페이지**
+
+<img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/bb80a8ff-7ec7-449c-9698-0e59d9d9e67b">   
+
+- **회원가입 페이지**
+
+<img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/2ef42055-b9f3-47e6-91ee-aedfd50a156f">      <img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/01d21650-fb78-49ac-978e-e4cea606e56d">
+
+- **홈 페이지**
+
+<img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/7d226035-6ce9-4fa8-8f7b-b5d754e8214e"> 
+
+- **비디오 스트리밍 페이지**
+
+<img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/9421e12b-bfe6-47bd-a803-69a5d9f30040">      <img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/f159f412-baf5-4c4d-9a18-7798899fed0d">
+
+- **비디오 업로드 페이지**
+
+<img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/61974afa-157b-497d-ae07-e3ebd35f78fd">
+
+- **프로필 페이지**
+
+<img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/7c69d788-6daf-4180-ae8e-b40f24f013fb">      <img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/c4b34e84-3382-4679-9a2d-7c325aab049f">
+
+
 
 ---
 
 ## 📱 뭅뭅 `Android` 팀의 도전
+
+### 기술 스택
+
+- **Minimum SDK Version** 26
+
+- **Target SDK Version** 34
+
+- **Clean Architecture**  지향
+
+- **Architecture**
+    - MVI
+
+- **사용한 라이브러리**
+    - Compose, Jetpack AAC, Hilt, Ktor, Coil, Media3  등
+
+- **비동기 처리**
+    - Coroutine Flow
+
 ### `K006_김민조`
 ### Compose
-- 제 첫번째 도전은 ```Compose``` 였습니다!
-- 이전 학습 스프린트 과정에서 ```XML``` 뷰 시스템에서의 적응이 끝나기도 전에 ```Compose```를 하게 되었고 프로젝트 시작 전 팀원 분의 가르침과 Basics codelab을 참고하여 급히 공부하였습니다 ! (https://github.com/boostcampwm2023/and03_movemove/wiki/Compose-%EC%A0%81%EC%9D%91%EA%B8%B0)
-- 자세하게 학습하여 정확히 사용한 건 아니라고 생각하고 있고 적어도 ```Compose```의 특징을 ```XML```과 비교하자면 여러가지 **편한점**을 느낄 수 있었습니다.
-- **편한점**은 1.XML 창을 왔다갔다 안해도 되서 좋았다 2. 뷰에서 데이터를 구독할 때 데이터 바인딩을 사용 안해도 되서 편했다 정도를 느꼈습니다!
+- 선언형 UI 
+- 기존에는 개발할 때 XML 창을 반복하며 개발하였지만 컴포즈는 이러한 점이 없음
+- 뷰에서 데이터를 구독시키기 위해 별다른 데이터 바인딩 작업이 없음
 
 ### MVI 패턴
-- 이전에 ```MVVM``` 패턴에 대해 공부하던 과정에서 곧바로 ```MVI``` 패턴에 대해 사용하게 되었기에 이 또한 제게 큰 도전이였습니다!
-- 기존에 팀장님 께서 셋업 해주신 코드로 사용을 하였고, ```MVI``` 패턴을 사용하면서 적어도 모든 행위(데이터 변경, 이펙트, 이벤트알림)를 **Intent** 로 사용하여 오히려 더 로직이 간결해 졌습니다.
-- 다만 Contract 파일, ViewModel, View 세부분에서 소스를 각자 추가하였기에 소스를 작성할때 처음에 헷갈리는게 있지만 충분히 적응할만 하였다고 느꼈습니다.
+- 기존 MVVM 상태 관리 문제와 부수효과로 예측 불가능한 단점을 극복
+- 구현 난이도는 올라갔지만 인텐트 위주로 생각하기 때문에 로직은 간결해짐
 
 ### Clean Architecture
-- 학습을 많이 못하여 아쉽지만 적어도 ```뭅뭅``` 프로젝트에서 레이어 구조를 이해하였습니다.
-- ```Data Layer``` 에서 실제로 API통신에 사용할 소스 **Impl** 파일을 구현하고 Model 파일을 생성하여 Response 모델을 사용합니다 
-- ```Domain Layer``` 에서 ``` Data Layer```의 데이터를 필요에 따라 가공하고 **UseCase**를 만들어서 추후 ```Presentation Layer```에서 사용할 함수를 작성합니다
-- ```Presentation Layer``` 에서는 ```Domain Layer```에서 생성한 **UseCase**를 사용합니다.
-- 이런 구조로 작성했을 시 추후 데이터받는 부분이 변경된다면 ```DataLayer```에서만 변경하고 사용하면 된다는 점이 메리트로 느껴졌습니다!
+- ```Data Layer``` 에서 실제로 API통신에 사용할 소스 **Impl** 파일을 구현하고 Model 파일을 생성하여 Response 모델을 사용 
+- ```Domain Layer``` 에서 ``` Data Layer```의 데이터를 필요에 따라 가공하고 **UseCase**를 만들어서 추후 ```Presentation Layer```에서 사용
+- ```Presentation Layer``` 에서는 ```Domain Layer```에서 생성한 **UseCase**를 사용
+- 이런 구조로 작성했을 시 추후 데이터받는 부분이 변경된다면 ```DataLayer```에서만 변경
 
 ### 소셜 로그인 API 
-- **구글**,**카카오** 로그인 구현하면서 데이터를 요구할때의 인증 값으로 **웹 클라이언트 ID**와 **Android 키 해시**, **SHA-1 키** 관리를 해야 한다는 것을 새로 배웠습니다.
+- **구글**,**카카오** 로그인 구현
+- 인증 값으로 **웹 클라이언트 ID**와 **Android 키 해시**, **SHA-1 키** 관리
 
 --- 
 ### `K034_장지호`
 ### `Jetpack Compose` 유저 인터랙션 경험
-`Modifier` 의 `.pointerInput()` 메서드를 활용한 유저 인터랙션을 구현하였습니다. [이전에도 비슷한 구현을 한 경험](https://blothhundr.tistory.com/116)이 있으나,
-
-이번 만큼 유저가 기대할만 한 모든 액션에 대해 처리하지는 않았습니다. 해당 과정을 통해 **`Unidirectional Data Flow` 구조에서**
-
-**`ViewModel` 과 `UI` 가 어떠한 방식으로 소통하여야 하는지 제대로 파악**하였습니다. 자세한 구현 경험은 [여기](https://blothhundr.tistory.com/194)에서 확인하실 수 있습니다!
+- `Modifier` 의 `.pointerInput()` 메서드를 활용한 유저 인터랙션을 구현
+- 해당 과정을 통해 **`Unidirectional Data Flow` 구조에서** **`ViewModel` 과 `UI` 가 어떠한 방식으로 소통하여야 하는지 제대로 파악**
+- [관련 포스트](https://blothhundr.tistory.com/194)
 
 ### 비디오 프레임 추출 기능의 로우 레벨 최적화
-`MediaMetadataRetriever` 클래스를 통해 비디오 프레임을 추출하는 기존 구현에서 `MediaCodec` 을 활용하는 구현으로 리팩토링을 진행하였습니다.
-
-해당 과정을 통해 `최대 약 62% 의 성능 개선` 을 이룰 수 있었으며, `CODEC`, `YUV` 등 기본적인 **안드로이드에서의 비디오 처리 관련 지식을 함양**할 수 있었습니다.
-
-자세한 구현 경험은 [여기](https://blothhundr.tistory.com/199)에서 확인하실 수 있습니다!
+- `MediaMetadataRetriever` 클래스를 통해 비디오 프레임을 추출하는 기존 구현에서 `MediaCodec` 을 활용하는 구현으로 리팩토링 진행
+- `최대 약 62% 의 성능 개선` 을 이룰 수 있었으며, `CODEC`, `YUV` 등 기본적인 **안드로이드에서의 비디오 처리 관련 지식을 함양**
+- [관련 포스트](https://blothhundr.tistory.com/199)
 
 ### `Ktor` vs `Retrofit`
-널리 사용되는 `Retrofit` 을 배제하고 `Ktor` 를 적용하였습니다. 모두에게 낯선 라이브러리였지만, **니즈가 확실**했기에 도전하게 되었습니다.
-
-저는 해당 기술을 적극적으로 학습하고 프로젝트에 사용하였는데요. 편리하고 직관적인 사용을 위해 심도있는 추상화를 진행하였고, 사용에 관해
-
-팀원들에게 전파하는 역할까지 수행하였습니다.
-
-개인적으로 느끼기에는 `Retrofit` 보다 훨씬 직관적이고, 최초 구현을 마친 뒤에는 보일러 플레이트 코드가 줄어드는 경험을 가질 수 있었습니다.
-
-구현에 대한 자세한 이야기는 [여기](https://blothhundr.tistory.com/193)에서 확인하실 수 있습니다!
+- 널리 사용되는 `Retrofit` 을 배제하고 `Ktor` 를 적용
+- 모두에게 낯선 라이브러리였지만, **니즈가 확실**했기에 도전
+- 편리하고 직관적인 사용을 위해 심도있는 추상화를 진행하였으며, 사용에 관해팀원들에게 전파하는 역할까지 수행
+- `Retrofit` 보다 훨씬 직관적이고, 최초 구현을 마친 뒤에는 보일러 플레이트 코드가 줄어드는 경험
+- [관련 포스트](https://blothhundr.tistory.com/193)
 
 ---
 
 ### `K039_조준장`
 
 ### 비디오 스트리밍 최적화
-많은 비디오를 쇼츠 형태로 효율적으로 보기 위해서 [ExoPlayer 최적화](https://github.com/boostcampwm2023/and03_movemove/wiki/%E2%9C%8F%EF%B8%8F-MoveMove-Tech-%EC%A1%B0%EC%A4%80%EC%9E%A5)를 진행했습니다.
-최적화를 위해서는 두 가지 방식을 고려해야 했습니다.
-
-첫 번째 방식은 하나의  ```ExoPlayer```를 생성하고 재활용하는 것으로, 메모리 사용량을 감소시키고 성능을 향상시킬 수 있는 장점이 있었습니다. 그러나 스크롤 중에 영상 상태가 초기화되어 일시 정지나 재시작이 발생할 수 있는 단점이 있었습니다.
-
-두 번째 방식은 각각의 영상에 대해 새로운  ```ExoPlayer```를 생성하는 것으로, 각 영상이 독립적으로 재생되고 전환 시 로딩 시간이 없는 장점이 있었습니다. 그러나 메모리 사용량이 높아질 수 있는 단점이 있었습니다.
-
-위 두가지 방식의 장단점을 극복하기 위해, ```3개의 미리 생성된 ExoPlayer 인스턴스를 사용하여 최적화를 진행했습니다.```
-3개의 ExoPlayer를 활용하여 이전 화면, 현재 화면, 그리고 다음 화면의 영상을 효율적으로 처리하면서 시스템 리소스를 효과적으로 활용할 수 있었습니다. 
-이 방식은 각각의 화면에서 독립적으로 영상을 처리하면서도 메모리를 효율적으로 활용하는 장점이 있었습니다. 
-
-또한, ```LaunchedEffect가 아닌 DisposableEffect를 활용하여```, 컴포넌트가 처음 구성될 때 또는 uri가 변경될 때마다 새로운 미디어 소스를 설정하고 ExoPlayer를 초기화하도록 구현했습니다. 
-그리고 DisposableEffect가 해제될 때 onDispose 블록에서 정의한 ExoPlayer를 종료하고 미디어 소스를 지우도록 했습니다.
-
-최종적으로 이러한 최적화를 통해 ```부드러운 비디오 재생```과 ```사용자 경험```을 향상시킬 수 있었습니다.
+- 많은 비디오를 쇼츠 형태로 효율적으로 보기 위해서 [ExoPlayer 비디오 스트리밍 최적화](https://github.com/boostcampwm2023/and03_movemove/wiki/%E2%9C%8F%EF%B8%8F-MoveMove-Tech-%EC%A1%B0%EC%A4%80%EC%9E%A5)를 진행함. 
+- 최적화를 위해서는 두 가지 방식을 고려 
+- 첫 번째 방식, 하나의 ExoPlayer를 생성하고 재활용하는 것으로, 메모리 사용량을 감소시키고 성능을 향상시킬 수 있는 장점이 있음. 그러나 스크롤 중에 영상 상태가 초기화되어 일시 정지나 재시작이 발생할 수 있는 단점이 있음 
+- 두 번째 방식은 각각의 영상에 대해 새로운 ExoPlayer를 생성하는 것으로, 각 영상이 독립적으로 재생되고 전환 시 로딩 시간이 없는 장점이 있음. 그러나 메모리 사용량이 높아질 수 있는 단점이 있음. 
+- 위 두가지 방식의 장단점을 극복하기 위해, 3개의 미리 생성된 ExoPlayer 인스턴스를 사용하여 최적화를 진행
+- 3개의 ExoPlayer를 활용하여 이전 화면, 현재 화면, 그리고 다음 화면의 영상을 효율적으로 처리하면서 시스템 리소스를 효과적으로 활용
+- 이 방식은 각각의 화면에서 독립적으로 영상을 처리하면서도 메모리를 효율적으로 활용하는 장점이 있음
+- 또한, LaunchedEffect가 아닌 DisposableEffect를 활용하여, 컴포넌트가 처음 구성될 때 또는 uri가 변경될 때마다 새로운 미디어 소스를 설정하고 ExoPlayer를 초기화하도록 구현, DisposableEffect가 해제될 때 onDispose 블록에서 정의한 ExoPlayer를 종료하고 미디어 소스를 지우도록 했음 
+- 최종적으로 CPU 사용량을 평균 42%에서 18%로 감소시켜 전체적으로 57% 개선되었음.
+- 이러한 최적화를 통해 부드러운 비디오 재생과 사용자 경험을 향상시킬 수 있었음.
 
 ## 💻 뭅뭅 `Backend` 팀의 도전
 
@@ -141,4 +172,8 @@
 - 서버 관리의 부담 완화
 - 대부분이 유휴 상태로 비용적 이득
 
----
+### 관련 문서
+<li><a href="https://movemove-backend.notion.site/VOD-Station-1-Cloud-Function-API-Gateway-3607d938c1344348a56f05d90f1c6730?pvs=4">VOD Station 대체 (1) Cloud Function, API Gateway</a></li>
+<li><a href="https://movemove-backend.notion.site/VOD-Station-2-VPC-subnet-NAT-Gateway-fd2fd12f6c87439d863b0090f7897db5?pvs=4">VOD Station 대체 (2) VPC Subnet, NAT Gateway</a></li>
+<li><a href="https://movemove-backend.notion.site/ffmpeg-1-fe829bdf2e64465899081270a69f8d2f?pvs=4">ffmpeg (1)</a></li>
+<li><a href="https://movemove-backend.notion.site/Presigned-URL-6b2787a1bb734fbbb49e2ac4eb8c27f5?pvs=4">Presigned URL</a></li>
