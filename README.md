@@ -42,6 +42,24 @@
 ---
 
 ## 📱 뭅뭅 `Android` 팀의 도전
+
+### 기술 스택
+
+- **Minimum SDK Version** 26
+
+- **Target SDK Version** 34
+
+- **Clean Architecture**  지향
+
+- **Architecture**
+    - MVI
+
+- **사용한 라이브러리**
+    - Compose, Jetpack AAC, Hilt, Ktor, Coil, Media3  등
+
+- **비동기 처리**
+    - Coroutine Flow
+
 ### `K006_김민조`
 ### Compose
 - 선언형 UI 
