@@ -16,6 +16,9 @@
     height="300"
   >
 </p>
+<p align="center">
+  <a href="https:/github.com/boostcampwm2023/and03_movemove/wiki/">팀 위키</a>
+</p>
 
 ### 앱 <뭅뭅>은 댄스 영상을 숏폼 비디오 형태로 시청하고 업로드할 수 있는 플랫폼입니다.
 최근, 숏 폼 비디오 플랫폼이 빠르게 성장하고 있음에 기인하여 시작된 프로젝트입니다.
@@ -175,5 +178,8 @@
 - 서버 관리의 부담 완화
 - 대부분이 유휴 상태로 비용적 이득
 
----
-## 📕 팀 문서
+### 관련 문서
+<li><a href="https://movemove-backend.notion.site/VOD-Station-1-Cloud-Function-API-Gateway-3607d938c1344348a56f05d90f1c6730?pvs=4">VOD Station 대체 (1) Cloud Function, API Gateway</a></li>
+<li><a href="https://movemove-backend.notion.site/VOD-Station-2-VPC-subnet-NAT-Gateway-fd2fd12f6c87439d863b0090f7897db5?pvs=4">VOD Station 대체 (2) VPC Subnet, NAT Gateway</a></li>
+<li><a href="https://movemove-backend.notion.site/ffmpeg-1-fe829bdf2e64465899081270a69f8d2f?pvs=4">ffmpeg (1)</a></li>
+<li><a href="https://movemove-backend.notion.site/Presigned-URL-6b2787a1bb734fbbb49e2ac4eb8c27f5?pvs=4">Presigned URL</a></li>
