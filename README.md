@@ -40,11 +40,11 @@
 ## 📷 앱 스크린샷
 - **스플래시 및 로그인 페이지**
 
-  <img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/bb80a8ff-7ec7-449c-9698-0e59d9d9e67b">   
+<img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/bb80a8ff-7ec7-449c-9698-0e59d9d9e67b">   
 
 - **회원가입 페이지**
 
-  <img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/2ef42055-b9f3-47e6-91ee-aedfd50a156f">      <img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/01d21650-fb78-49ac-978e-e4cea606e56d">
+<img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/2ef42055-b9f3-47e6-91ee-aedfd50a156f">      <img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/01d21650-fb78-49ac-978e-e4cea606e56d">
 
 - **홈 페이지**
 
@@ -52,11 +52,11 @@
 
 - **비디오 스트리밍 페이지**
 
-  <img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/9421e12b-bfe6-47bd-a803-69a5d9f30040">      <img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/f159f412-baf5-4c4d-9a18-7798899fed0d">
+<img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/9421e12b-bfe6-47bd-a803-69a5d9f30040">      <img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/f159f412-baf5-4c4d-9a18-7798899fed0d">
 
 - **비디오 업로드 페이지**
 
-  <img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/61974afa-157b-497d-ae07-e3ebd35f78fd">
+<img width="30%" src="https://github.com/boostcampwm2023/and03_movemove/assets/69571848/61974afa-157b-497d-ae07-e3ebd35f78fd">
 
 - **프로필 페이지**
 
